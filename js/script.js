@@ -1,5 +1,6 @@
 (function() {
   var poz = $('#poz');
+  mediaLinks = $("a.media")
   var body = $("#b");
   var suggestion = $('#suggestion')
   var count = 0;
@@ -10,12 +11,18 @@
     var target = $(event.target)
     if (!target.is('i')) {
       count = count + 1;
-      poz.css('color', randomColor());
+      var color = randomColor()
+      poz.css('color', color);
+      $.each(mediaLinks, function(index, link) {
+        $(link).hover(function(hoverEvent){
+          $(this).css('color', hoverEvent.type === 'mouseenter' ? color : 'black');
+        })
+      });
     }
-    if (count === 7) {
+    if (count === 5) {
       suggestion.show();
     }
-    if (count === 14) {
+    if (count === 10) {
       suggestion.text(suggestion.text().toUpperCase());
     }
   });

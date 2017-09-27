@@ -1,0 +1,138 @@
+html, body {
+  height: 100%;
+  cursor: pointer;
+}
+
+#main {
+  height: 75%;
+  font-family: 'Questrial', sans-serif;
+  font-size: 20px;
+  display: -webkit-flex;
+  display: flex;
+  -webkit-flex-direction: column;
+  flex-direction: column;
+  -webkit-align-items: center;
+  align-items: center;
+  -webkit-justify-content: center;
+  justify-content: center;
+}
+
+#suggestion {
+  display: none;
+}
+
+#poz {
+  display: inline-flex;
+  -webkit-animation: wiggle 5s 1;
+  /* Safari 4+ */
+  -moz-animation: wiggle 5s 1;
+  /* Fx 5+ */
+  animation-name: wiggle;
+  animation-duration: 1s;
+  animation-iteration-count: 1;
+  animation-delay: 2s;
+  /* IE 10+, Fx 29+ */
+}
+
+@-webkit-keyframes wiggle {
+  0%, 100% {
+    -webkit-transform: rotate(0deg);
+  }
+  15% {
+    -webkit-transform: rotate(2deg);
+  }
+  30% {
+    -webkit-transform: rotate(-2deg);
+  }
+  45% {
+    -webkit-transform: rotate(2deg);
+  }
+  60% {
+    -webkit-transform: rotate(-2deg);
+  }
+  75% {
+    -webkit-transform: rotate(2deg);
+  }
+  90% {
+    -webkit-transform: rotate(0deg);
+  }
+}
+
+@-moz-keyframes wiggle {
+  0%, 100% {
+    -moz-transform: rotate(0deg);
+  }
+  15% {
+    -moz-transform: rotate(2deg);
+  }
+  30% {
+    -moz-transform: rotate(-2deg);
+  }
+  45% {
+    -moz-transform: rotate(2deg);
+  }
+  60% {
+    -moz-transform: rotate(-2deg);
+  }
+  75% {
+    -moz-transform: rotate(2deg);
+  }
+  90% {
+    -moz-transform: rotate(0deg);
+  }
+}
+
+@keyframes wiggle {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  15% {
+    transform: rotate(2deg);
+  }
+  30% {
+    transform: rotate(-2deg);
+  }
+  45% {
+    transform: rotate(2deg);
+  }
+  60% {
+    transform: rotate(-2deg);
+  }
+  75% {
+    transform: rotate(2deg);
+  }
+  90% {
+    transform: rotate(0deg);
+  }
+}
+
+h1 {
+  font-size: 70px;
+  font-weight: normal;
+  margin-bottom: 10px;
+}
+
+a {
+  color: black
+}
+
+a:visited {
+  color: black;
+}
+
+a:hover {
+  color: #990000;
+}
+
+a:active {
+  color: #555555;
+}
+
+.social {
+  font-size: 40px;
+  margin: 10px;
+}
+
+.reddish {
+  color: #990000;
+}
