@@ -1,6 +1,7 @@
 html, body {
   height: 100%;
   cursor: pointer;
+  -webkit-tap-highlight-color: rgba(0,0,0,0);
 }
 
 #main {
@@ -129,7 +130,7 @@ a:active {
 }
 
 .social {
-  font-size: 40px;
+  font-size: 50px;
   margin: 10px;
 }
 
