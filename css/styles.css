@@ -114,6 +114,11 @@ h1 {
   margin-bottom: 10px;
 }
 
+i {
+  padding-left: 6px;
+  padding-right: 6px;
+}
+
 a {
   color: black
 }
