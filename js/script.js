@@ -24,6 +24,11 @@
     if (count === 10) {
       suggestion.text(suggestion.text().toUpperCase());
     }
+    if (count === 20) {
+      var html = $("html");
+      html.css('background-size', 'cover');
+      html.css('filter', 'invert(100%)');
+    }
   });
 
   function randomColorVal() {

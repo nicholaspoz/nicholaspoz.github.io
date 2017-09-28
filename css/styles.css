@@ -1,3 +1,9 @@
+html {
+  background: url('/img/fire.gif');
+  background-position: 0% 50%;
+  background-size: 0 0
+}
+
 html, body {
   height: 100%;
   cursor: pointer;
