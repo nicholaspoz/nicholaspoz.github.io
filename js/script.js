@@ -25,9 +25,8 @@
       suggestion.text(suggestion.text().toUpperCase());
     }
     if (count === 20) {
-      var html = $("html");
-      html.css('background-size', 'cover');
-      html.css('filter', 'invert(100%)');
+      body.css('background-size', 'cover');
+      body.css('filter', 'invert(100%)');
     }
   });
 
