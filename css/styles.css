@@ -5,10 +5,10 @@ html, body {
 body {
   margin: 0;
   cursor: pointer;
-  background: url('/img/fire.gif');
-  background-position: 0% 50%;
-  background-size: 0 0;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  /*background: url('/img/fall.gif');
+  background-size: cover;
+  background-position: 0% 100%;*/
 }
 
 #main {
@@ -26,15 +26,11 @@ body {
   user-select: none;
 }
 
-#suggestion {
-  display: none;
-}
-
 #poz {
   display: inline-flex;
-  -webkit-animation: wiggle 5s 1;
+  -webkit-animation: wiggle 1s 1;
   /* Safari 4+ */
-  -moz-animation: wiggle 5s 1;
+  -moz-animation: wiggle 1s 1;
   /* Fx 5+ */
   animation-name: wiggle;
   animation-duration: 1s;
@@ -126,19 +122,19 @@ i {
   padding-right: 6px;
 }
 
-a {
+.media {
   color: black
 }
 
-a:visited {
+.media:visited {
   color: black;
 }
 
-a:hover {
+.media:hover {
   color: #990000;
 }
 
-a:active {
+.media:active {
   color: #555555;
 }
 
@@ -150,3 +146,61 @@ a:active {
 .reddish {
   color: #990000;
 }
+
+.secret {
+  display: none;
+}
+
+.bg-fire {
+  background: url('/img/fire.gif');
+  background-size: cover;
+  background-position: 0% 50%;
+  filter: invert(100%);
+}
+
+.bg-city {
+  background: url('/img/city.gif');
+  background-size: cover;
+  background-position: 0% 50%;
+  filter: invert(0%);
+}
+
+.bg-fall {
+  background: url('/img/fall.gif');
+  background-size: cover;
+  background-position: 0% 50%;
+  filter: invert(100%);
+}
+
+.bg-waterfall {
+  background: url('/img/waterfall.gif');
+  background-size: cover;
+  background-position: 0% 50%;
+  filter: invert(100%);
+}
+
+.bg-winter {
+  background: url('/img/winter.gif');
+  background-size: cover;
+  background-position: 0% 50%;
+  filter: invert(0%);
+}
+
+/*
+.spinning {
+  display: inline-flex;
+  animation-name: spin;
+  animation-duration: 2s;
+  animation-iteration-count: infinite;
+  animation-timing-function: linear;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(-359deg);
+  }
+}
+*/
