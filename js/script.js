@@ -1,6 +1,7 @@
 (function() {
   var body = $("#b");
   var poz = $('#poz');
+  var name = $('#name');
   var mediaLinks = $("a.media");
   var suggestion = $('#suggestion');
   var count = 0;
@@ -11,6 +12,7 @@
       count = count + 1;
       var color = randomColor()
       poz.css('color', color);
+      name.css('color', color);
       $.each(mediaLinks, function(index, link) {
         $(link).hover(function(hoverEvent) {
           var linkColor = hoverEvent.type === 'mouseenter' ? color : 'black'

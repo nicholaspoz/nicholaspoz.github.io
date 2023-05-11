@@ -9,11 +9,11 @@ body {
   background-position: 0% 50%;
   background-size: 0 0;
   -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
+  font-family: 'Questrial', sans-serif;
 }
 
 #main {
   height: 75%;
-  font-family: 'Questrial', sans-serif;
   font-size: 20px;
   display: -webkit-flex;
   display: flex;
@@ -127,7 +127,8 @@ i {
 }
 
 a {
-  color: black
+  color: black;
+  text-decoration: none;
 }
 
 a:visited {
@@ -136,6 +137,7 @@ a:visited {
 
 a:hover {
   color: #990000;
+  text-decoration: underline;
 }
 
 a:active {
@@ -149,4 +151,14 @@ a:active {
 
 .reddish {
   color: #990000;
+}
+
+footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  color: black;
+  text-align: center;
+  padding-bottom: 20px;
 }
