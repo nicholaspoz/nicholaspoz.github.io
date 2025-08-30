@@ -1,8 +1,8 @@
 (function () {
   // use a script tag or an external JS file
   document.addEventListener("DOMContentLoaded", (event) => {
-    gsap.registerPlugin(SplitText);
-    console.log("DOMContentLoaded GSAP hooray");
+    // gsap.registerPlugin(SplitText);
+    // console.log("DOMContentLoaded GSAP hooray");
 
     // Initialize split-flap display
     initSplitFlap();
@@ -41,40 +41,68 @@
 
   // Split-flap display functionality
   function initSplitFlap() {
+    // gsap.registerPlugin(SplitText);
+    // console.log("DOMContentLoaded GSAP hooray");
+
     const splitFlap = document.querySelector(".split-flap");
     if (!splitFlap) return;
 
     const topFlap = splitFlap.querySelector(".flap.top");
     const bottomFlap = splitFlap.querySelector(".flap.bottom");
     const flippingTop = splitFlap.querySelector(".flap.flipping-top");
+    const flippingBottom = splitFlap.querySelector(".flap.flipping-bottom");
 
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?@#$%^&*() ";
     let currentChar = "A";
-    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ";
     let charIndex = 0;
+
+    function getPath(startChar, endChar) {
+      const startIndex = chars.indexOf(startChar);
+      const endIndex = chars.indexOf(endChar);
+      if (endIndex === -1 || startIndex === -1 || startChar === endChar) {
+        return [];
+      }
+
+      const path = [];
+      for (let i = startIndex + 1; i <= endIndex + chars.length; i++) {
+        path.push(chars[i % chars.length]);
+      }
+      return path;
+    }
 
     function flipToNext() {
       const nextIndex = (charIndex + 1) % chars.length;
       const nextChar = chars[nextIndex];
 
-      // Set up the display for realistic flipping:
-      // - Top static flap keeps showing current character
-      // - Bottom static flap shows next character (will be revealed)
-      // - Flipping top flap shows current character (will rotate down)
-
       // Prepare the bottom flap to show next character (hidden behind flipping flap)
-      bottomFlap.querySelector(".flap-content").textContent = nextChar;
+      bottomFlap.querySelector(".flap-content").textContent = currentChar;
 
       // Set up the flipping flap with current character
       flippingTop.querySelector(".flap-content").textContent = currentChar;
 
       // Create timeline for the flip animation
       const tl = gsap.timeline({
+        onStart: () => {
+          flippingTop.querySelector(".flap-content").textContent = currentChar;
+          gsap.set(flippingTop, {
+            opacity: 1,
+            rotateX: 0,
+            zIndex: 10,
+            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.3)",
+          });
+
+          flippingBottom.querySelector(".flap-content").textContent = nextChar;
+          gsap.set(flippingBottom, { opacity: 0, rotateX: 90 });
+
+          topFlap.querySelector(".flap-content").textContent = nextChar;
+        },
         onComplete: () => {
           // Update the top flap to show next character
-          topFlap.querySelector(".flap-content").textContent = nextChar;
+          bottomFlap.querySelector(".flap-content").textContent = nextChar;
 
           // Reset flipping flap
           gsap.set(flippingTop, { opacity: 0, rotateX: 0 });
+          gsap.set(flippingBottom, { opacity: 0, rotateX: 90 });
 
           // Update current state
           currentChar = nextChar;
@@ -83,16 +111,26 @@
       });
 
       // Animate the flip with enhanced shadow effect
-      tl.set(flippingTop, {
-        opacity: 1,
-        zIndex: 10,
-        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.3)",
-      }).to(flippingTop, {
+      tl.to(flippingTop, {
         rotateX: -90,
-        duration: 1,
+        duration: 0.1,
         ease: "power2.in",
         boxShadow: "0 8px 16px rgba(0, 0, 0, 0.5)",
-      });
+      })
+        .set(flippingTop, {
+          opacity: 0,
+        })
+        .set(flippingBottom, {
+          opacity: 1,
+          zIndex: 10,
+          boxShadow: "0 2px 4px rgba(0, 0, 0, 0.3)",
+          rotateX: 90,
+        })
+        .to(flippingBottom, {
+          rotateX: 0,
+          duration: 0.05,
+          ease: "linear",
+        });
 
       return tl;
     }
