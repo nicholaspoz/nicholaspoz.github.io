@@ -1,42 +1,33 @@
-(function() {
-  var body = $("#b");
-  var poz = $('#poz');
-  var name = $('#name');
-  var mediaLinks = $("a.media");
-  var suggestion = $('#suggestion');
-  var count = 0;
+(function () {
+  // defer to next tick so the blur placeholder paints first
+  requestAnimationFrame(() =>
+    document.querySelector(".site-hero").classList.add("ready")
+  );
 
-  body.on('click', function(event) {
-    target = $(event.target);
-    if (!target.is('i')) {
-      count = count + 1;
-      var color = randomColor()
-      poz.css('color', color);
-      name.css('color', color);
-      $.each(mediaLinks, function(index, link) {
-        $(link).hover(function(hoverEvent) {
-          var linkColor = hoverEvent.type === 'mouseenter' ? color : 'black'
-          $(this).css('color', linkColor);
-        })
-      });
-    }
-    if (count === 5) {
-      suggestion.show();
-    }
-    if (count === 10) {
-      suggestion.text(suggestion.text().toUpperCase());
-    }
-    if (count === 20) {
-      body.css('background-size', 'cover');
-      body.css('filter', 'invert(100%)');
-    }
-  });
+  // Dynamic scaling based on aspect ratio
+  function updateDynamicScale() {
+    const aspectRatio = window.innerWidth / window.innerHeight;
+    const targetAspectRatio = 16 / 9; // 1.777...
 
-  function randomColorVal() {
-    return 30 + Math.round(Math.random() * 69);
+    if (aspectRatio < targetAspectRatio) {
+      // Calculate scale: more narrow = more scaling
+      // Scale from 115% at 16:9 to 200% at very narrow ratios
+      const minScale = 100;
+      const maxScale = 180;
+      const normalizedRatio = Math.max(
+        0,
+        Math.min(1, (targetAspectRatio - aspectRatio) / targetAspectRatio)
+      );
+      const scale = minScale + (maxScale - minScale) * normalizedRatio;
+
+      document.documentElement.style.setProperty(
+        "--dynamic-scale",
+        `${scale}%`
+      );
+    }
   }
 
-  function randomColor() {
-    return '#' + [randomColorVal(), randomColorVal(), randomColorVal()].join('');
-  }
+  // Update on resize and initial load
+  window.addEventListener("resize", updateDynamicScale);
+  updateDynamicScale();
 })();

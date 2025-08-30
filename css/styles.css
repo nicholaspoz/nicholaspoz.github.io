@@ -1,164 +1,83 @@
-html, body {
-  height: 100%;
+html {
+  height: 100dvh;
+  height: 100vh;
+  width: 100vw;
+  margin: 0;
+  padding: 0;
 }
 
 body {
   margin: 0;
-  cursor: pointer;
-  background: url('/img/fire.gif');
-  background-position: 0% 50%;
-  background-size: 0 0;
-  -webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-  font-family: 'Questrial', sans-serif;
+  padding: 0;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+  height: 100dvh;
+  height: 100vh;
+  width: 100vw;
+  background-color: #d4d4d4; /* or any color you prefer */
 }
 
-#main {
-  height: 75%;
-  font-size: 20px;
-  display: -webkit-flex;
-  display: flex;
-  -webkit-flex-direction: column;
-  flex-direction: column;
-  -webkit-align-items: center;
-  align-items: center;
-  -webkit-justify-content: center;
-  justify-content: center;
-  user-select: none;
+/* full-bleed backdrop */
+.site-hero {
+  height: 100dvh;
+  height: 100vh;
+  width: 100vw;
+  position: relative;
 }
 
-#suggestion {
-  display: none;
-}
-
-#poz {
-  display: inline-flex;
-  -webkit-animation: wiggle 5s 1;
-  /* Safari 4+ */
-  -moz-animation: wiggle 5s 1;
-  /* Fx 5+ */
-  animation-name: wiggle;
-  animation-duration: 1s;
-  animation-iteration-count: 1;
-  animation-delay: 2s;
-  /* IE 10+, Fx 29+ */
-}
-
-@-webkit-keyframes wiggle {
-  0%, 100% {
-    -webkit-transform: rotate(0deg);
-  }
-  15% {
-    -webkit-transform: rotate(2deg);
-  }
-  30% {
-    -webkit-transform: rotate(-2deg);
-  }
-  45% {
-    -webkit-transform: rotate(2deg);
-  }
-  60% {
-    -webkit-transform: rotate(-2deg);
-  }
-  75% {
-    -webkit-transform: rotate(2deg);
-  }
-  90% {
-    -webkit-transform: rotate(0deg);
-  }
-}
-
-@-moz-keyframes wiggle {
-  0%, 100% {
-    -moz-transform: rotate(0deg);
-  }
-  15% {
-    -moz-transform: rotate(2deg);
-  }
-  30% {
-    -moz-transform: rotate(-2deg);
-  }
-  45% {
-    -moz-transform: rotate(2deg);
-  }
-  60% {
-    -moz-transform: rotate(-2deg);
-  }
-  75% {
-    -moz-transform: rotate(2deg);
-  }
-  90% {
-    -moz-transform: rotate(0deg);
-  }
-}
-
-@keyframes wiggle {
-  0%, 100% {
-    transform: rotate(0deg);
-  }
-  15% {
-    transform: rotate(2deg);
-  }
-  30% {
-    transform: rotate(-2deg);
-  }
-  45% {
-    transform: rotate(2deg);
-  }
-  60% {
-    transform: rotate(-2deg);
-  }
-  75% {
-    transform: rotate(2deg);
-  }
-  90% {
-    transform: rotate(0deg);
-  }
-}
-
-h1 {
-  font-size: 70px;
-  font-weight: normal;
-  margin-bottom: 10px;
-}
-
-i {
-  padding-left: 6px;
-  padding-right: 6px;
-}
-
-a {
-  color: black;
-  text-decoration: none;
-}
-
-a:visited {
-  color: black;
-}
-
-a:hover {
-  color: #990000;
-  text-decoration: underline;
-}
-
-a:active {
-  color: #555555;
-}
-
-.social {
-  font-size: 50px;
-  margin: 10px;
-}
-
-.reddish {
-  color: #990000;
-}
-
-footer {
-  position: fixed;
+/* Image container */
+.site-hero-image {
+  position: absolute;
+  top: 0;
   left: 0;
+  right: 0;
   bottom: 0;
-  width: 100%;
-  color: black;
-  text-align: center;
-  padding-bottom: 20px;
+
+  background-position: bottom;
+  background-size: contain;
+  background-repeat: no-repeat;
+
+  /* start with blur-up */
+  background-image: url("/img/bg-blur.webp");
+  filter: blur(8px);
+  transform: translateZ(0); /* avoid subpixel shimmer */
+}
+
+/* load sharper sources once JS flips .ready */
+.site-hero.ready .site-hero-image {
+  filter: none;
+  transition: filter 1000ms ease-out;
+}
+
+/* Make image full width when viewport is landscape/shorter */
+@media (aspect-ratio > 16/9) {
+  .site-hero-image {
+    background-size: cover; /* Full width, may crop top/bottom */
+    background-position: top 65% center;
+  }
+}
+
+/* Dynamic scaling based on aspect ratio - will be controlled by JavaScript */
+@media (aspect-ratio < 16/9) {
+  .site-hero-image {
+    background-size: calc(var(--dynamic-scale, 100%) * 1) auto;
+    background-position: bottom center;
+  }
+}
+
+/* width tiers + DPR selection */
+@media (min-width: 0px) {
+  .site-hero.ready .site-hero-image {
+    background-image: image-set(
+      url("/img/bg-1280.webp") 1x,
+      url("/img/bg-2560.webp") 2x
+    );
+  }
+}
+@media (min-width: 1280px) {
+  .site-hero.ready .site-hero-image {
+    background-image: image-set(
+      url("/img/bg-1920.webp") 1x,
+      url("/img/bg-3840.webp") 2x
+    );
+  }
 }
