@@ -3,9 +3,9 @@
   document.addEventListener("DOMContentLoaded", (event) => {
     // gsap.registerPlugin(SplitText);
     // console.log("DOMContentLoaded GSAP hooray");
-
-    // Initialize split-flap display
-    initSplitFlap();
+    // Split-flap components are now self-contained web components
+    // You can interact with them using their API methods
+    // initSplitFlap(); // Old implementation - now using web component
   });
 
   // defer to next tick so the blur placeholder paints first

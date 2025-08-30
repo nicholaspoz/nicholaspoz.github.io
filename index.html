@@ -74,29 +74,22 @@
 
         <!-- Split-flap display widget -->
         <div class="split-flap-container">
-          <div class="split-flap">
-            <div class="flap top">
-              <span class="flap-content">A</span>
-            </div>
+          <!-- Single component with auto-flip -->
+          <split-flap-display value="A"></split-flap-display>
 
-            <div class="flap bottom">
-              <span class="flap-content">A</span>
-            </div>
-
-            <div class="flap flipping-top">
-              <span class="flap-content">B</span>
-            </div>
-
-            <div class="flap flipping-bottom">
-              <span class="flap-content">B</span>
-            </div>
-          </div>
+          <!-- Or multiple components spelling a word -->
+          <!-- <split-flap-display value="H"></split-flap-display>
+          <split-flap-display value="E"></split-flap-display>
+          <split-flap-display value="L"></split-flap-display>
+          <split-flap-display value="L"></split-flap-display>
+          <split-flap-display value="O"></split-flap-display> -->
         </div>
       </main>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/gsap.min.js"></script>
     <!-- <script src="https://cdn.jsdelivr.net/npm/gsap@3.13.0/dist/SplitText.min.js"></script> -->
+    <script src="/js/split-flap-component.js"></script>
     <script src="/js/script.js"></script>
   </body>
 </html>

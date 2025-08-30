@@ -1,3 +1,8 @@
+const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?@#$%^&*() ";
+
+/**
+ * Requires GSAP
+ */
 class SplitFlapDisplay extends HTMLElement {
   constructor() {
     super();
@@ -6,21 +11,21 @@ class SplitFlapDisplay extends HTMLElement {
     this.attachShadow({ mode: "open" });
 
     // Default configuration
-    this.chars =
-      this.getAttribute("chars") || "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 ";
-    this.autoFlip = this.hasAttribute("auto-flip");
-    this.flipInterval = parseInt(this.getAttribute("flip-interval")) || 2000;
+    // this.flipInterval = parseInt(this.getAttribute("flip-interval")) || 2000;
+    // this.autoFlip = this.hasAttribute("auto-flip");
 
     // State
     this.currentChar = this.getAttribute("value") || this.chars[0];
-    this.charIndex = this.chars.indexOf(this.currentChar);
+    // this.charIndex = this.chars.indexOf(this.currentChar);
+
+    this.tl = null;
 
     this.render();
     this.setupEventListeners();
 
-    if (this.autoFlip) {
-      this.startAutoFlip();
-    }
+    // if (this.autoFlip) {
+    //   this.startAutoFlip();
+    // }
   }
 
   render() {
@@ -73,6 +78,7 @@ class SplitFlapDisplay extends HTMLElement {
           transform-origin: bottom;
           border-radius: 4px 4px 0 0;
           z-index: 2;
+          user-select: text;
         }
         
         .flap.bottom {
@@ -108,9 +114,25 @@ class SplitFlapDisplay extends HTMLElement {
           z-index: 10;
           box-shadow: 0 2px 4px rgb(0, 0, 0);
         }
+
+        .flap.flipping-bottom {
+          /* Animated flap that rotates down during character change */
+          opacity: 0;
+          pointer-events: none;
+          bottom: 0;
+          transform-origin: top;
+          border-radius: 0 0 4px 4px;
+          z-index: 10;
+          box-shadow: 0 2px 4px rgb(0, 0, 0); /* Shadow for depth */
+        }
         
         .flap.flipping-top .flap-content {
           top: 0;
+        }
+
+        .flap.flipping-bottom .flap-content {
+          /* Positions text in bottom half of flap */
+          bottom: 0;
         }
       </style>
     `;
@@ -127,6 +149,9 @@ class SplitFlapDisplay extends HTMLElement {
         <div class="flap flipping-top">
           <span class="flap-content">${this.currentChar}</span>
         </div>
+        <div class="flap flipping-bottom">
+          <span class="flap-content">${this.currentChar}</span>
+        </div>
       </div>
     `;
 
@@ -139,70 +164,118 @@ class SplitFlapDisplay extends HTMLElement {
   }
 
   flipToNext() {
-    const nextIndex = (this.charIndex + 1) % this.chars.length;
-    const nextChar = this.chars[nextIndex];
-
-    this.flipTo(nextChar);
+    const someLetter = chars[Math.floor(Math.random() * chars.length)];
+    console.log(someLetter);
+    const path = this.getPath(this.currentChar, someLetter);
+    this.flipTo(path);
   }
 
-  flipTo(targetChar) {
-    if (!this.chars.includes(targetChar)) return;
-
-    const targetIndex = this.chars.indexOf(targetChar);
-    if (targetIndex === this.charIndex) return;
+  flipTo(path) {
+    if (!path) return;
+    if (this.tl) {
+      console.log("tl already exists!!! todo");
+    }
 
     const topFlap = this.shadowRoot.querySelector(".flap.top");
     const bottomFlap = this.shadowRoot.querySelector(".flap.bottom");
     const flippingTop = this.shadowRoot.querySelector(".flap.flipping-top");
+    const flippingBottom = this.shadowRoot.querySelector(
+      ".flap.flipping-bottom"
+    );
 
-    // Prepare the bottom flap to show next character
-    bottomFlap.querySelector(".flap-content").textContent = targetChar;
-
-    // Set up the flipping flap with current character
-    flippingTop.querySelector(".flap-content").textContent = this.currentChar;
+    const nextChar = path[0];
+    // bottomFlap.querySelector(".flap-content").textContent = this.currentChar;
+    // flippingTop.querySelector(".flap-content").textContent = this.currentChar;
 
     // Create timeline for the flip animation
-    const tl = gsap.timeline({
+    this.tl = gsap.timeline({
+      onStart: () => {
+        flippingTop.querySelector(".flap-content").textContent =
+          this.currentChar;
+        gsap.set(flippingTop, {
+          opacity: 1,
+          rotateX: 0,
+          zIndex: 10,
+          boxShadow: "0 2px 4px rgba(0, 0, 0, 0.3)",
+        });
+
+        flippingBottom.querySelector(".flap-content").textContent = nextChar;
+        gsap.set(flippingBottom, { opacity: 0, rotateX: 90 });
+
+        topFlap.querySelector(".flap-content").textContent = nextChar;
+      },
       onComplete: () => {
         // Update the top flap to show next character
-        topFlap.querySelector(".flap-content").textContent = targetChar;
+        bottomFlap.querySelector(".flap-content").textContent = nextChar;
 
         // Reset flipping flap
         gsap.set(flippingTop, { opacity: 0, rotateX: 0 });
+        gsap.set(flippingBottom, { opacity: 0, rotateX: 90 });
 
         // Update current state
-        this.currentChar = targetChar;
-        this.charIndex = targetIndex;
+        this.currentChar = nextChar;
 
-        // Dispatch custom event
-        this.dispatchEvent(
-          new CustomEvent("flip", {
-            detail: { character: targetChar, index: targetIndex },
-          })
-        );
+        const nextPath = path.slice(1);
+        this.tl = null;
+        if (nextPath.length > 0) {
+          this.flipTo(nextPath);
+        }
       },
     });
 
-    // Animate the flip
-    tl.set(flippingTop, {
-      opacity: 1,
-      zIndex: 10,
-      boxShadow: "0 2px 4px rgba(0, 0, 0, 0.3)",
-    }).to(flippingTop, {
-      rotateX: -90,
-      duration: 1,
-      ease: "power2.in",
-      boxShadow: "0 8px 16px rgba(0, 0, 0, 0.5)",
-    });
+    // Animate the flip with enhanced shadow effect
+    this.tl
+      .to(flippingTop, {
+        rotateX: -90,
+        duration: 0.08,
+        ease: "power2.in",
+        boxShadow: "0 8px 16px rgba(0, 0, 0, 0.5)",
+      })
+      .set(flippingTop, {
+        opacity: 0,
+      })
+      .set(flippingBottom, {
+        opacity: 1,
+        zIndex: 10,
+        boxShadow: "0 2px 4px rgba(0, 0, 0, 0.3)",
+        rotateX: 90,
+      })
+      .to(flippingBottom, {
+        rotateX: 0,
+        duration: 0.02,
+        ease: "linear",
+      });
 
-    return tl;
+    return this.tl;
   }
 
-  startAutoFlip() {
-    this.autoFlipTimer = setInterval(() => {
-      this.flipToNext();
-    }, this.flipInterval);
+  /**
+   * Get the path of characters between two characters (excluding the
+   * startChar, including the endChar).
+   *
+   * @param {string} startChar - The starting character
+   * @param {string} endChar - The ending character
+   * @returns {string[]} The path of characters
+   */
+  getPath(startChar, endChar) {
+    const startIndex = chars.indexOf(startChar);
+    const endIndex = chars.indexOf(endChar);
+    if (endIndex === -1 || startIndex === -1 || startChar === endChar) {
+      return [];
+    }
+
+    const path = [];
+    for (let i = startIndex + 1; i <= endIndex + chars.length; i++) {
+      path.push(chars[i % chars.length]);
+    }
+    return path;
   }
+
+  // startAutoFlip() {
+  //   this.autoFlipTimer = setInterval(() => {
+  //     this.flipToNext();
+  //   }, this.flipInterval);
+  // }
 
   stopAutoFlip() {
     if (this.autoFlipTimer) {
@@ -236,8 +309,16 @@ class SplitFlapDisplay extends HTMLElement {
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
+    console.log("attributeChangedCallback", name, oldValue, newValue);
+    console.log(JSON.stringify(this, null, 2));
     if (name === "value" && newValue !== oldValue) {
-      this.flipTo(newValue);
+      if (this.tl) {
+        // this.tl.kill();
+        // this.tl = null;
+      }
+      const path = this.getPath(this.currentChar, newValue);
+      console.log("path", path);
+      // this.flipTo(path);
     }
   }
 }

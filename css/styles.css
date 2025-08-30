@@ -266,16 +266,6 @@ footer {
   box-shadow: 0 2px 4px rgb(0, 0, 0); /* Shadow for depth */
 }
 
-.flap.flipping-top .flap-content {
-  /* Positions text in top half of flap */
-  top: 0;
-}
-
-.flap.flipping-bottom .flap-content {
-  /* Positions text in bottom half of flap */
-  bottom: 0;
-}
-
 .flap.flipping-bottom {
   /* Animated flap that rotates down during character change */
   opacity: 0;
@@ -285,6 +275,16 @@ footer {
   border-radius: 0 0 4px 4px;
   z-index: 10;
   box-shadow: 0 2px 4px rgb(0, 0, 0); /* Shadow for depth */
+}
+
+.flap.flipping-top .flap-content {
+  /* Positions text in top half of flap */
+  top: 0;
+}
+
+.flap.flipping-bottom .flap-content {
+  /* Positions text in bottom half of flap */
+  bottom: 0;
 }
 
 .flap.top {
