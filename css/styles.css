@@ -4,6 +4,7 @@ html {
   width: 100vw;
   margin: 0;
   padding: 0;
+  min-width: 320px;
 }
 
 body {
@@ -13,7 +14,25 @@ body {
   height: 100dvh;
   height: 100vh;
   width: 100vw;
-  background-color: #d4d4d4; /* or any color you prefer */
+  background-color: rgb(212, 212, 212);
+  font-family: "Fragment Mono", monospace;
+}
+
+@font-face {
+  font-family: "Inkpen";
+  src: url("/static/Inkpen2Script.woff2") format("woff2"),
+    url("/static/Inkpen2Script.woff") format("woff");
+  font-weight: 400;
+  font-style: normal;
+}
+
+.tech {
+  font-family: "Fragment Mono", monospace;
+}
+
+.music {
+  font-family: "Inkpen", sans-serif;
+  line-height: 1.5;
 }
 
 /* full-bleed backdrop */
@@ -22,19 +41,10 @@ body {
   height: 100vh;
   width: 100vw;
   position: relative;
-}
-
-/* Image container */
-.site-hero-image {
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-
   background-position: bottom;
   background-size: contain;
   background-repeat: no-repeat;
+  overflow-x: hidden;
 
   /* start with blur-up */
   background-image: url("/img/bg-blur.webp");
@@ -43,22 +53,57 @@ body {
 }
 
 /* load sharper sources once JS flips .ready */
-.site-hero.ready .site-hero-image {
+.site-hero.ready {
   filter: none;
-  transition: filter 1000ms ease-out;
+  transition: filter 300ms ease-out;
+}
+
+main {
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  width: 100%;
+  transition: background-color 300ms ease-out;
+}
+
+.nick {
+  flex: 1;
+  text-align: center;
+  padding-top: 1rem;
 }
 
 /* Make image full width when viewport is landscape/shorter */
 @media (aspect-ratio > 16/9) {
-  .site-hero-image {
-    background-size: cover; /* Full width, may crop top/bottom */
+  .site-hero.ready {
+    background-size: cover;
     background-position: top 65% center;
+  }
+
+  .nick {
+    padding-left: calc((var(--dynamic-factor, 1) - 1) * 10rem);
+  }
+}
+
+@media (aspect-ratio > 3/1) {
+  main {
+    background-color: rgb(
+      212 212 212 / calc(var(--dynamic-scale, 100%) - 100%)
+    );
+  }
+}
+
+@media (aspect-ratio < 2/3) {
+  .nick {
+    padding-top: calc((var(--dynamic-factor, 1) - 1) * 10rem);
   }
 }
 
 /* Dynamic scaling based on aspect ratio - will be controlled by JavaScript */
 @media (aspect-ratio < 16/9) {
-  .site-hero-image {
+  .site-hero.ready {
     background-size: calc(var(--dynamic-scale, 100%) * 1) auto;
     background-position: bottom center;
   }
@@ -66,7 +111,7 @@ body {
 
 /* width tiers + DPR selection */
 @media (min-width: 0px) {
-  .site-hero.ready .site-hero-image {
+  .site-hero.ready {
     background-image: image-set(
       url("/img/bg-1280.webp") 1x,
       url("/img/bg-2560.webp") 2x
@@ -74,7 +119,7 @@ body {
   }
 }
 @media (min-width: 1280px) {
-  .site-hero.ready .site-hero-image {
+  .site-hero.ready {
     background-image: image-set(
       url("/img/bg-1920.webp") 1x,
       url("/img/bg-3840.webp") 2x
