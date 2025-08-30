@@ -41,9 +41,6 @@
 
   // Split-flap display functionality
   function initSplitFlap() {
-    // gsap.registerPlugin(SplitText);
-    // console.log("DOMContentLoaded GSAP hooray");
-
     const splitFlap = document.querySelector(".split-flap");
     if (!splitFlap) return;
 
@@ -54,8 +51,15 @@
 
     const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?@#$%^&*() ";
     let currentChar = "A";
-    let charIndex = 0;
 
+    /**
+     * Get the path of characters between two characters (excluding the
+     * startChar, including the endChar).
+     *
+     * @param {string} startChar - The starting character
+     * @param {string} endChar - The ending character
+     * @returns {string[]} The path of characters
+     */
     function getPath(startChar, endChar) {
       const startIndex = chars.indexOf(startChar);
       const endIndex = chars.indexOf(endChar);
@@ -70,9 +74,9 @@
       return path;
     }
 
-    function flipToNext() {
-      const nextIndex = (charIndex + 1) % chars.length;
-      const nextChar = chars[nextIndex];
+    function flipToNext(path) {
+      console.log("flipping!", path);
+      const nextChar = path[0];
 
       // Prepare the bottom flap to show next character (hidden behind flipping flap)
       bottomFlap.querySelector(".flap-content").textContent = currentChar;
@@ -106,14 +110,18 @@
 
           // Update current state
           currentChar = nextChar;
-          charIndex = nextIndex;
+
+          const nextPath = path.slice(1);
+          if (nextPath.length > 0) {
+            flipToNext(nextPath);
+          }
         },
       });
 
       // Animate the flip with enhanced shadow effect
       tl.to(flippingTop, {
         rotateX: -90,
-        duration: 0.1,
+        duration: 0.08,
         ease: "power2.in",
         boxShadow: "0 8px 16px rgba(0, 0, 0, 0.5)",
       })
@@ -128,17 +136,25 @@
         })
         .to(flippingBottom, {
           rotateX: 0,
-          duration: 0.05,
+          duration: 0.02,
           ease: "linear",
         });
 
       return tl;
     }
 
+    function scrollToRandomLetter() {
+      const someLetter = chars[Math.floor(Math.random() * chars.length)];
+      console.log(someLetter);
+      const path = getPath(currentChar, someLetter);
+      console.log(path);
+      flipToNext(path);
+    }
+
     // Flip every 2 seconds for demo
-    setInterval(flipToNext, 2000);
+    setInterval(scrollToRandomLetter, 20000);
 
     // Also flip on click
-    splitFlap.addEventListener("click", flipToNext);
+    splitFlap.addEventListener("click", scrollToRandomLetter);
   }
 })();

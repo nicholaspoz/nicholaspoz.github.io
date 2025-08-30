@@ -187,11 +187,11 @@ footer {
   width: 60px;
   height: 80px;
   font-family: "Fragment Mono", monospace;
-  font-size: 48px;
+  font-size: 60px;
   font-weight: bold;
-  background: #1a1a1a;
+  background: #202020;
   border-radius: 4px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  box-shadow: inset 0px 0px 5px 5px rgba(0, 0, 0, 0.8);
 }
 
 /* Visual divider line between top and bottom flaps */
@@ -214,10 +214,9 @@ footer {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(to bottom, #2a2a2a, #222);
-  color: #fff;
+  color: #d2d1d1;
   overflow: hidden;
-  /* backface-visibility: hidden; */ /* Prevents seeing back of flap during rotation */
+  user-select: none;
 }
 
 .flap.top {
@@ -225,6 +224,7 @@ footer {
   top: 0;
   transform-origin: bottom; /* Rotates from bottom edge */
   border-radius: 4px 4px 0 0;
+  user-select: text;
 }
 
 .flap.bottom {
@@ -232,7 +232,7 @@ footer {
   bottom: 0;
   transform-origin: top; /* Rotates from top edge */
   border-radius: 0 0 4px 4px;
-  background: linear-gradient(to bottom, #222, #2a2a2a); /* Reversed gradient */
+  /* background: linear-gradient(to bottom, #222, #2a2a2a); Reversed gradient */
 }
 
 .flap-content {
