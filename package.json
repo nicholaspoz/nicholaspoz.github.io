@@ -4,8 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "esbuild src/script.ts --bundle --outfile=js/bundle.js --format=iife --platform=browser --target=es2017",
-    "watch": "esbuild src/script.ts --bundle --outfile=js/bundle.js --format=iife --platform=browser --target=es2017 --watch",
+    "build": "esbuild src/script.ts --bundle --outfile=js/bundle.js --format=iife --platform=browser --target=es2017 --tsconfig=tsconfig.json",
+    "watch": "esbuild src/script.ts --bundle --outfile=js/bundle.js --format=iife --platform=browser --target=es2017 --watch --tsconfig=tsconfig.json",
     "dev": "npm run watch",
     "type-check": "tsc --noEmit",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -19,6 +19,7 @@
     "typescript": "^5.9.2"
   },
   "dependencies": {
-    "gsap": "^3.13.0"
+    "gsap": "^3.13.0",
+    "lit": "^3.3.1"
   }
 }

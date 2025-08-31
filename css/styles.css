@@ -97,14 +97,6 @@ body {
   width: 100%;
 }
 
-.left {
-  align-self: flex-start;
-}
-
-.right {
-  align-self: flex-end;
-}
-
 .links {
   border-top: 2px solid #b44e04;
   padding-top: 1rem;
@@ -113,6 +105,15 @@ body {
   justify-content: space-between;
   flex-direction: row;
   width: 100%;
+}
+
+.word {
+  padding-top: 3rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: row;
+  gap: 0.5rem;
 }
 
 footer {
@@ -169,130 +170,4 @@ footer {
       url("/img/bg-3840.webp") 2x
     );
   }
-}
-
-/* Split-flap display styles */
-.split-flap-container {
-  /* Centers the display widget on the page */
-  margin-top: 2rem;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  perspective: 400px; /* 3D perspective for flip animation */
-}
-
-.split-flap {
-  /* Main container for the split-flap character */
-  position: relative;
-  width: 60px;
-  height: 80px;
-  font-family: "Fragment Mono", monospace;
-  font-size: 60px;
-  font-weight: bold;
-  background: #202020;
-  border-radius: 4px;
-  box-shadow: inset 0px 0px 5px 5px rgba(0, 0, 0, 0.8);
-}
-
-/* Visual divider line between top and bottom flaps */
-.split-flap::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  top: 50%;
-  height: 2px;
-  background: #000;
-  z-index: 20;
-}
-
-.flap {
-  /* Base styles for both top and bottom flap halves */
-  position: absolute;
-  width: 100%;
-  height: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #d2d1d1;
-  overflow: hidden;
-  user-select: none;
-}
-
-.flap.top {
-  /* Upper half of the character display */
-  top: 0;
-  transform-origin: bottom; /* Rotates from bottom edge */
-  border-radius: 4px 4px 0 0;
-  user-select: text;
-}
-
-.flap.bottom {
-  /* Lower half of the character display */
-  bottom: 0;
-  transform-origin: top; /* Rotates from top edge */
-  border-radius: 0 0 4px 4px;
-  /* background: linear-gradient(to bottom, #222, #2a2a2a); Reversed gradient */
-}
-
-.flap-content {
-  /* Text content inside each flap */
-  position: absolute;
-  width: 100%;
-  height: 200%; /* Double height to allow proper positioning */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.flap.top .flap-content {
-  /* Positions text in top half of flap */
-  top: 0;
-}
-
-.flap.bottom .flap-content {
-  /* Positions text in bottom half of flap */
-  bottom: 0;
-}
-
-.flap.flipping-top {
-  /* Animated flap that rotates down during character change */
-  opacity: 0;
-  pointer-events: none;
-  top: 0;
-  transform-origin: bottom;
-  border-radius: 4px 4px 0 0;
-  z-index: 10;
-  box-shadow: 0 2px 4px rgb(0, 0, 0); /* Shadow for depth */
-}
-
-.flap.flipping-bottom {
-  /* Animated flap that rotates down during character change */
-  opacity: 0;
-  pointer-events: none;
-  bottom: 0;
-  transform-origin: top;
-  border-radius: 0 0 4px 4px;
-  z-index: 10;
-  box-shadow: 0 2px 4px rgb(0, 0, 0); /* Shadow for depth */
-}
-
-.flap.flipping-top .flap-content {
-  /* Positions text in top half of flap */
-  top: 0;
-}
-
-.flap.flipping-bottom .flap-content {
-  /* Positions text in bottom half of flap */
-  bottom: 0;
-}
-
-.flap.top {
-  /* Ensures top flap appears above bottom flap */
-  z-index: 2;
-}
-
-.flap.bottom {
-  /* Bottom flap sits behind top flap */
-  z-index: 1;
 }
