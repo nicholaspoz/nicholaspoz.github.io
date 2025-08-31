@@ -22,10 +22,6 @@ class SplitFlapDisplay extends HTMLElement {
 
     this.render();
     this.setupEventListeners();
-
-    // if (this.autoFlip) {
-    //   this.startAutoFlip();
-    // }
   }
 
   render() {
@@ -39,14 +35,14 @@ class SplitFlapDisplay extends HTMLElement {
         
         .split-flap {
           position: relative;
-          width: 60px;
+          width: 50px;
           height: 80px;
           font-family: "Fragment Mono", monospace;
           font-size: 60px;
           font-weight: bold;
-          background: #202020;
+          background:rgb(40, 40, 40);
           border-radius: 4px;
-          box-shadow: inset 0px 0px 5px 5px rgba(0, 0, 0, 0.8);
+          box-shadow: inset 0px 1px 5px 5px rgba(0, 0, 0, 0.8);
           cursor: pointer;
         }
         
@@ -95,6 +91,7 @@ class SplitFlapDisplay extends HTMLElement {
           display: flex;
           align-items: center;
           justify-content: center;
+          text-align: center;
         }
         
         .flap.top .flap-content {
@@ -172,9 +169,8 @@ class SplitFlapDisplay extends HTMLElement {
 
   flipTo(path) {
     if (!path) return;
-    if (this.tl) {
-      console.log("tl already exists!!! todo");
-    }
+
+    if (this.tl) console.log("tl already exists!!! todo");
 
     const topFlap = this.shadowRoot.querySelector(".flap.top");
     const bottomFlap = this.shadowRoot.querySelector(".flap.bottom");
@@ -208,7 +204,7 @@ class SplitFlapDisplay extends HTMLElement {
         // Update the top flap to show next character
         bottomFlap.querySelector(".flap-content").textContent = nextChar;
 
-        // Reset flipping flap
+        // Reset flipping flaps
         gsap.set(flippingTop, { opacity: 0, rotateX: 0 });
         gsap.set(flippingBottom, { opacity: 0, rotateX: 90 });
 
@@ -265,23 +261,18 @@ class SplitFlapDisplay extends HTMLElement {
     }
 
     const path = [];
-    for (let i = startIndex + 1; i <= endIndex + chars.length; i++) {
+    const endLoop = (() => {
+      if (endIndex > startIndex) {
+        return endIndex;
+      }
+      return endIndex + chars.length;
+    })();
+
+    for (let i = startIndex + 1; i <= endLoop; i++) {
       path.push(chars[i % chars.length]);
     }
+
     return path;
-  }
-
-  // startAutoFlip() {
-  //   this.autoFlipTimer = setInterval(() => {
-  //     this.flipToNext();
-  //   }, this.flipInterval);
-  // }
-
-  stopAutoFlip() {
-    if (this.autoFlipTimer) {
-      clearInterval(this.autoFlipTimer);
-      this.autoFlipTimer = null;
-    }
   }
 
   // Lifecycle callbacks
@@ -291,7 +282,6 @@ class SplitFlapDisplay extends HTMLElement {
 
   disconnectedCallback() {
     // Component removed from DOM
-    this.stopAutoFlip();
   }
 
   // Public API methods
@@ -305,7 +295,7 @@ class SplitFlapDisplay extends HTMLElement {
 
   // Observed attributes
   static get observedAttributes() {
-    return ["value", "chars", "auto-flip", "flip-interval"];
+    return ["value"];
   }
 
   attributeChangedCallback(name, oldValue, newValue) {
