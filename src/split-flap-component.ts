@@ -1,9 +1,13 @@
+import gsap from "gsap";
+
 const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?@#$%^&*() ";
 
 /**
  * Requires GSAP
  */
 class SplitFlapDisplay extends HTMLElement {
+  private currentChar: string;
+  private tl: any;
   constructor() {
     super();
 
@@ -15,7 +19,7 @@ class SplitFlapDisplay extends HTMLElement {
     // this.autoFlip = this.hasAttribute("auto-flip");
 
     // State
-    this.currentChar = this.getAttribute("value") || this.chars[0];
+    this.currentChar = this.getAttribute("value") || chars[0];
     // this.charIndex = this.chars.indexOf(this.currentChar);
 
     this.tl = null;
@@ -167,7 +171,7 @@ class SplitFlapDisplay extends HTMLElement {
     this.flipTo(path);
   }
 
-  flipTo(path) {
+  flipTo(path: string[]) {
     if (!path) return;
 
     if (this.tl) console.log("tl already exists!!! todo");
@@ -253,7 +257,7 @@ class SplitFlapDisplay extends HTMLElement {
    * @param {string} endChar - The ending character
    * @returns {string[]} The path of characters
    */
-  getPath(startChar, endChar) {
+  getPath(startChar: string, endChar: string) {
     const startIndex = chars.indexOf(startChar);
     const endIndex = chars.indexOf(endChar);
     if (endIndex === -1 || startIndex === -1 || startChar === endChar) {
@@ -285,8 +289,9 @@ class SplitFlapDisplay extends HTMLElement {
   }
 
   // Public API methods
-  setValue(char) {
-    this.flipTo(char);
+  setValue(char: string) {
+    const path = this.getPath(this.currentChar, char);
+    this.flipTo(path);
   }
 
   getValue() {
@@ -298,7 +303,7 @@ class SplitFlapDisplay extends HTMLElement {
     return ["value"];
   }
 
-  attributeChangedCallback(name, oldValue, newValue) {
+  attributeChangedCallback(name: string, oldValue: string, newValue: string) {
     console.log("attributeChangedCallback", name, oldValue, newValue);
     console.log(JSON.stringify(this, null, 2));
     if (name === "value" && newValue !== oldValue) {
@@ -313,5 +318,7 @@ class SplitFlapDisplay extends HTMLElement {
   }
 }
 
-// Register the custom element
-customElements.define("split-flap-display", SplitFlapDisplay);
+export function registerComponent() {
+  // Register the custom element
+  customElements.define("split-flap-display", SplitFlapDisplay);
+}

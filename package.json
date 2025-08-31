@@ -1,0 +1,24 @@
+{
+  "name": "nicholaspoz.github.io",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "esbuild src/script.ts --bundle --outfile=js/bundle.js --format=iife --platform=browser --target=es2017",
+    "watch": "esbuild src/script.ts --bundle --outfile=js/bundle.js --format=iife --platform=browser --target=es2017 --watch",
+    "dev": "npm run watch",
+    "type-check": "tsc --noEmit",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/gsap": "^3.0.0",
+    "esbuild": "^0.25.9",
+    "typescript": "^5.9.2"
+  },
+  "dependencies": {
+    "gsap": "^3.13.0"
+  }
+}
