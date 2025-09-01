@@ -89,7 +89,7 @@
   var _installScope = {};
   var _coreReady;
   var _install = function _install2(scope) {
-    return (_installScope = _merge(scope, _globals)) && gsap2;
+    return (_installScope = _merge(scope, _globals)) && gsap;
   };
   var _missingPlugin = function _missingPlugin2(property, value) {
     return console.warn("Invalid property", property, "set to", value, "Missing plugin? gsap.registerPlugin()");
@@ -808,7 +808,7 @@
         name = (name === "css" ? "CSS" : name.charAt(0).toUpperCase() + name.substr(1)) + "Plugin";
       }
       _addGlobal(name, Plugin);
-      config3.register && config3.register(gsap2, Plugin, PropTween);
+      config3.register && config3.register(gsap, Plugin, PropTween);
     } else {
       _registerPluginQueue.push(config3);
     }
@@ -996,8 +996,8 @@
           if (!_coreInitted && _windowExists()) {
             _win = _coreInitted = window;
             _doc = _win.document || {};
-            _globals.gsap = gsap2;
-            (_win.gsapVersions || (_win.gsapVersions = [])).push(gsap2.version);
+            _globals.gsap = gsap;
+            (_win.gsapVersions || (_win.gsapVersions = [])).push(gsap.version);
             _install(_installScope || _win.GreenSockGlobals || !_win.gsap && _win || {});
             _registerPluginQueue.forEach(_createPlugin);
           }
@@ -2913,7 +2913,7 @@
       target = toArray(target);
       if (target.length > 1) {
         var setters = target.map(function(t4) {
-          return gsap2.quickSetter(t4, property, unit);
+          return gsap.quickSetter(t4, property, unit);
         }), l3 = setters.length;
         return function(value) {
           var i5 = l3;
@@ -2936,7 +2936,7 @@
     },
     quickTo: function quickTo(target, property, vars) {
       var _setDefaults22;
-      var tween = gsap2.to(target, _setDefaults((_setDefaults22 = {}, _setDefaults22[property] = "+=0.1", _setDefaults22.paused = true, _setDefaults22.stagger = 0, _setDefaults22), vars || {})), func = function func2(value, start, startIsRelative) {
+      var tween = gsap.to(target, _setDefaults((_setDefaults22 = {}, _setDefaults22[property] = "+=0.1", _setDefaults22.paused = true, _setDefaults22.stagger = 0, _setDefaults22), vars || {})), func = function func2(value, start, startIsRelative) {
         return tween.resetTo(property, value, start, startIsRelative);
       };
       func.tween = tween;
@@ -3125,7 +3125,7 @@
       }
     };
   };
-  var gsap2 = _gsap.registerPlugin({
+  var gsap = _gsap.registerPlugin({
     name: "attr",
     init: function init(target, vars, tween, index, targets) {
       var p3, pt, v2;
@@ -3155,7 +3155,7 @@
       }
     }
   }, _buildModifierPlugin("roundProps", _roundModifier), _buildModifierPlugin("modifiers"), _buildModifierPlugin("snap", snap)) || _gsap;
-  Tween.version = Timeline.version = gsap2.version = "3.13.0";
+  Tween.version = Timeline.version = gsap.version = "3.13.0";
   _coreReady = 1;
   _windowExists() && _wake();
   var Power0 = _easeMap.Power0;
@@ -3317,7 +3317,7 @@
       revert: _revertStyle,
       save: _saveStyle
     };
-    target._gsap || gsap2.core.getCache(target);
+    target._gsap || gsap.core.getCache(target);
     properties && target.style && target.nodeType && properties.split(",").forEach(function(p3) {
       return saver.save(p3);
     });
@@ -3356,7 +3356,7 @@
       _transformOriginProp = _transformProp + "Origin";
       _tempDiv.style.cssText = "border-width:0;line-height:0;position:absolute;padding:0";
       _supports3D = !!_checkPropPrefix("perspective");
-      _reverting2 = gsap2.core.reverting;
+      _reverting2 = gsap.core.reverting;
       _pluginInitted = 1;
     }
   };
@@ -4259,8 +4259,8 @@
       _getMatrix
     }
   };
-  gsap2.utils.checkPrefix = _checkPropPrefix;
-  gsap2.core.getStyleSaver = _getStyleSaver;
+  gsap.utils.checkPrefix = _checkPropPrefix;
+  gsap.core.getStyleSaver = _getStyleSaver;
   (function(positionAndScale, rotation, others, aliases) {
     var all = _forEachName(positionAndScale + "," + rotation + "," + others, function(name) {
       _transformProps[name] = 1;
@@ -4278,10 +4278,10 @@
   _forEachName("x,y,z,top,right,bottom,left,width,height,fontSize,padding,margin,perspective", function(name) {
     _config.units[name] = "px";
   });
-  gsap2.registerPlugin(CSSPlugin);
+  gsap.registerPlugin(CSSPlugin);
 
   // node_modules/gsap/index.js
-  var gsapWithCSS = gsap2.registerPlugin(CSSPlugin) || gsap2;
+  var gsapWithCSS = gsap.registerPlugin(CSSPlugin) || gsap;
   var TweenMaxWithCSS = gsapWithCSS.core.Tween;
 
   // node_modules/@lit/reactive-element/css-tag.js
@@ -4916,44 +4916,45 @@
   }
 
   // src/split-flap-component.ts
-  console.log("WEEE LOOK AT MEEEE~~~!!!!!");
   var chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?@#$%^&*() ";
   var SplitFlapDisplay = class extends i4 {
     constructor() {
-      console.log("constructorkkkkk!!!");
       super();
-      this.value = "A";
-      this.currentChar = "A";
+      console.log("constructor called!!!", { letter: this.letter });
+      this.currentChar = this.letter = " ";
     }
     render() {
-      console.log("renderkkkkk!!!", this.value);
+      console.log("render calleddddd!!!", this.currentChar);
       return x`
-      <div class="split-flap" @click=${this.flipToNext}>
+      <div class="split-flap">
         <div class="flap top">
-          <span class="flap-content">${this.value}</span>
+          <span class="flap-content">${this.currentChar}</span>
         </div>
         <div class="flap bottom">
-          <span class="flap-content">${this.value}</span>
+          <span class="flap-content">${this.currentChar}</span>
         </div>
         <div class="flap flipping-top">
-          <span class="flap-content">${this.value}</span>
+          <span class="flap-content">${this.currentChar}</span>
         </div>
         <div class="flap flipping-bottom">
-          <span class="flap-content">${this.value}</span>
+          <span class="flap-content">${this.currentChar}</span>
         </div>
       </div>
     `;
     }
-    flipToNext() {
-      const someLetter = chars[Math.floor(Math.random() * chars.length)];
-      console.log(someLetter);
-      const path = this.getPath(this.currentChar, someLetter);
+    updated(changedProperties) {
+      const next = changedProperties.get("letter");
+      console.log("updated called!!!", changedProperties);
+      console.table({
+        next,
+        curr: this.currentChar
+      });
+      const path = this.getPath(this.currentChar, next);
       this.flipTo(path);
     }
     flipTo(path) {
-      console.log("flipTokkkkk!!!", path);
-      if (!path) return;
-      if (this.tl) console.log("tl already exists!!! todo");
+      console.log("flipTo!!!", path);
+      if (path.length === 0) return;
       const topFlap = this.shadowRoot.querySelector(".flap.top");
       const bottomFlap = this.shadowRoot.querySelector(".flap.bottom");
       const flippingTop = this.shadowRoot.querySelector(".flap.flipping-top");
@@ -4961,7 +4962,7 @@
         ".flap.flipping-bottom"
       );
       const nextChar = path[0];
-      this.tl = gsapWithCSS.timeline({
+      const tl = gsapWithCSS.timeline({
         onStart: () => {
           flippingTop.querySelector(".flap-content").textContent = this.currentChar;
           gsapWithCSS.set(flippingTop, {
@@ -4980,13 +4981,12 @@
           gsapWithCSS.set(flippingBottom, { opacity: 0, rotateX: 90 });
           this.currentChar = nextChar;
           const nextPath = path.slice(1);
-          this.tl = null;
           if (nextPath.length > 0) {
             this.flipTo(nextPath);
           }
         }
       });
-      this.tl.to(flippingTop, {
+      tl.to(flippingTop, {
         rotateX: -90,
         duration: 0.08,
         ease: "power2.in",
@@ -5003,7 +5003,7 @@
         duration: 0.02,
         ease: "linear"
       });
-      return this.tl;
+      return tl;
     }
     /**
      * Get the path of characters between two characters (excluding the
@@ -5032,16 +5032,6 @@
       return path;
     }
   };
-  // connectedCallback() {
-  //   console.log("connectedCallback - component added to DOM");
-  //   super.connectedCallback();
-  // }
-  // firstUpdated() {
-  //   console.log("firstUpdated - first render complete");
-  // }
-  // updated(changedProperties: Map<string, any>) {
-  //   console.log("updated - properties changed:", changedProperties);
-  // }
   SplitFlapDisplay.styles = i`
     :host {
       display: inline-block;
@@ -5148,8 +5138,8 @@
     }
   `;
   __decorateClass([
-    n4()
-  ], SplitFlapDisplay.prototype, "value", 2);
+    n4({ type: String })
+  ], SplitFlapDisplay.prototype, "letter", 2);
   SplitFlapDisplay = __decorateClass([
     t3("split-flap-display")
   ], SplitFlapDisplay);
@@ -5158,9 +5148,9 @@
   document.addEventListener("DOMContentLoaded", (event) => {
     console.log("Split-flap components loaded???!");
   });
-  requestAnimationFrame(
-    () => document.querySelector(".site-hero").classList.add("ready")
-  );
+  requestAnimationFrame(() => {
+    document.querySelector(".site-hero").classList.add("ready");
+  });
   function updateDynamicScale() {
     const minScale = 100;
     const maxScale = 180;

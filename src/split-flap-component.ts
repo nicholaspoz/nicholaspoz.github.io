@@ -1,36 +1,23 @@
 import gsap from "gsap";
-import { LitElement, html, css } from "lit";
-import { customElement, property } from "lit/decorators.js";
-
-console.log("WEEE LOOK AT MEEEE~~~!!!!!");
+import { LitElement, html, css, type PropertyValues } from "lit";
+import { customElement, property, state } from "lit/decorators.js";
 
 const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?@#$%^&*() ";
 
 @customElement("split-flap-display")
 export class SplitFlapDisplay extends LitElement {
   // private currentChar: string;
-  private tl: GSAPTimeline | null;
+  // private tl: GSAPTimeline | null;
 
-  @property() value: string = "A";
-  private currentChar: string = "A";
+  @property({ type: String }) letter;
+
+  private currentChar: string;
 
   constructor() {
-    console.log("constructorkkkkk!!!");
     super();
+    console.log("constructor called!!!", { letter: this.letter });
+    this.currentChar = this.letter = " ";
   }
-
-  // connectedCallback() {
-  //   console.log("connectedCallback - component added to DOM");
-  //   super.connectedCallback();
-  // }
-
-  // firstUpdated() {
-  //   console.log("firstUpdated - first render complete");
-  // }
-
-  // updated(changedProperties: Map<string, any>) {
-  //   console.log("updated - properties changed:", changedProperties);
-  // }
 
   static styles = css`
     :host {
@@ -139,38 +126,42 @@ export class SplitFlapDisplay extends LitElement {
   `;
 
   render() {
-    console.log("renderkkkkk!!!", this.value);
+    console.log("render calleddddd!!!", this.currentChar);
     return html`
-      <div class="split-flap" @click=${this.flipToNext}>
+      <div class="split-flap">
         <div class="flap top">
-          <span class="flap-content">${this.value}</span>
+          <span class="flap-content">${this.currentChar}</span>
         </div>
         <div class="flap bottom">
-          <span class="flap-content">${this.value}</span>
+          <span class="flap-content">${this.currentChar}</span>
         </div>
         <div class="flap flipping-top">
-          <span class="flap-content">${this.value}</span>
+          <span class="flap-content">${this.currentChar}</span>
         </div>
         <div class="flap flipping-bottom">
-          <span class="flap-content">${this.value}</span>
+          <span class="flap-content">${this.currentChar}</span>
         </div>
       </div>
     `;
   }
 
-  flipToNext() {
-    const someLetter = chars[Math.floor(Math.random() * chars.length)];
-    console.log(someLetter);
-    const path = this.getPath(this.currentChar, someLetter);
+  updated(changedProperties: PropertyValues<this>) {
+    const next = changedProperties.get("letter");
+    console.log("updated called!!!", changedProperties);
+    console.table({
+      next,
+      curr: this.currentChar,
+    });
+    const path = this.getPath(this.currentChar, next);
     this.flipTo(path);
   }
 
   flipTo(path: string[]) {
-    console.log("flipTokkkkk!!!", path);
+    console.log("flipTo!!!", path);
 
-    if (!path) return;
+    if (path.length === 0) return;
 
-    if (this.tl) console.log("tl already exists!!! todo");
+    // if (this.tl) console.log("tl already exists!!! todo");
 
     const topFlap = this.shadowRoot.querySelector(".flap.top");
     const bottomFlap = this.shadowRoot.querySelector(".flap.bottom");
@@ -184,7 +175,7 @@ export class SplitFlapDisplay extends LitElement {
     // flippingTop.querySelector(".flap-content").textContent = this.currentChar;
 
     // Create timeline for the flip animation
-    this.tl = gsap.timeline({
+    const tl = gsap.timeline({
       onStart: () => {
         flippingTop.querySelector(".flap-content").textContent =
           this.currentChar;
@@ -212,7 +203,7 @@ export class SplitFlapDisplay extends LitElement {
         this.currentChar = nextChar;
 
         const nextPath = path.slice(1);
-        this.tl = null;
+        // this.tl = null;
         if (nextPath.length > 0) {
           this.flipTo(nextPath);
         }
@@ -220,13 +211,12 @@ export class SplitFlapDisplay extends LitElement {
     });
 
     // Animate the flip with enhanced shadow effect
-    this.tl
-      .to(flippingTop, {
-        rotateX: -90,
-        duration: 0.08,
-        ease: "power2.in",
-        boxShadow: "0 8px 16px rgba(0, 0, 0, 0.5)",
-      })
+    tl.to(flippingTop, {
+      rotateX: -90,
+      duration: 0.08,
+      ease: "power2.in",
+      boxShadow: "0 8px 16px rgba(0, 0, 0, 0.5)",
+    })
       .set(flippingTop, {
         opacity: 0,
       })
@@ -242,7 +232,7 @@ export class SplitFlapDisplay extends LitElement {
         ease: "linear",
       });
 
-    return this.tl;
+    return tl;
   }
 
   /**
@@ -273,5 +263,11 @@ export class SplitFlapDisplay extends LitElement {
     }
 
     return path;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "split-flap-display": SplitFlapDisplay;
   }
 }
