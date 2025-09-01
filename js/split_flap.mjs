@@ -44,8 +44,8 @@ var List = class {
     return length2 - 1;
   }
 };
-function prepend(element4, tail) {
-  return new NonEmpty(element4, tail);
+function prepend(element5, tail) {
+  return new NonEmpty(element5, tail);
 }
 function toList(elements, tail) {
   return List.fromArray(elements, tail);
@@ -361,6 +361,23 @@ function structurallyCompatibleObjects(a, b) {
   if (nonstructural.some((c) => a instanceof c)) return false;
   return a.constructor === b.constructor;
 }
+function remainderInt(a, b) {
+  if (b === 0) {
+    return 0;
+  } else {
+    return a % b;
+  }
+}
+function divideInt(a, b) {
+  return Math.trunc(divideFloat(a, b));
+}
+function divideFloat(a, b) {
+  if (b === 0) {
+    return 0;
+  } else {
+    return a / b;
+  }
+}
 function makeError(variant, file, module, line, fn, message, extra) {
   let error = new globalThis.Error(message);
   error.gleam_error = variant;
@@ -372,6 +389,24 @@ function makeError(variant, file, module, line, fn, message, extra) {
   for (let k in extra) error[k] = extra[k];
   return error;
 }
+
+// build/dev/javascript/gleam_stdlib/gleam/order.mjs
+var Lt = class extends CustomType {
+};
+var Eq = class extends CustomType {
+};
+var Gt = class extends CustomType {
+};
+
+// build/dev/javascript/gleam_stdlib/gleam/option.mjs
+var Some = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var None = class extends CustomType {
+};
 
 // build/dev/javascript/gleam_stdlib/dict.mjs
 var referenceMap = /* @__PURE__ */ new WeakMap();
@@ -1077,149 +1112,6 @@ var Dict = class _Dict {
 };
 var unequalDictSymbol = /* @__PURE__ */ Symbol();
 
-// build/dev/javascript/gleam_stdlib/gleam/option.mjs
-var Some = class extends CustomType {
-  constructor($0) {
-    super();
-    this[0] = $0;
-  }
-};
-var None = class extends CustomType {
-};
-
-// build/dev/javascript/gleam_stdlib/gleam/order.mjs
-var Lt = class extends CustomType {
-};
-var Eq = class extends CustomType {
-};
-var Gt = class extends CustomType {
-};
-
-// build/dev/javascript/gleam_stdlib/gleam/string.mjs
-function concat_loop(loop$strings, loop$accumulator) {
-  while (true) {
-    let strings = loop$strings;
-    let accumulator = loop$accumulator;
-    if (strings instanceof Empty) {
-      return accumulator;
-    } else {
-      let string5 = strings.head;
-      let strings$1 = strings.tail;
-      loop$strings = strings$1;
-      loop$accumulator = accumulator + string5;
-    }
-  }
-}
-function concat2(strings) {
-  return concat_loop(strings, "");
-}
-function first(string5) {
-  let $ = pop_grapheme(string5);
-  if ($ instanceof Ok) {
-    let first$1 = $[0][0];
-    return new Ok(first$1);
-  } else {
-    return $;
-  }
-}
-
-// build/dev/javascript/gleam_stdlib/gleam/dynamic/decode.mjs
-var Decoder = class extends CustomType {
-  constructor(function$) {
-    super();
-    this.function = function$;
-  }
-};
-function run(data2, decoder) {
-  let $ = decoder.function(data2);
-  let maybe_invalid_data;
-  let errors;
-  maybe_invalid_data = $[0];
-  errors = $[1];
-  if (errors instanceof Empty) {
-    return new Ok(maybe_invalid_data);
-  } else {
-    return new Error(errors);
-  }
-}
-function map2(decoder, transformer) {
-  return new Decoder(
-    (d) => {
-      let $ = decoder.function(d);
-      let data2;
-      let errors;
-      data2 = $[0];
-      errors = $[1];
-      return [transformer(data2), errors];
-    }
-  );
-}
-
-// build/dev/javascript/gleam_stdlib/gleam_stdlib.mjs
-var Nil = void 0;
-function to_string(term) {
-  return term.toString();
-}
-function graphemes(string5) {
-  const iterator = graphemes_iterator(string5);
-  if (iterator) {
-    return List.fromArray(Array.from(iterator).map((item) => item.segment));
-  } else {
-    return List.fromArray(string5.match(/./gsu));
-  }
-}
-var segmenter = void 0;
-function graphemes_iterator(string5) {
-  if (globalThis.Intl && Intl.Segmenter) {
-    segmenter ||= new Intl.Segmenter();
-    return segmenter.segment(string5)[Symbol.iterator]();
-  }
-}
-function pop_grapheme(string5) {
-  let first2;
-  const iterator = graphemes_iterator(string5);
-  if (iterator) {
-    first2 = iterator.next().value?.segment;
-  } else {
-    first2 = string5.match(/./su)?.[0];
-  }
-  if (first2) {
-    return new Ok([first2, string5.slice(first2.length)]);
-  } else {
-    return new Error(Nil);
-  }
-}
-function contains_string(haystack, needle) {
-  return haystack.indexOf(needle) >= 0;
-}
-function starts_with(haystack, needle) {
-  return haystack.startsWith(needle);
-}
-var unicode_whitespaces = [
-  " ",
-  // Space
-  "	",
-  // Horizontal tab
-  "\n",
-  // Line feed
-  "\v",
-  // Vertical tab
-  "\f",
-  // Form feed
-  "\r",
-  // Carriage return
-  "\x85",
-  // Next line
-  "\u2028",
-  // Line separator
-  "\u2029"
-  // Paragraph separator
-].join("");
-var trim_start_regex = /* @__PURE__ */ new RegExp(
-  `^[${unicode_whitespaces}]*`
-);
-var trim_end_regex = /* @__PURE__ */ new RegExp(`[${unicode_whitespaces}]*$`);
-
 // build/dev/javascript/gleam_stdlib/gleam/list.mjs
 var Ascending = class extends CustomType {
 };
@@ -1241,6 +1133,75 @@ function reverse_and_prepend(loop$prefix, loop$suffix) {
 }
 function reverse(list4) {
   return reverse_and_prepend(list4, toList([]));
+}
+function filter_map_loop(loop$list, loop$fun, loop$acc) {
+  while (true) {
+    let list4 = loop$list;
+    let fun = loop$fun;
+    let acc = loop$acc;
+    if (list4 instanceof Empty) {
+      return reverse(acc);
+    } else {
+      let first$1 = list4.head;
+      let rest$1 = list4.tail;
+      let _block;
+      let $ = fun(first$1);
+      if ($ instanceof Ok) {
+        let first$2 = $[0];
+        _block = prepend(first$2, acc);
+      } else {
+        _block = acc;
+      }
+      let new_acc = _block;
+      loop$list = rest$1;
+      loop$fun = fun;
+      loop$acc = new_acc;
+    }
+  }
+}
+function filter_map(list4, fun) {
+  return filter_map_loop(list4, fun, toList([]));
+}
+function map_loop(loop$list, loop$fun, loop$acc) {
+  while (true) {
+    let list4 = loop$list;
+    let fun = loop$fun;
+    let acc = loop$acc;
+    if (list4 instanceof Empty) {
+      return reverse(acc);
+    } else {
+      let first$1 = list4.head;
+      let rest$1 = list4.tail;
+      loop$list = rest$1;
+      loop$fun = fun;
+      loop$acc = prepend(fun(first$1), acc);
+    }
+  }
+}
+function map(list4, fun) {
+  return map_loop(list4, fun, toList([]));
+}
+function index_map_loop(loop$list, loop$fun, loop$index, loop$acc) {
+  while (true) {
+    let list4 = loop$list;
+    let fun = loop$fun;
+    let index3 = loop$index;
+    let acc = loop$acc;
+    if (list4 instanceof Empty) {
+      return reverse(acc);
+    } else {
+      let first$1 = list4.head;
+      let rest$1 = list4.tail;
+      let acc$1 = prepend(fun(first$1, index3), acc);
+      loop$list = rest$1;
+      loop$fun = fun;
+      loop$index = index3 + 1;
+      loop$acc = acc$1;
+    }
+  }
+}
+function index_map(list4, fun) {
+  return index_map_loop(list4, fun, 0, toList([]));
 }
 function take_loop(loop$list, loop$n, loop$acc) {
   while (true) {
@@ -1280,10 +1241,13 @@ function append_loop(loop$first, loop$second) {
     }
   }
 }
-function append2(first2, second) {
+function append(first2, second) {
   return append_loop(reverse(first2), second);
 }
-function fold2(loop$list, loop$initial, loop$fun) {
+function prepend2(list4, item) {
+  return prepend(item, list4);
+}
+function fold(loop$list, loop$initial, loop$fun) {
   while (true) {
     let list4 = loop$list;
     let initial = loop$initial;
@@ -1629,6 +1593,258 @@ function sort(list4, compare4) {
         toList([])
       );
       return merge_all(sequences$1, new Ascending(), compare4);
+    }
+  }
+}
+function range_loop(loop$start, loop$stop, loop$acc) {
+  while (true) {
+    let start3 = loop$start;
+    let stop = loop$stop;
+    let acc = loop$acc;
+    let $ = compare2(start3, stop);
+    if ($ instanceof Lt) {
+      loop$start = start3;
+      loop$stop = stop - 1;
+      loop$acc = prepend(stop, acc);
+    } else if ($ instanceof Eq) {
+      return prepend(stop, acc);
+    } else {
+      loop$start = start3;
+      loop$stop = stop + 1;
+      loop$acc = prepend(stop, acc);
+    }
+  }
+}
+function range(start3, stop) {
+  return range_loop(start3, stop, toList([]));
+}
+
+// build/dev/javascript/gleam_stdlib/gleam/string.mjs
+function slice(string5, idx, len) {
+  let $ = len < 0;
+  if ($) {
+    return "";
+  } else {
+    let $1 = idx < 0;
+    if ($1) {
+      let translated_idx = string_length(string5) + idx;
+      let $2 = translated_idx < 0;
+      if ($2) {
+        return "";
+      } else {
+        return string_slice(string5, translated_idx, len);
+      }
+    } else {
+      return string_slice(string5, idx, len);
+    }
+  }
+}
+function concat_loop(loop$strings, loop$accumulator) {
+  while (true) {
+    let strings = loop$strings;
+    let accumulator = loop$accumulator;
+    if (strings instanceof Empty) {
+      return accumulator;
+    } else {
+      let string5 = strings.head;
+      let strings$1 = strings.tail;
+      loop$strings = strings$1;
+      loop$accumulator = accumulator + string5;
+    }
+  }
+}
+function concat2(strings) {
+  return concat_loop(strings, "");
+}
+function repeat_loop(loop$string, loop$times, loop$acc) {
+  while (true) {
+    let string5 = loop$string;
+    let times = loop$times;
+    let acc = loop$acc;
+    let $ = times <= 0;
+    if ($) {
+      return acc;
+    } else {
+      loop$string = string5;
+      loop$times = times - 1;
+      loop$acc = acc + string5;
+    }
+  }
+}
+function repeat(string5, times) {
+  return repeat_loop(string5, times, "");
+}
+function padding(size2, pad_string) {
+  let pad_string_length = string_length(pad_string);
+  let num_pads = divideInt(size2, pad_string_length);
+  let extra = remainderInt(size2, pad_string_length);
+  return repeat(pad_string, num_pads) + slice(pad_string, 0, extra);
+}
+function pad_end(string5, desired_length, pad_string) {
+  let current_length = string_length(string5);
+  let to_pad_length = desired_length - current_length;
+  let $ = to_pad_length <= 0;
+  if ($) {
+    return string5;
+  } else {
+    return string5 + padding(to_pad_length, pad_string);
+  }
+}
+function first(string5) {
+  let $ = pop_grapheme(string5);
+  if ($ instanceof Ok) {
+    let first$1 = $[0][0];
+    return new Ok(first$1);
+  } else {
+    return $;
+  }
+}
+
+// build/dev/javascript/gleam_stdlib/gleam/dynamic/decode.mjs
+var Decoder = class extends CustomType {
+  constructor(function$) {
+    super();
+    this.function = function$;
+  }
+};
+function run(data2, decoder) {
+  let $ = decoder.function(data2);
+  let maybe_invalid_data;
+  let errors;
+  maybe_invalid_data = $[0];
+  errors = $[1];
+  if (errors instanceof Empty) {
+    return new Ok(maybe_invalid_data);
+  } else {
+    return new Error(errors);
+  }
+}
+function map2(decoder, transformer) {
+  return new Decoder(
+    (d) => {
+      let $ = decoder.function(d);
+      let data2;
+      let errors;
+      data2 = $[0];
+      errors = $[1];
+      return [transformer(data2), errors];
+    }
+  );
+}
+
+// build/dev/javascript/gleam_stdlib/gleam_stdlib.mjs
+var Nil = void 0;
+function to_string(term) {
+  return term.toString();
+}
+function string_length(string5) {
+  if (string5 === "") {
+    return 0;
+  }
+  const iterator = graphemes_iterator(string5);
+  if (iterator) {
+    let i = 0;
+    for (const _ of iterator) {
+      i++;
+    }
+    return i;
+  } else {
+    return string5.match(/./gsu).length;
+  }
+}
+function graphemes(string5) {
+  const iterator = graphemes_iterator(string5);
+  if (iterator) {
+    return List.fromArray(Array.from(iterator).map((item) => item.segment));
+  } else {
+    return List.fromArray(string5.match(/./gsu));
+  }
+}
+var segmenter = void 0;
+function graphemes_iterator(string5) {
+  if (globalThis.Intl && Intl.Segmenter) {
+    segmenter ||= new Intl.Segmenter();
+    return segmenter.segment(string5)[Symbol.iterator]();
+  }
+}
+function pop_grapheme(string5) {
+  let first2;
+  const iterator = graphemes_iterator(string5);
+  if (iterator) {
+    first2 = iterator.next().value?.segment;
+  } else {
+    first2 = string5.match(/./su)?.[0];
+  }
+  if (first2) {
+    return new Ok([first2, string5.slice(first2.length)]);
+  } else {
+    return new Error(Nil);
+  }
+}
+function string_slice(string5, idx, len) {
+  if (len <= 0 || idx >= string5.length) {
+    return "";
+  }
+  const iterator = graphemes_iterator(string5);
+  if (iterator) {
+    while (idx-- > 0) {
+      iterator.next();
+    }
+    let result = "";
+    while (len-- > 0) {
+      const v = iterator.next().value;
+      if (v === void 0) {
+        break;
+      }
+      result += v.segment;
+    }
+    return result;
+  } else {
+    return string5.match(/./gsu).slice(idx, idx + len).join("");
+  }
+}
+function contains_string(haystack, needle) {
+  return haystack.indexOf(needle) >= 0;
+}
+function starts_with(haystack, needle) {
+  return haystack.startsWith(needle);
+}
+var unicode_whitespaces = [
+  " ",
+  // Space
+  "	",
+  // Horizontal tab
+  "\n",
+  // Line feed
+  "\v",
+  // Vertical tab
+  "\f",
+  // Form feed
+  "\r",
+  // Carriage return
+  "\x85",
+  // Next line
+  "\u2028",
+  // Line separator
+  "\u2029"
+  // Paragraph separator
+].join("");
+var trim_start_regex = /* @__PURE__ */ new RegExp(
+  `^[${unicode_whitespaces}]*`
+);
+var trim_end_regex = /* @__PURE__ */ new RegExp(`[${unicode_whitespaces}]*$`);
+
+// build/dev/javascript/gleam_stdlib/gleam/int.mjs
+function compare2(a, b) {
+  let $ = a === b;
+  if ($) {
+    return new Eq();
+  } else {
+    let $1 = a < b;
+    if ($1) {
+      return new Lt();
+    } else {
+      return new Gt();
     }
   }
 }
@@ -2243,7 +2459,7 @@ function remove_event(events, path, name) {
   );
 }
 function remove_attributes(handlers, path, attributes) {
-  return fold2(
+  return fold(
     attributes,
     handlers,
     (events, attribute3) => {
@@ -2302,7 +2518,7 @@ function add_event(events, mapper, path, name, handler) {
   );
 }
 function add_attributes(handlers, mapper, path, attributes) {
-  return fold2(
+  return fold(
     attributes,
     handlers,
     (events, attribute3) => {
@@ -2483,8 +2699,8 @@ function unsafe_raw_html(namespace, tag, attributes, inner_html) {
 function text3(content) {
   return text2(content);
 }
-function style(attrs, css2) {
-  return unsafe_raw_html("", "style", attrs, css2);
+function style(attrs, css3) {
+  return unsafe_raw_html("", "style", attrs, css3);
 }
 function div(attrs, children) {
   return element2("div", attrs, children);
@@ -4054,6 +4270,9 @@ function fragment3(children) {
   children$1 = $[1];
   return fragment("", identity2, children$1, keyed_children);
 }
+function div2(attributes, children) {
+  return element3("div", attributes, children);
+}
 
 // build/dev/javascript/lustre/lustre/vdom/virtualise.ffi.mjs
 var virtualise = (root3) => {
@@ -4180,11 +4399,11 @@ var virtualiseAttribute = (attr) => {
 // build/dev/javascript/lustre/lustre/runtime/client/runtime.ffi.mjs
 var is_browser = () => !!document();
 var Runtime = class {
-  constructor(root3, [model, effects], view2, update3) {
+  constructor(root3, [model, effects], view3, update4) {
     this.root = root3;
     this.#model = model;
-    this.#view = view2;
-    this.#update = update3;
+    this.#view = view3;
+    this.#update = update4;
     this.root.addEventListener("context-request", (event2) => {
       if (!(event2.context && event2.callback)) return;
       if (!this.#contexts.has(event2.context)) return;
@@ -4346,7 +4565,7 @@ function listAppend(a, b) {
   } else if (b instanceof Empty) {
     return a;
   } else {
-    return append2(a, b);
+    return append(a, b);
   }
 }
 var copiedStyleSheets = /* @__PURE__ */ new WeakMap();
@@ -4419,7 +4638,7 @@ var SystemRequestedShutdown = class extends CustomType {
 };
 
 // build/dev/javascript/lustre/lustre/runtime/client/component.ffi.mjs
-var make_component = ({ init: init2, update: update3, view: view2, config }, name) => {
+var make_component = ({ init: init3, update: update4, view: view3, config }, name) => {
   if (!is_browser()) return new Error(new NotABrowser());
   if (!name.includes("-")) return new Error(new BadComponentName(name));
   if (customElements.get(name)) {
@@ -4433,7 +4652,7 @@ var make_component = ({ init: init2, update: update3, view: view2, config }, nam
     attributes.set(name2, decoder);
     observedAttributes.push(name2);
   }
-  const [model, effects] = init2(void 0);
+  const [model, effects] = init3(void 0);
   const component2 = class Component extends HTMLElement {
     static get observedAttributes() {
       return observedAttributes;
@@ -4460,8 +4679,8 @@ var make_component = ({ init: init2, update: update3, view: view2, config }, nam
       this.#runtime = new Runtime(
         this.#shadowRoot,
         [model, effects],
-        view2,
-        update3
+        view3,
+        update4
       );
     }
     // CUSTOM ELEMENT LIFECYCLE METHODS ----------------------------------------
@@ -4604,7 +4823,7 @@ var Option = class extends CustomType {
   }
 };
 function new$6(options) {
-  let init2 = new Config2(
+  let init3 = new Config2(
     true,
     true,
     false,
@@ -4616,9 +4835,9 @@ function new$6(options) {
     option_none,
     option_none
   );
-  return fold2(
+  return fold(
     options,
-    init2,
+    init3,
     (config, option) => {
       return option.apply(config);
     }
@@ -4646,11 +4865,11 @@ function on_attribute_change(name, decoder) {
 
 // build/dev/javascript/lustre/lustre.mjs
 var App = class extends CustomType {
-  constructor(init2, update3, view2, config) {
+  constructor(init3, update4, view3, config) {
     super();
-    this.init = init2;
-    this.update = update3;
-    this.view = view2;
+    this.init = init3;
+    this.update = update4;
+    this.view = view3;
     this.config = config;
   }
 };
@@ -4668,8 +4887,8 @@ var ComponentAlreadyRegistered = class extends CustomType {
 };
 var NotABrowser = class extends CustomType {
 };
-function component(init2, update3, view2, options) {
-  return new App(init2, update3, view2, new$6(options));
+function component(init3, update4, view3, options) {
+  return new App(init3, update4, view3, new$6(options));
 }
 
 // build/dev/javascript/split_flap/split_flap.ffi.mjs
@@ -4677,8 +4896,8 @@ function set_timeout(delay, cb) {
   window.setTimeout(cb, delay);
 }
 
-// build/dev/javascript/split_flap/split_flap.mjs
-var FILEPATH = "src/split_flap.gleam";
+// build/dev/javascript/split_flap/split_flap_char.mjs
+var FILEPATH = "src/split_flap_char.gleam";
 var Model = class extends CustomType {
   constructor(char_stack, dest, state) {
     super();
@@ -4701,6 +4920,13 @@ var StartFlip = class extends CustomType {
 };
 var EndFlip = class extends CustomType {
 };
+function element4(char) {
+  return element2(
+    "split-flap-char",
+    toList([attribute2("letter", char)]),
+    toList([])
+  );
+}
 function update2(model, msg) {
   if (msg instanceof SetDestination) {
     let dest = msg[0];
@@ -4748,16 +4974,16 @@ function update2(model, msg) {
       throw makeError(
         "let_assert",
         FILEPATH,
-        "split_flap",
-        88,
+        "split_flap_char",
+        81,
         "update",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 1983,
-          end: 2052,
-          pattern_start: 1994,
-          pattern_end: 2012
+          start: 1951,
+          end: 2020,
+          pattern_start: 1962,
+          pattern_end: 1980
         }
       );
     }
@@ -4801,7 +5027,7 @@ var chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?@#$%^&*()";
 function init(_) {
   return [new Model(chars, " ", new Idle()), none2()];
 }
-var css = '\n  :host {\n    display: inline-block;\n    perspective: 10rem;\n  }\n\n  .split-flap {\n    position: relative;\n    width: 50px;\n    height: 80px;\n    font-family: "Fragment Mono", monospace;\n    font-size: 60px;\n    font-weight: bold;\n    background: rgb(40, 40, 40);\n    border-radius: 4px;\n    box-shadow: inset 0px -3px 5px 4px rgba(0, 0, 0, 0.8);\n    cursor: pointer;\n  }\n\n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 2px;\n    background: #000;\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    z-index: 1;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 4px 4px 0 0;\n    user-select: text;\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 4px 4px;\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n  }\n\n  .flap.top .flap-content {\n    top: 0;\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n  .flap.flipping-top {\n    opacity: 0;\n    pointer-events: none;\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 4px 4px 0 0;\n    z-index: 10;\n    transform: rotateX(0deg);\n    background: rgb(40, 40, 40);\n\n  }\n\n\n\n  .flap.flipping-bottom {\n    /* Animated flap that rotates down during character change */\n    opacity: 0;\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 4px 4px;\n    z-index: 10;\n    transform: rotateX(90deg);\n    background: rgb(40, 40, 40);\n  }\n\n  .flap.flipping-top[data-state="flipping"] {\n    opacity: 1;\n    z-index: 10;\n    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);\n    transform: rotateX(-90deg);\n    transition: transform 0.08s ease-in;\n  }\n  \n  .flap.flipping-bottom[data-state="flipping"] {\n    opacity: 1;\n    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);\n    z-index: 10;\n    transform: rotateX(0deg);\n    transition: transform 0.02s linear;\n    transition-delay: 0.1s;\n  }\n\n  .flap.flipping-top .flap-content {\n    top: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
+var css = '\n  :host {\n    display: inline-block;\n    perspective: 10rem;\n  }\n\n  .split-flap {\n    position: relative;\n    width: 50px;\n    height: 80px;\n    font-family: "Fragment Mono", monospace;\n    font-size: 60px;\n    font-weight: bold;\n    background: rgb(40, 40, 40);\n    border-radius: 4px;\n    box-shadow: inset 0px -3px 5px 4px rgba(0, 0, 0, 0.8);\n    \n  }\n\n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 2px;\n    background: #000;\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    z-index: 1;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 4px 4px 0 0;\n    user-select: text;\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 4px 4px;\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n  }\n\n  .flap.top .flap-content {\n    top: 0;\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n  .flap.flipping-top {\n    opacity: 0;\n    pointer-events: none;\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 4px 4px 0 0;\n    z-index: 10;\n    transform: rotateX(0deg);\n    background: rgb(40, 40, 40);\n\n  }\n\n\n\n  .flap.flipping-bottom {\n    /* Animated flap that rotates down during character change */\n    opacity: 0;\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 4px 4px;\n    z-index: 10;\n    transform: rotateX(90deg);\n    background: rgb(40, 40, 40);\n  }\n\n  .flap.flipping-top[data-state="flipping"] {\n    opacity: 1;\n    z-index: 10;\n    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);\n    transform: rotateX(-90deg);\n    transition: transform 0.08s ease-in;\n  }\n  \n  .flap.flipping-bottom[data-state="flipping"] {\n    opacity: 1;\n    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);\n    z-index: 10;\n    transform: rotateX(0deg);\n    transition: transform 0.02s linear;\n    transition-delay: 0.1s;\n  }\n\n  .flap.flipping-top .flap-content {\n    top: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
 function view(model) {
   let $ = get_chars(model.char_stack);
   let curr;
@@ -4813,16 +5039,16 @@ function view(model) {
     throw makeError(
       "let_assert",
       FILEPATH,
-      "split_flap",
-      114,
+      "split_flap_char",
+      107,
       "view",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 2683,
-        end: 2741,
-        pattern_start: 2694,
-        pattern_end: 2711
+        start: 2651,
+        end: 2709,
+        pattern_start: 2662,
+        pattern_end: 2679
       }
     );
   }
@@ -4919,11 +5145,16 @@ function register() {
       on_attribute_change(
         "letter",
         (val) => {
-          echo("on_attribute_change ", void 0, "src/split_flap.gleam", 22);
+          echo(
+            "on_attribute_change ",
+            void 0,
+            "src/split_flap_char.gleam",
+            17
+          );
           return try$(
             first(val),
             (char) => {
-              echo("char  " + char, void 0, "src/split_flap.gleam", 24);
+              echo("char  " + char, void 0, "src/split_flap_char.gleam", 19);
               let $ = contains_string(chars, char);
               if ($) {
                 return new Ok(new SetDestination(val));
@@ -4936,23 +5167,7 @@ function register() {
       )
     ])
   );
-  echo("registered ", void 0, "src/split_flap.gleam", 32);
   return make_component(component2, "split-flap-char");
-}
-function main() {
-  let $ = register();
-  if (!($ instanceof Ok)) {
-    throw makeError(
-      "let_assert",
-      FILEPATH,
-      "split_flap",
-      14,
-      "main",
-      "Pattern match failed, no pattern matched the value.",
-      { value: $, start: 294, end: 323, pattern_start: 305, pattern_end: 310 }
-    );
-  }
-  return void 0;
 }
 function echo(value, message, file, line) {
   const grey = "\x1B[90m";
@@ -5080,15 +5295,15 @@ var Echo$Inspector = class {
     let list_out = "[";
     let current = list4;
     while (current instanceof NonEmpty) {
-      let element4 = current.head;
+      let element5 = current.head;
       current = current.tail;
       if (list_out !== "[") {
         list_out += ", ";
       }
-      list_out += this.inspect(element4);
+      list_out += this.inspect(element5);
       if (char_out) {
-        if (Number.isInteger(element4) && element4 >= 32 && element4 <= 126) {
-          char_out += String.fromCharCode(element4);
+        if (Number.isInteger(element5) && element5 >= 32 && element5 <= 126) {
+          char_out += String.fromCharCode(element5);
         } else {
           char_out = null;
         }
@@ -5157,6 +5372,181 @@ var Echo$Inspector = class {
     return acc;
   }
 };
+
+// build/dev/javascript/split_flap/split_flap_display.mjs
+var FILEPATH2 = "src/split_flap_display.gleam";
+var Noop = class extends CustomType {
+};
+var Model2 = class extends CustomType {
+  constructor(rows, cols, lines) {
+    super();
+    this.rows = rows;
+    this.cols = cols;
+    this.lines = lines;
+  }
+};
+function init2(_) {
+  return [new Model2(6, 25, toList(["NICK POZOULAKIS"])), none2()];
+}
+function update3(model, msg) {
+  return [model, none2()];
+}
+function zip_longest(list1, list22) {
+  let _block;
+  if (list1 instanceof Empty) {
+    _block = [new None(), toList([])];
+  } else {
+    let h = list1.head;
+    let rest = list1.tail;
+    _block = [new Some(h), rest];
+  }
+  let $ = _block;
+  let head1;
+  let rest1;
+  head1 = $[0];
+  rest1 = $[1];
+  let _block$1;
+  if (list22 instanceof Empty) {
+    _block$1 = [new None(), toList([])];
+  } else {
+    let h = list22.head;
+    let rest = list22.tail;
+    _block$1 = [new Some(h), rest];
+  }
+  let $1 = _block$1;
+  let head2;
+  let rest2;
+  head2 = $1[0];
+  rest2 = $1[1];
+  let _block$2;
+  if (head2 instanceof Some) {
+    if (head1 instanceof Some) {
+      let h2 = head2[0];
+      let h1 = head1[0];
+      _block$2 = new Some([new Some(h1), new Some(h2)]);
+    } else {
+      let h2 = head2[0];
+      _block$2 = new Some([new None(), new Some(h2)]);
+    }
+  } else if (head1 instanceof Some) {
+    let h1 = head1[0];
+    _block$2 = new Some([new Some(h1), new None()]);
+  } else {
+    _block$2 = head1;
+  }
+  let el = _block$2;
+  if (el instanceof Some) {
+    let el$1 = el[0];
+    return prepend2(zip_longest(rest1, rest2), el$1);
+  } else {
+    return toList([]);
+  }
+}
+function row(index3, num_cols, line) {
+  let chars2 = graphemes(
+    (() => {
+      if (line instanceof Some) {
+        let line$1 = line[0];
+        return pad_end(line$1, num_cols, " ");
+      } else {
+        return repeat(" ", num_cols);
+      }
+    })()
+  );
+  return div2(
+    toList([class$("row")]),
+    index_map(
+      chars2,
+      (char, col_num) => {
+        let key = to_string(index3) + "-" + to_string(col_num);
+        return [key, element4(char)];
+      }
+    )
+  );
+}
+var css2 = "\n  :host {\n    display: inline-block;\n    width: 100%;\n  }\n\n  split-flap-char {\n    padding: 1rem 0.25rem;\n    background: rgb(40, 40, 40);\n    border: 1px solid rgb(20, 20, 20);\n  }\n\n  .display {\n    display: flex;\n    flex-direction: column;\n    gap: 0rem;\n    background: rgb(20, 20, 20);\n    padding: 0.5rem;\n  }\n\n  .row {\n    display: flex;\n    flex-direction: row;\n    gap: 0rem;\n  }\n\n";
+function view2(model) {
+  let _block;
+  let _pipe = zip_longest(range(0, model.rows - 1), model.lines);
+  _block = filter_map(
+    _pipe,
+    (el) => {
+      let $ = el[0];
+      if ($ instanceof Some) {
+        let line = el[1];
+        let row_num = $[0];
+        return new Ok([row_num, line]);
+      } else {
+        return new Error(void 0);
+      }
+    }
+  );
+  let rows_and_lines = _block;
+  return fragment2(
+    toList([
+      style(toList([]), css2),
+      div2(
+        toList([class$("display")]),
+        map(
+          rows_and_lines,
+          (row_and_line) => {
+            let row_num;
+            let line;
+            row_num = row_and_line[0];
+            line = row_and_line[1];
+            return [to_string(row_num), row(row_num, model.cols, line)];
+          }
+        )
+      )
+    ])
+  );
+}
+function register2() {
+  let $ = register();
+  if (!($ instanceof Ok)) {
+    throw makeError(
+      "let_assert",
+      FILEPATH2,
+      "split_flap_display",
+      16,
+      "register",
+      "Pattern match failed, no pattern matched the value.",
+      { value: $, start: 366, end: 411, pattern_start: 377, pattern_end: 382 }
+    );
+  }
+  let component2 = component(
+    init2,
+    update3,
+    view2,
+    toList([
+      on_attribute_change(
+        "letter",
+        (val) => {
+          return new Ok(new Noop());
+        }
+      )
+    ])
+  );
+  return make_component(component2, "split-flap-display");
+}
+
+// build/dev/javascript/split_flap/split_flap.mjs
+var FILEPATH3 = "src/split_flap.gleam";
+function main() {
+  let $ = register2();
+  if (!($ instanceof Ok)) {
+    throw makeError(
+      "let_assert",
+      FILEPATH3,
+      "split_flap",
+      4,
+      "main",
+      "Pattern match failed, no pattern matched the value.",
+      { value: $, start: 45, end: 93, pattern_start: 56, pattern_end: 61 }
+    );
+  }
+  return void 0;
+}
 
 // build/.lustre/entry.mjs
 main();

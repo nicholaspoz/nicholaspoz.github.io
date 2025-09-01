@@ -61,18 +61,13 @@
   </head>
 
   <body class="site-hero">
-    <div class="content-container">
-      <main class="box">
-        <!-- Or multiple components spelling a word -->
-        <div class="word">
-          <split-flap-char id="sf0" letter="H"></split-flap-char>
-          <split-flap-char id="sf1" letter="E"></split-flap-char>
-          <split-flap-char id="sf2" letter="L"></split-flap-char>
-          <split-flap-char id="sf3" letter="L"></split-flap-char>
-          <split-flap-char id="sf4" letter="O"></split-flap-char>
-        </div>
-      </main>
-    </div>
+    <!-- Or multiple components spelling a word -->
+    <main>
+      <div class="display-container">
+        <split-flap-display></split-flap-display>
+      </div>
+    </main>
+
     <script src="/js/script.js"></script>
     <script type="module" src="/js/split_flap.mjs"></script>
   </body>

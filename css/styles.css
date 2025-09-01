@@ -16,16 +16,6 @@ h2 {
   margin: 0;
 }
 
-header {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-  margin-top: 1rem;
-}
-
 body {
   margin: 0;
   padding: 0;
@@ -75,56 +65,18 @@ body {
   transition: filter 300ms ease-out;
 }
 
-.content-container {
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  height: 100%;
-  width: 100%;
-  transition: background-color 300ms ease-out;
-}
-
-.box {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  text-align: center;
-  flex-direction: column;
-
-  max-width: 250px;
-  width: 100%;
-  perspective: 800px;
-  perspective-origin: bottom left;
-  transform-style: preserve-3d;
-}
-
-.links {
-  border-top: 2px solid #b44e04;
-  padding-top: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-direction: row;
-  width: 100%;
-}
-
-.word {
-  margin-top: 3rem;
-  padding: 1rem;
+main {
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-direction: row;
-  gap: 0.5rem;
-  transform: rotateY(-35deg);
-  background: rgb(41 41 41);
-  border-radius: 4px;
+  height: 100%;
+  width: 100%;
 }
 
-footer {
-  justify-self: flex-end;
+.display-container {
+  width: 50%;
+  overflow: hidden;
+  height: 100%;
 }
 
 /* Make image full width when viewport is landscape/shorter */
@@ -132,24 +84,6 @@ footer {
   .site-hero.ready {
     background-size: cover;
     background-position: top 65% center;
-  }
-
-  .box {
-    padding-left: calc((var(--dynamic-factor, 1) - 1) * 10rem);
-  }
-}
-
-@media (aspect-ratio > 3/1) {
-  .content-container {
-    background-color: rgb(
-      212 212 212 / calc(var(--dynamic-scale, 100%) - 100%)
-    );
-  }
-}
-
-@media (aspect-ratio < 2/3) {
-  header {
-    padding-top: calc((var(--dynamic-factor, 1) - 1) * 10rem);
   }
 }
 
