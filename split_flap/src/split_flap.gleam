@@ -130,31 +130,34 @@ fn view(model: Model) -> Element(Msg) {
         html.span([attribute.class("flap-content")], [html.text(curr)]),
       ]),
 
-      html.div(
-        [
+      {
+        // FLIPPING TOP
+        let attrs = [
           attribute.class("flap flipping-top"),
           case model.state {
             Flipping -> attribute.data("state", "flipping")
             _ -> attribute.none()
           },
-        ],
-        [
-          html.span([attribute.class("flap-content")], [html.text(curr)]),
-        ],
-      ),
+        ]
 
-      html.div(
-        [
+        html.div(attrs, [
+          html.span([attribute.class("flap-content")], [html.text(curr)]),
+        ])
+      },
+
+      {
+        // FLIPPING BOTTOM
+        let attrs = [
           attribute.class("flap flipping-bottom"),
           case model.state {
             Flipping -> attribute.data("state", "flipping")
             _ -> attribute.none()
           },
-        ],
-        [
+        ]
+        html.div(attrs, [
           html.span([attribute.class("flap-content")], [html.text(next)]),
-        ],
-      ),
+        ])
+      },
     ]),
   ])
 }

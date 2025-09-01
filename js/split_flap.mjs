@@ -4861,8 +4861,8 @@ function view(model) {
               )
             ])
           ),
-          div(
-            toList([
+          (() => {
+            let attrs = toList([
               class$("flap flipping-top"),
               (() => {
                 let $1 = model.state;
@@ -4872,16 +4872,19 @@ function view(model) {
                   return none();
                 }
               })()
-            ]),
-            toList([
-              span(
-                toList([class$("flap-content")]),
-                toList([text3(curr)])
-              )
-            ])
-          ),
-          div(
-            toList([
+            ]);
+            return div(
+              attrs,
+              toList([
+                span(
+                  toList([class$("flap-content")]),
+                  toList([text3(curr)])
+                )
+              ])
+            );
+          })(),
+          (() => {
+            let attrs = toList([
               class$("flap flipping-bottom"),
               (() => {
                 let $1 = model.state;
@@ -4891,14 +4894,17 @@ function view(model) {
                   return none();
                 }
               })()
-            ]),
-            toList([
-              span(
-                toList([class$("flap-content")]),
-                toList([text3(next)])
-              )
-            ])
-          )
+            ]);
+            return div(
+              attrs,
+              toList([
+                span(
+                  toList([class$("flap-content")]),
+                  toList([text3(next)])
+                )
+              ])
+            );
+          })()
         ])
       )
     ])

@@ -95,6 +95,9 @@ body {
 
   max-width: 250px;
   width: 100%;
+  perspective: 800px;
+  perspective-origin: bottom left;
+  transform-style: preserve-3d;
 }
 
 .links {
@@ -108,12 +111,16 @@ body {
 }
 
 .word {
-  padding-top: 3rem;
+  margin-top: 3rem;
+  padding: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: row;
   gap: 0.5rem;
+  transform: rotateY(-35deg);
+  background: rgb(41 41 41);
+  border-radius: 4px;
 }
 
 footer {
