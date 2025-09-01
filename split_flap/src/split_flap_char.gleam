@@ -160,30 +160,89 @@ const css = "
   :host {
     display: inline-block;
     perspective: 10rem;
+    width: 100%;
+    height: 100%;
+    aspect-ratio: 5/8;
+    container-type: inline-size;
   }
 
-  .split-flap {
-    position: relative;
-    width: 50px;
-    height: 80px;
-    font-family: \"Fragment Mono\", monospace;
-    font-size: 60px;
-    font-weight: bold;
-    background: rgb(40, 40, 40);
-    border-radius: 4px;
-    box-shadow: inset 0px -3px 5px 4px rgba(0, 0, 0, 0.8);
+  @container (width > 0px) {
+    .split-flap {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      font-family: \"Fragment Mono\", monospace;
+      font-weight: bold;
+      font-size: 120cqw;
+      background: rgb(40, 40, 40);
+      border-radius: 0.5px;
+      box-shadow: inset 0px -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);
+    }
+
     
-  }
+    .split-flap::after {
+      content: \"\";
+      position: absolute;
+      left: 0;
+      right: 0;
+      top: 50%;
+      height: 3.5cqw;
+      background: #000;
+      z-index: 20;
+    }
 
-  .split-flap::after {
-    content: \"\";
-    position: absolute;
-    left: 0;
-    right: 0;
-    top: 50%;
-    height: 2px;
-    background: #000;
-    z-index: 20;
+    .flap.top {
+      top: 0;
+      transform-origin: bottom;
+      border-radius: 0.5cqw 0.5cqw 0 0;
+      user-select: text;
+    }
+
+    .flap.bottom {
+      bottom: 0;
+      transform-origin: top;
+      border-radius: 0 0 0.5cqw 0.5cqw;
+    }
+
+    .flap.flipping-top {
+      opacity: 0;
+      pointer-events: none;
+      top: 0;
+      transform-origin: bottom;
+      border-radius: 0.5cqw 0.5cqw 0 0;
+      z-index: 10;
+      transform: rotateX(0deg);
+      background: rgb(40, 40, 40);
+    }
+
+    .flap.flipping-bottom {
+      /* Animated flap that rotates down during character change */
+      opacity: 0;
+      pointer-events: none;
+      bottom: 0;
+      transform-origin: top;
+      border-radius: 0 0 0.5cqw 0.5cqw;
+      z-index: 10;
+      transform: rotateX(90deg);
+      background: rgb(40, 40, 40);
+    }
+
+    .flap.flipping-top[data-state=\"flipping\"] {
+      opacity: 1;
+      z-index: 10;
+      box-shadow: 0 0.5cqw 1cqw rgba(0, 0, 0, 0.3);
+      transform: rotateX(-90deg);
+      transition: transform 0.08s ease-in;
+    }
+    
+    .flap.flipping-bottom[data-state=\"flipping\"] {
+      opacity: 1;
+      box-shadow: 0 0.5cqw 1cqw rgba(0, 0, 0, 0.3);
+      z-index: 10;
+      transform: rotateX(0deg);
+      transition: transform 0.02s linear;
+      transition-delay: 0.1s;
+    }
   }
 
   .flap {
@@ -197,19 +256,6 @@ const css = "
     overflow: hidden;
     user-select: none;
     z-index: 1;
-  }
-
-  .flap.top {
-    top: 0;
-    transform-origin: bottom;
-    border-radius: 4px 4px 0 0;
-    user-select: text;
-  }
-
-  .flap.bottom {
-    bottom: 0;
-    transform-origin: top;
-    border-radius: 0 0 4px 4px;
   }
 
   .flap-content {
@@ -230,48 +276,6 @@ const css = "
     bottom: 0;
   }
 
-  .flap.flipping-top {
-    opacity: 0;
-    pointer-events: none;
-    top: 0;
-    transform-origin: bottom;
-    border-radius: 4px 4px 0 0;
-    z-index: 10;
-    transform: rotateX(0deg);
-    background: rgb(40, 40, 40);
-
-  }
-
-
-
-  .flap.flipping-bottom {
-    /* Animated flap that rotates down during character change */
-    opacity: 0;
-    pointer-events: none;
-    bottom: 0;
-    transform-origin: top;
-    border-radius: 0 0 4px 4px;
-    z-index: 10;
-    transform: rotateX(90deg);
-    background: rgb(40, 40, 40);
-  }
-
-  .flap.flipping-top[data-state=\"flipping\"] {
-    opacity: 1;
-    z-index: 10;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    transform: rotateX(-90deg);
-    transition: transform 0.08s ease-in;
-  }
-  
-  .flap.flipping-bottom[data-state=\"flipping\"] {
-    opacity: 1;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    z-index: 10;
-    transform: rotateX(0deg);
-    transition: transform 0.02s linear;
-    transition-delay: 0.1s;
-  }
 
   .flap.flipping-top .flap-content {
     top: 0;

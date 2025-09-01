@@ -116,20 +116,22 @@ const css = "
   :host {
     display: inline-block;
     width: 100%;
+    height: 100%;
+    container-type: inline-size;
   }
 
   split-flap-char {
-    padding: 1rem 0.25rem;
+    padding: 1cqw 0.3cqw;
     background: rgb(40, 40, 40);
-    border: 1px solid rgb(20, 20, 20);
+    border: 0.05cqw solid rgb(30, 30, 30);
   }
 
   .display {
     display: flex;
     flex-direction: column;
     gap: 0rem;
-    background: rgb(20, 20, 20);
-    padding: 0.5rem;
+    border: 1cqw solid rgb(20, 20, 20);
+    border-radius: 0.5cqw;
   }
 
   .row {
@@ -137,5 +139,4 @@ const css = "
     flex-direction: row;
     gap: 0rem;
   }
-
 "

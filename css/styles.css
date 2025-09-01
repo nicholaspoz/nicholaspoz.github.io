@@ -67,16 +67,24 @@ body {
 
 main {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   height: 100%;
   width: 100%;
 }
 
 .display-container {
-  width: 50%;
+  width: 30%;
   overflow: hidden;
-  height: 100%;
+  padding-left: 20vw;
+  padding-top: 5vh;
+  min-width: 320px;
+}
+
+@media (width < 800px) {
+  .display-container {
+    padding-left: 0;
+  }
 }
 
 /* Make image full width when viewport is landscape/shorter */
