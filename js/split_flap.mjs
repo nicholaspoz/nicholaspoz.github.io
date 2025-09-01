@@ -1160,6 +1160,14 @@ var Nil = void 0;
 function to_string(term) {
   return term.toString();
 }
+function graphemes(string5) {
+  const iterator = graphemes_iterator(string5);
+  if (iterator) {
+    return List.fromArray(Array.from(iterator).map((item) => item.segment));
+  } else {
+    return List.fromArray(string5.match(/./gsu));
+  }
+}
 var segmenter = void 0;
 function graphemes_iterator(string5) {
   if (globalThis.Intl && Intl.Segmenter) {
@@ -1233,6 +1241,30 @@ function reverse_and_prepend(loop$prefix, loop$suffix) {
 }
 function reverse(list4) {
   return reverse_and_prepend(list4, toList([]));
+}
+function take_loop(loop$list, loop$n, loop$acc) {
+  while (true) {
+    let list4 = loop$list;
+    let n = loop$n;
+    let acc = loop$acc;
+    let $ = n <= 0;
+    if ($) {
+      return reverse(acc);
+    } else {
+      if (list4 instanceof Empty) {
+        return reverse(acc);
+      } else {
+        let first$1 = list4.head;
+        let rest$1 = list4.tail;
+        loop$list = rest$1;
+        loop$n = n - 1;
+        loop$acc = prepend(first$1, acc);
+      }
+    }
+  }
+}
+function take(list4, n) {
+  return take_loop(list4, n, toList([]));
 }
 function append_loop(loop$first, loop$second) {
   while (true) {
@@ -4657,9 +4689,7 @@ var Model = class extends CustomType {
 };
 var Idle = class extends CustomType {
 };
-var FlippingTop = class extends CustomType {
-};
-var FlippingBottom = class extends CustomType {
+var Flipping = class extends CustomType {
 };
 var SetDestination = class extends CustomType {
   constructor($0) {
@@ -4671,18 +4701,7 @@ var StartFlip = class extends CustomType {
 };
 var EndFlip = class extends CustomType {
 };
-function to_string4(msg) {
-  if (msg instanceof SetDestination) {
-    let dest = msg[0];
-    return "SetDestination(" + dest + ")";
-  } else if (msg instanceof StartFlip) {
-    return "StartFlip";
-  } else {
-    return "EndFlip";
-  }
-}
 function update2(model, msg) {
-  echo("update ZOMG " + to_string4(msg), void 0, "src/split_flap.gleam", 100);
   if (msg instanceof SetDestination) {
     let dest = msg[0];
     return [
@@ -4697,15 +4716,12 @@ function update2(model, msg) {
       let x = $[0];
       if (x !== model.dest) {
         return [
-          new Model(model.char_stack, model.dest, new FlippingTop()),
+          new Model(model.char_stack, model.dest, new Flipping()),
           from(
             (dispatch) => {
-              return set_timeout(
-                1e3,
-                () => {
-                  return dispatch(new EndFlip());
-                }
-              );
+              return set_timeout(80, () => {
+                return dispatch(new EndFlip());
+              });
             }
           )
         ];
@@ -4733,25 +4749,24 @@ function update2(model, msg) {
         "let_assert",
         FILEPATH,
         "split_flap",
-        123,
+        88,
         "update",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 2811,
-          end: 2880,
-          pattern_start: 2822,
-          pattern_end: 2840
+          start: 1983,
+          end: 2052,
+          pattern_start: 1994,
+          pattern_end: 2012
         }
       );
     }
     let next = rest + first2;
-    echo("EndFlip ZOMG " + next, void 0, "src/split_flap.gleam", 125);
     return [
       new Model(next, model.dest, new Idle()),
       from(
         (dispatch) => {
-          return set_timeout(1e3, () => {
+          return set_timeout(20, () => {
             return dispatch(new StartFlip());
           });
         }
@@ -4759,34 +4774,58 @@ function update2(model, msg) {
     ];
   }
 }
+function get_chars(stack) {
+  let $ = (() => {
+    let _pipe = graphemes(stack);
+    return take(_pipe, 2);
+  })();
+  if ($ instanceof Empty) {
+    return new Error(void 0);
+  } else {
+    let $1 = $.tail;
+    if ($1 instanceof Empty) {
+      return new Error(void 0);
+    } else {
+      let $2 = $1.tail;
+      if ($2 instanceof Empty) {
+        let a = $.head;
+        let b = $1.head;
+        return new Ok([a, b]);
+      } else {
+        return new Error(void 0);
+      }
+    }
+  }
+}
 var chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?@#$%^&*()";
 function init(_) {
   return [new Model(chars, " ", new Idle()), none2()];
 }
-var css = '\n  :host {\n    display: inline-block;\n    perspective: 400px;\n  }\n\n  .split-flap {\n    position: relative;\n    width: 50px;\n    height: 80px;\n    font-family: "Fragment Mono", monospace;\n    font-size: 60px;\n    font-weight: bold;\n    background: rgb(40, 40, 40);\n    border-radius: 4px;\n    box-shadow: inset 0px 1px 5px 5px rgba(0, 0, 0, 0.8);\n    cursor: pointer;\n  }\n\n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 2px;\n    background: #000;\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 4px 4px 0 0;\n    z-index: 2;\n    user-select: text;\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 4px 4px;\n    z-index: 1;\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n  }\n\n  .flap.top .flap-content {\n    top: 0;\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n  .flap.flipping-top {\n    opacity: 0;\n    pointer-events: none;\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 4px 4px 0 0;\n    z-index: 10;\n    box-shadow: 0 2px 4px rgb(0, 0, 0);\n  }\n\n  .flap.flipping-bottom {\n    /* Animated flap that rotates down during character change */\n    opacity: 0;\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 4px 4px;\n    z-index: 10;\n    box-shadow: 0 2px 4px rgb(0, 0, 0); /* Shadow for depth */\n  }\n\n  .flap.flipping-top .flap-content {\n    top: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
+var css = '\n  :host {\n    display: inline-block;\n    perspective: 10rem;\n  }\n\n  .split-flap {\n    position: relative;\n    width: 50px;\n    height: 80px;\n    font-family: "Fragment Mono", monospace;\n    font-size: 60px;\n    font-weight: bold;\n    background: rgb(40, 40, 40);\n    border-radius: 4px;\n    box-shadow: inset 0px -3px 5px 4px rgba(0, 0, 0, 0.8);\n    cursor: pointer;\n  }\n\n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 2px;\n    background: #000;\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    z-index: 1;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 4px 4px 0 0;\n    user-select: text;\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 4px 4px;\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n  }\n\n  .flap.top .flap-content {\n    top: 0;\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n  .flap.flipping-top {\n    opacity: 0;\n    pointer-events: none;\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 4px 4px 0 0;\n    z-index: 10;\n    transform: rotateX(0deg);\n    background: rgb(40, 40, 40);\n\n  }\n\n\n\n  .flap.flipping-bottom {\n    /* Animated flap that rotates down during character change */\n    opacity: 0;\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 4px 4px;\n    z-index: 10;\n    transform: rotateX(90deg);\n    background: rgb(40, 40, 40);\n  }\n\n  .flap.flipping-top[data-state="flipping"] {\n    opacity: 1;\n    z-index: 10;\n    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);\n    transform: rotateX(-90deg);\n    transition: transform 0.08s ease-in;\n  }\n  \n  .flap.flipping-bottom[data-state="flipping"] {\n    opacity: 1;\n    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);\n    z-index: 10;\n    transform: rotateX(0deg);\n    transition: transform 0.02s linear;\n    transition-delay: 0.1s;\n  }\n\n  .flap.flipping-top .flap-content {\n    top: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
 function view(model) {
-  let $ = first(model.char_stack);
-  let char;
+  let $ = get_chars(model.char_stack);
+  let curr;
+  let next;
   if ($ instanceof Ok) {
-    char = $[0];
+    curr = $[0][0];
+    next = $[0][1];
   } else {
     throw makeError(
       "let_assert",
       FILEPATH,
       "split_flap",
-      147,
+      114,
       "view",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 3577,
-        end: 3629,
-        pattern_start: 3588,
-        pattern_end: 3596
+        start: 2683,
+        end: 2741,
+        pattern_start: 2694,
+        pattern_end: 2711
       }
     );
   }
-  echo("view ZOMG " + char, void 0, "src/split_flap.gleam", 148);
   return fragment2(
     toList([
       style(toList([]), css),
@@ -4798,7 +4837,18 @@ function view(model) {
             toList([
               span(
                 toList([class$("flap-content")]),
-                toList([text3(char)])
+                toList([
+                  text3(
+                    (() => {
+                      let $1 = model.state;
+                      if ($1 instanceof Idle) {
+                        return curr;
+                      } else {
+                        return next;
+                      }
+                    })()
+                  )
+                ])
               )
             ])
           ),
@@ -4807,7 +4857,7 @@ function view(model) {
             toList([
               span(
                 toList([class$("flap-content")]),
-                toList([text3(char)])
+                toList([text3(curr)])
               )
             ])
           ),
@@ -4816,7 +4866,7 @@ function view(model) {
               class$("flap flipping-top"),
               (() => {
                 let $1 = model.state;
-                if ($1 instanceof FlippingTop) {
+                if ($1 instanceof Flipping) {
                   return data("state", "flipping");
                 } else {
                   return none();
@@ -4826,7 +4876,7 @@ function view(model) {
             toList([
               span(
                 toList([class$("flap-content")]),
-                toList([text3(char)])
+                toList([text3(curr)])
               )
             ])
           ),
@@ -4835,7 +4885,7 @@ function view(model) {
               class$("flap flipping-bottom"),
               (() => {
                 let $1 = model.state;
-                if ($1 instanceof FlippingBottom) {
+                if ($1 instanceof Flipping) {
                   return data("state", "flipping");
                 } else {
                   return none();
@@ -4845,7 +4895,7 @@ function view(model) {
             toList([
               span(
                 toList([class$("flap-content")]),
-                toList([text3(char)])
+                toList([text3(next)])
               )
             ])
           )
@@ -4863,16 +4913,11 @@ function register() {
       on_attribute_change(
         "letter",
         (val) => {
-          echo(
-            "on_attribute_change ZOMG",
-            void 0,
-            "src/split_flap.gleam",
-            40
-          );
+          echo("on_attribute_change ", void 0, "src/split_flap.gleam", 22);
           return try$(
             first(val),
             (char) => {
-              echo("char ZOMG " + char, void 0, "src/split_flap.gleam", 42);
+              echo("char  " + char, void 0, "src/split_flap.gleam", 24);
               let $ = contains_string(chars, char);
               if ($) {
                 return new Ok(new SetDestination(val));
@@ -4885,7 +4930,7 @@ function register() {
       )
     ])
   );
-  echo("registered ZOMG", void 0, "src/split_flap.gleam", 50);
+  echo("registered ", void 0, "src/split_flap.gleam", 32);
   return make_component(component2, "split-flap-char");
 }
 function main() {
@@ -4895,10 +4940,10 @@ function main() {
       "let_assert",
       FILEPATH,
       "split_flap",
-      32,
+      14,
       "main",
       "Pattern match failed, no pattern matched the value.",
-      { value: $, start: 709, end: 738, pattern_start: 720, pattern_end: 725 }
+      { value: $, start: 294, end: 323, pattern_start: 305, pattern_end: 310 }
     );
   }
   return void 0;

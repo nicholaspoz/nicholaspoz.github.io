@@ -1,3 +1,4 @@
+import gleam/list
 import gleam/result
 import gleam/string
 import lustre
@@ -9,25 +10,6 @@ import lustre/element/html
 
 pub const chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?@#$%^&*()"
 
-// fn index_of(char: String) -> Int {
-//   case string.length(char) {
-//     1 -> do_index_of(char, chars, 0)
-//     _ -> 0
-//   }
-// }
-
-// fn do_index_of(needle: String, haystack: String, idx: Int) -> Int {
-//   case string.pop_grapheme(haystack) {
-//     Ok(#(char, rest)) ->
-//       case char == needle {
-//         True -> idx
-//         False -> do_index_of(needle, rest, idx + 1)
-//       }
-
-//     Error(_) -> 0
-//   }
-// }
-
 pub fn main() {
   let assert Ok(_) = register()
   Nil
@@ -37,9 +19,9 @@ pub fn register() -> Result(Nil, lustre.Error) {
   let component =
     lustre.component(init, update, view, [
       component.on_attribute_change("letter", fn(val) {
-        echo "on_attribute_change ZOMG"
+        echo "on_attribute_change "
         use char <- result.try(string.first(val))
-        echo "char ZOMG " <> char
+        echo "char  " <> char
         case string.contains(chars, char) {
           True -> Ok(SetDestination(val))
           False -> Error(Nil)
@@ -47,7 +29,7 @@ pub fn register() -> Result(Nil, lustre.Error) {
       }),
     ])
 
-  echo "registered ZOMG"
+  echo "registered "
 
   lustre.register(component, "split-flap-char")
 }
@@ -65,20 +47,12 @@ type Model {
 
 type State {
   Idle
-  FlippingTop
-  FlippingBottom
+  Flipping
 }
 
 fn init(_) -> #(Model, effect.Effect(Msg)) {
   #(Model(chars, " ", Idle), effect.none())
 }
-
-// fn set_destination(dest: String) -> effect.Effect(Msg) {
-//   use dispatch <- effect.from
-//   use <- set_timeout(1000)
-
-//   dispatch(SetDestination(dest))
-// }
 
 // UPDATE ----------------------------------------------------------------------
 
@@ -88,16 +62,7 @@ type Msg {
   EndFlip
 }
 
-fn to_string(msg: Msg) -> String {
-  case msg {
-    SetDestination(dest) -> "SetDestination(" <> dest <> ")"
-    StartFlip -> "StartFlip"
-    EndFlip -> "EndFlip"
-  }
-}
-
 fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
-  echo "update ZOMG " <> to_string(msg)
   case msg {
     SetDestination(dest) -> {
       #(Model(..model, dest:), {
@@ -109,9 +74,9 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
     StartFlip -> {
       case string.first(model.char_stack) {
         Ok(x) if x != model.dest -> {
-          #(Model(..model, state: FlippingTop), {
+          #(Model(..model, state: Flipping), {
             use dispatch <- effect.from
-            use <- set_timeout(1000)
+            use <- set_timeout(80)
             dispatch(EndFlip)
           })
         }
@@ -122,11 +87,9 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
     EndFlip -> {
       let assert Ok(#(first, rest)) = string.pop_grapheme(model.char_stack)
       let next = rest <> first
-      echo "EndFlip ZOMG " <> next
       #(Model(..model, char_stack: next, state: Idle), {
         use dispatch <- effect.from
-        use <- set_timeout(1000)
-
+        use <- set_timeout(20)
         dispatch(StartFlip)
       })
     }
@@ -135,38 +98,48 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
 
 @external(javascript, "./split_flap.ffi.mjs", "set_timeout")
 pub fn set_timeout(_delay: Int, _cb: fn() -> a) -> Nil {
-  // It's good practice to provide a fallback for side effects that rely on FFI
-  // where possible. This means your app can run - without the side effect - in
-  // environments other than the browser.
   Nil
 }
 
 // VIEW ------------------------------------------------------------------------
 
+fn get_chars(from stack: String) -> Result(#(String, String), Nil) {
+  case string.to_graphemes(stack) |> list.take(2) {
+    [a, b] -> Ok(#(a, b))
+    _ -> Error(Nil)
+  }
+}
+
 fn view(model: Model) -> Element(Msg) {
-  let assert Ok(char) = string.first(model.char_stack)
-  echo "view ZOMG " <> char
+  let assert Ok(#(curr, next)) = get_chars(model.char_stack)
+
   element.fragment([
     html.style([], css),
 
     html.div([attribute.class("split-flap")], [
       html.div([attribute.class("flap top")], [
-        html.span([attribute.class("flap-content")], [html.text(char)]),
+        html.span([attribute.class("flap-content")], [
+          html.text(case model.state {
+            Idle -> curr
+            _ -> next
+          }),
+        ]),
       ]),
+
       html.div([attribute.class("flap bottom")], [
-        html.span([attribute.class("flap-content")], [html.text(char)]),
+        html.span([attribute.class("flap-content")], [html.text(curr)]),
       ]),
 
       html.div(
         [
           attribute.class("flap flipping-top"),
           case model.state {
-            FlippingTop -> attribute.data("state", "flipping")
+            Flipping -> attribute.data("state", "flipping")
             _ -> attribute.none()
           },
         ],
         [
-          html.span([attribute.class("flap-content")], [html.text(char)]),
+          html.span([attribute.class("flap-content")], [html.text(curr)]),
         ],
       ),
 
@@ -174,12 +147,12 @@ fn view(model: Model) -> Element(Msg) {
         [
           attribute.class("flap flipping-bottom"),
           case model.state {
-            FlippingBottom -> attribute.data("state", "flipping")
+            Flipping -> attribute.data("state", "flipping")
             _ -> attribute.none()
           },
         ],
         [
-          html.span([attribute.class("flap-content")], [html.text(char)]),
+          html.span([attribute.class("flap-content")], [html.text(next)]),
         ],
       ),
     ]),
@@ -190,7 +163,7 @@ fn view(model: Model) -> Element(Msg) {
 const css = "
   :host {
     display: inline-block;
-    perspective: 400px;
+    perspective: 10rem;
   }
 
   .split-flap {
@@ -202,7 +175,7 @@ const css = "
     font-weight: bold;
     background: rgb(40, 40, 40);
     border-radius: 4px;
-    box-shadow: inset 0px 1px 5px 5px rgba(0, 0, 0, 0.8);
+    box-shadow: inset 0px -3px 5px 4px rgba(0, 0, 0, 0.8);
     cursor: pointer;
   }
 
@@ -227,13 +200,13 @@ const css = "
     color: #d2d1d1;
     overflow: hidden;
     user-select: none;
+    z-index: 1;
   }
 
   .flap.top {
     top: 0;
     transform-origin: bottom;
     border-radius: 4px 4px 0 0;
-    z-index: 2;
     user-select: text;
   }
 
@@ -241,7 +214,6 @@ const css = "
     bottom: 0;
     transform-origin: top;
     border-radius: 0 0 4px 4px;
-    z-index: 1;
   }
 
   .flap-content {
@@ -269,8 +241,12 @@ const css = "
     transform-origin: bottom;
     border-radius: 4px 4px 0 0;
     z-index: 10;
-    box-shadow: 0 2px 4px rgb(0, 0, 0);
+    transform: rotateX(0deg);
+    background: rgb(40, 40, 40);
+
   }
+
+
 
   .flap.flipping-bottom {
     /* Animated flap that rotates down during character change */
@@ -280,7 +256,25 @@ const css = "
     transform-origin: top;
     border-radius: 0 0 4px 4px;
     z-index: 10;
-    box-shadow: 0 2px 4px rgb(0, 0, 0); /* Shadow for depth */
+    transform: rotateX(90deg);
+    background: rgb(40, 40, 40);
+  }
+
+  .flap.flipping-top[data-state=\"flipping\"] {
+    opacity: 1;
+    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    transform: rotateX(-90deg);
+    transition: transform 0.08s ease-in;
+  }
+  
+  .flap.flipping-bottom[data-state=\"flipping\"] {
+    opacity: 1;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    z-index: 10;
+    transform: rotateX(0deg);
+    transition: transform 0.02s linear;
+    transition-delay: 0.1s;
   }
 
   .flap.flipping-top .flap-content {
