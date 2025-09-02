@@ -1,0 +1,6 @@
+img:
+    magick scene_original.png -resize 300x -blur 0x8 -quality 90 bg-blur.webp
+    magick scene_original.png -resize 1280x -quality 90 -define webp:method=6 bg-1280.webp
+    magick scene_original.png -resize 1920x -quality 90 -define webp:method=6 bg-1920.webp
+    magick scene_original.png -resize 2560x -quality 90 -define webp:method=6 bg-2560.webp
+    magick scene_original.png -resize 3840x -quality 90 -define webp:method=6 bg-3840.webp

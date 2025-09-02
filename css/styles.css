@@ -4,16 +4,9 @@ html {
   width: 100vw;
   margin: 0;
   padding: 0;
-  min-width: 320px;
-  min-height: 375px;
+  /* min-width: 500px;
+  min-height: 500px; */
   overflow: scroll;
-}
-
-h1,
-h2 {
-  line-height: 1;
-  font-weight: normal;
-  margin: 0;
 }
 
 body {
@@ -23,23 +16,10 @@ body {
   height: 100dvh;
   height: 100vh;
   width: 100vw;
-  min-width: 320px;
-  min-height: 375px;
+  /* min-width: 500px;
+  min-height: 500px; */
   background-color: rgb(212, 212, 212);
   font-family: "Fragment Mono", monospace;
-}
-
-@font-face {
-  font-family: "Inkpen";
-  src: url("/static/Inkpen2Script.woff2") format("woff2"),
-    url("/static/Inkpen2Script.woff") format("woff");
-  font-weight: 400;
-  font-style: normal;
-}
-
-.music {
-  font-family: "Inkpen", sans-serif;
-  line-height: 1.5;
 }
 
 /* full-bleed backdrop */
@@ -48,15 +28,17 @@ body {
   height: 100vh;
   width: 100vw;
   position: relative;
-  background-position: bottom;
-  background-size: contain;
+
+  /* re-center the square image */
+  background-position: 50% 30%;
+  background-size: cover;
   background-repeat: no-repeat;
   overflow-x: hidden;
 
   /* start with blur-up */
   background-image: url("/img/bg-blur.webp");
   filter: blur(8px);
-  transform: translateZ(0); /* avoid subpixel shimmer */
+  transform: translateZ(0);
 }
 
 /* load sharper sources once JS flips .ready */
@@ -65,44 +47,15 @@ body {
   transition: filter 300ms ease-out;
 }
 
-main {
-  display: flex;
-  align-items: flex-start;
-  justify-content: center;
-  height: 100%;
-  width: 100%;
+.image-overlay {
+  position: absolute;
+  z-index: 1;
+  /* currently controlled by js */
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
 }
-
-.display-container {
-  width: 30%;
-  overflow: hidden;
-  padding-left: 20vw;
-  padding-top: 5vh;
-  min-width: 320px;
-}
-
-@media (width < 800px) {
-  .display-container {
-    padding-left: 0;
-  }
-}
-
-/* Make image full width when viewport is landscape/shorter */
-@media (aspect-ratio > 16/9) {
-  .site-hero.ready {
-    background-size: cover;
-    background-position: top 65% center;
-  }
-}
-
-/* Dynamic scaling based on aspect ratio - will be controlled by JavaScript */
-@media (aspect-ratio < 16/9) {
-  .site-hero.ready {
-    background-size: calc(var(--dynamic-scale, 100%) * 1) auto;
-    background-position: bottom center;
-  }
-}
-
 /* width tiers + DPR selection */
 @media (min-width: 0px) {
   .site-hero.ready {

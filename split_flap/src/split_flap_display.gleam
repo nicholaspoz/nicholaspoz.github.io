@@ -65,7 +65,7 @@ pub fn register() -> Result(Nil, lustre.Error) {
   let component =
     lustre.component(init, update, view, [
       component.on_attribute_change("lines", fn(val) {
-        echo "on_attribute_change" <> val
+        // echo "on_attribute_change" <> val
         let lines = json.parse(val, using: decode.list(of: content_decoder()))
         case lines {
           Ok(lines) -> Ok(SetLines(lines))
@@ -132,7 +132,7 @@ fn zip_longest(list1: List(a), list2: List(b)) -> List(#(Option(a), Option(b))) 
 
 fn first_is_some(pair: #(Option(a), b)) -> Result(b, Nil) {
   case pair {
-    #(Some(a), b) -> Ok(b)
+    #(Some(_), b) -> Ok(b)
     _ -> Error(Nil)
   }
 }
@@ -205,11 +205,9 @@ const css = "
     display: flex;
     flex-direction: column;
     gap: 0;
-    border: 1cqw solid rgb(20, 20, 20);
-    border-radius: 0.5cqw;
     /* background: rgb(40, 40, 40); */
     background: linear-gradient(250deg, rgb(40, 40, 40) 0%,rgb(60, 60, 60) 25%,rgba(40,40,40,1) 80%);
-    padding: 2cqw 4cqw;
+    padding: 1cqw 3cqw;
     box-shadow: inset 0cqw -0.3cqw 1cqw 0.3cqw rgba(0, 0, 0, 0.4)
   }
 

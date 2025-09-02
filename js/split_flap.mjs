@@ -5763,7 +5763,6 @@ function first_is_some(pair) {
   let $ = pair[0];
   if ($ instanceof Some) {
     let b = pair[1];
-    let a = $[0];
     return new Ok(b);
   } else {
     return new Error(void 0);
@@ -5810,7 +5809,7 @@ function row(line, row_num, cols) {
     children
   );
 }
-var css2 = "\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  split-flap-char {\n    padding: 1cqw 0.3cqw;\n  }\n\n  .display {\n    display: flex;\n    flex-direction: column;\n    gap: 0;\n    border: 1cqw solid rgb(20, 20, 20);\n    border-radius: 0.5cqw;\n    /* background: rgb(40, 40, 40); */\n    background: linear-gradient(250deg, rgb(40, 40, 40) 0%,rgb(60, 60, 60) 25%,rgba(40,40,40,1) 80%);\n    padding: 2cqw 4cqw;\n    box-shadow: inset 0cqw -0.3cqw 1cqw 0.3cqw rgba(0, 0, 0, 0.4)\n  }\n\n  .row {\n    display: flex;\n    flex-direction: row;\n    gap: 0rem;\n\n    cursor: default;\n  }\n\n  .row[href] {\n    cursor: pointer;\n  }\n";
+var css2 = "\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  split-flap-char {\n    padding: 1cqw 0.3cqw;\n  }\n\n  .display {\n    display: flex;\n    flex-direction: column;\n    gap: 0;\n    /* background: rgb(40, 40, 40); */\n    background: linear-gradient(250deg, rgb(40, 40, 40) 0%,rgb(60, 60, 60) 25%,rgba(40,40,40,1) 80%);\n    padding: 1cqw 3cqw;\n    box-shadow: inset 0cqw -0.3cqw 1cqw 0.3cqw rgba(0, 0, 0, 0.4)\n  }\n\n  .row {\n    display: flex;\n    flex-direction: row;\n    gap: 0rem;\n\n    cursor: default;\n  }\n\n  .row[href] {\n    cursor: pointer;\n  }\n";
 function view2(model) {
   let _block;
   let _pipe = model.lines;
@@ -5861,12 +5860,6 @@ function register2() {
       on_attribute_change(
         "lines",
         (val) => {
-          echo(
-            "on_attribute_change" + val,
-            void 0,
-            "src/split_flap_display.gleam",
-            68
-          );
           let lines = parse(val, list2(content_decoder()));
           if (lines instanceof Ok) {
             let lines$1 = lines[0];

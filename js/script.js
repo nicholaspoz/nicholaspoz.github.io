@@ -1,6 +1,4 @@
 (() => {
-  const __EMPTY__ = { text: "", type: "text" };
-
   function row(str, url) {
     return {
       type: url ? "link" : "text",
@@ -72,9 +70,9 @@
   const MUSICIAN = [
     row("FREELANCE"),
     row("CELLIST"),
-    row("  ___ ".padStart(10)),
-    row(" |   |".padStart(10)),
-    row("0   0 ".padStart(10)),
+    row("  ___ ".padStart(12)),
+    row(" |   |".padStart(12)),
+    row("0   0 ".padStart(12)),
     email(),
   ];
 
@@ -111,39 +109,55 @@
     setTimeout(nextFrame, ms);
   }
 
+  // If the image is not a square, everything explodes and then you die.
+  function positionImageOverlay() {
+    const overlay = document.getElementById("rectangle-overlay");
+    if (!overlay) return;
+
+    // % of left/top when aspect ratio is 1
+    const xOffsetBase = 0.363;
+    const yOffsetBase = 0.222;
+
+    // actual viewport dimensions
+    const viewWidth = window.innerWidth;
+    const viewHeight = window.innerHeight;
+    const longestSide = Math.max(viewWidth, viewHeight);
+
+    let left = xOffsetBase * longestSide;
+    let top = yOffsetBase * longestSide;
+
+    const widthBase = 0.275;
+    const heightBase = 0.125;
+    const width = widthBase * longestSide;
+    const height = heightBase * longestSide;
+
+    // Account for background-position offset (50% 30%)
+    // https://developer.mozilla.org/en-US/docs/Web/CSS/background-position#regarding_percentages
+    // TODO these should be css vars
+    const xOffset = (viewWidth - longestSide) * 0.5;
+    const yOffset = (viewHeight - longestSide) * 0.3;
+
+    // Apply the calculated position and size
+    overlay.style.left = `${left + xOffset}px`;
+    overlay.style.top = `${top + yOffset}px`;
+    overlay.style.width = `${width}px`;
+    overlay.style.height = `${height}px`;
+
+    const aspectRatio = window.innerWidth / window.innerHeight;
+    document.documentElement.style.setProperty("--aspect-ratio", aspectRatio);
+  }
+
+  // Update overlay position on resize and initial load
+  window.addEventListener("resize", positionImageOverlay);
+  positionImageOverlay();
+
+  // Update the DOMContentLoaded listener to include overlay positioning
   document.addEventListener("DOMContentLoaded", (event) => {
-    console.log("Split-flap components loaded???!");
     nextFrame();
   });
 
-  // defer to next tick so the blur placeholder paints first
+  // Also update it when the image transitions from blur to sharp
   requestAnimationFrame(() => {
     document.querySelector(".site-hero").classList.add("ready");
   });
-
-  // Dynamic scaling based on aspect ratio
-  function updateDynamicScale() {
-    const minScale = 100;
-    const maxScale = 180;
-    const targetAspectRatio = 16 / 9;
-    const aspectRatio = window.innerWidth / window.innerHeight;
-
-    // Calculate scale: more narrow = more scaling
-    const delta = Math.abs(targetAspectRatio - aspectRatio);
-    const normalizedDelta = delta / targetAspectRatio;
-
-    const normalizedRatio = Math.max(0, Math.min(1, normalizedDelta));
-    const scale = minScale + (maxScale - minScale) * normalizedRatio;
-    console.log(scale);
-
-    document.documentElement.style.setProperty("--dynamic-scale", `${scale}%`);
-    document.documentElement.style.setProperty(
-      "--dynamic-factor",
-      `${scale / 100}`
-    );
-  }
-
-  // Update on resize and initial load
-  window.addEventListener("resize", updateDynamicScale);
-  updateDynamicScale();
 })();
