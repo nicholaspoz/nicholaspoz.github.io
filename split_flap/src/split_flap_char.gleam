@@ -14,9 +14,7 @@ pub fn register() -> Result(Nil, lustre.Error) {
   let component =
     lustre.component(init, update, view, [
       component.on_attribute_change("letter", fn(val) {
-        echo "on_attribute_change "
         use char <- result.try(string.first(val))
-        echo "char  " <> char
         case string.contains(chars, char) {
           True -> Ok(SetDestination(val))
           False -> Error(Nil)
@@ -175,8 +173,8 @@ const css = "
       font-weight: bold;
       font-size: 120cqw;
       background: rgb(40, 40, 40);
-      border-radius: 0.5px;
-      box-shadow: inset 0px -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);
+      border-radius: 5cqw;
+      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);
     }
 
     
@@ -187,7 +185,7 @@ const css = "
       right: 0;
       top: 50%;
       height: 3.5cqw;
-      background: #000;
+      background: rgb(20, 20, 20);
       z-index: 20;
     }
 

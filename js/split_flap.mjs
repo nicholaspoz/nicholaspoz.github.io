@@ -407,6 +407,14 @@ var Some = class extends CustomType {
 };
 var None = class extends CustomType {
 };
+function unwrap(option, default$) {
+  if (option instanceof Some) {
+    let x = option[0];
+    return x;
+  } else {
+    return default$;
+  }
+}
 
 // build/dev/javascript/gleam_stdlib/dict.mjs
 var referenceMap = /* @__PURE__ */ new WeakMap();
@@ -1181,28 +1189,6 @@ function map_loop(loop$list, loop$fun, loop$acc) {
 function map(list4, fun) {
   return map_loop(list4, fun, toList([]));
 }
-function index_map_loop(loop$list, loop$fun, loop$index, loop$acc) {
-  while (true) {
-    let list4 = loop$list;
-    let fun = loop$fun;
-    let index3 = loop$index;
-    let acc = loop$acc;
-    if (list4 instanceof Empty) {
-      return reverse(acc);
-    } else {
-      let first$1 = list4.head;
-      let rest$1 = list4.tail;
-      let acc$1 = prepend(fun(first$1, index3), acc);
-      loop$list = rest$1;
-      loop$fun = fun;
-      loop$index = index3 + 1;
-      loop$acc = acc$1;
-    }
-  }
-}
-function index_map(list4, fun) {
-  return index_map_loop(list4, fun, 0, toList([]));
-}
 function take_loop(loop$list, loop$n, loop$acc) {
   while (true) {
     let list4 = loop$list;
@@ -1619,88 +1605,15 @@ function range(start3, stop) {
   return range_loop(start3, stop, toList([]));
 }
 
-// build/dev/javascript/gleam_stdlib/gleam/string.mjs
-function slice(string5, idx, len) {
-  let $ = len < 0;
-  if ($) {
-    return "";
-  } else {
-    let $1 = idx < 0;
-    if ($1) {
-      let translated_idx = string_length(string5) + idx;
-      let $2 = translated_idx < 0;
-      if ($2) {
-        return "";
-      } else {
-        return string_slice(string5, translated_idx, len);
-      }
-    } else {
-      return string_slice(string5, idx, len);
-    }
-  }
-}
-function concat_loop(loop$strings, loop$accumulator) {
-  while (true) {
-    let strings = loop$strings;
-    let accumulator = loop$accumulator;
-    if (strings instanceof Empty) {
-      return accumulator;
-    } else {
-      let string5 = strings.head;
-      let strings$1 = strings.tail;
-      loop$strings = strings$1;
-      loop$accumulator = accumulator + string5;
-    }
-  }
-}
-function concat2(strings) {
-  return concat_loop(strings, "");
-}
-function repeat_loop(loop$string, loop$times, loop$acc) {
-  while (true) {
-    let string5 = loop$string;
-    let times = loop$times;
-    let acc = loop$acc;
-    let $ = times <= 0;
-    if ($) {
-      return acc;
-    } else {
-      loop$string = string5;
-      loop$times = times - 1;
-      loop$acc = acc + string5;
-    }
-  }
-}
-function repeat(string5, times) {
-  return repeat_loop(string5, times, "");
-}
-function padding(size2, pad_string) {
-  let pad_string_length = string_length(pad_string);
-  let num_pads = divideInt(size2, pad_string_length);
-  let extra = remainderInt(size2, pad_string_length);
-  return repeat(pad_string, num_pads) + slice(pad_string, 0, extra);
-}
-function pad_end(string5, desired_length, pad_string) {
-  let current_length = string_length(string5);
-  let to_pad_length = desired_length - current_length;
-  let $ = to_pad_length <= 0;
-  if ($) {
-    return string5;
-  } else {
-    return string5 + padding(to_pad_length, pad_string);
-  }
-}
-function first(string5) {
-  let $ = pop_grapheme(string5);
-  if ($ instanceof Ok) {
-    let first$1 = $[0][0];
-    return new Ok(first$1);
-  } else {
-    return $;
-  }
-}
-
 // build/dev/javascript/gleam_stdlib/gleam/dynamic/decode.mjs
+var DecodeError = class extends CustomType {
+  constructor(expected, found, path) {
+    super();
+    this.expected = expected;
+    this.found = found;
+    this.path = path;
+  }
+};
 var Decoder = class extends CustomType {
   constructor(function$) {
     super();
@@ -1731,9 +1644,124 @@ function map2(decoder, transformer) {
     }
   );
 }
+function run_decoders(loop$data, loop$failure, loop$decoders) {
+  while (true) {
+    let data2 = loop$data;
+    let failure2 = loop$failure;
+    let decoders = loop$decoders;
+    if (decoders instanceof Empty) {
+      return failure2;
+    } else {
+      let decoder = decoders.head;
+      let decoders$1 = decoders.tail;
+      let $ = decoder.function(data2);
+      let layer;
+      let errors;
+      layer = $;
+      errors = $[1];
+      if (errors instanceof Empty) {
+        return layer;
+      } else {
+        loop$data = data2;
+        loop$failure = failure2;
+        loop$decoders = decoders$1;
+      }
+    }
+  }
+}
+function one_of(first2, alternatives) {
+  return new Decoder(
+    (dynamic_data) => {
+      let $ = first2.function(dynamic_data);
+      let layer;
+      let errors;
+      layer = $;
+      errors = $[1];
+      if (errors instanceof Empty) {
+        return layer;
+      } else {
+        return run_decoders(dynamic_data, layer, alternatives);
+      }
+    }
+  );
+}
+function run_dynamic_function(data2, name, f) {
+  let $ = f(data2);
+  if ($ instanceof Ok) {
+    let data$1 = $[0];
+    return [data$1, toList([])];
+  } else {
+    let zero = $[0];
+    return [
+      zero,
+      toList([new DecodeError(name, classify_dynamic(data2), toList([]))])
+    ];
+  }
+}
+function decode_int(data2) {
+  return run_dynamic_function(data2, "Int", int);
+}
+var int2 = /* @__PURE__ */ new Decoder(decode_int);
+function decode_string(data2) {
+  return run_dynamic_function(data2, "String", string);
+}
+var string2 = /* @__PURE__ */ new Decoder(decode_string);
+function list2(inner) {
+  return new Decoder(
+    (data2) => {
+      return list(
+        data2,
+        inner.function,
+        (p, k) => {
+          return push_path(p, toList([k]));
+        },
+        0,
+        toList([])
+      );
+    }
+  );
+}
+function push_path(layer, path) {
+  let decoder = one_of(
+    string2,
+    toList([
+      (() => {
+        let _pipe = int2;
+        return map2(_pipe, to_string);
+      })()
+    ])
+  );
+  let path$1 = map(
+    path,
+    (key) => {
+      let key$1 = identity(key);
+      let $ = run(key$1, decoder);
+      if ($ instanceof Ok) {
+        let key$2 = $[0];
+        return key$2;
+      } else {
+        return "<" + classify_dynamic(key$1) + ">";
+      }
+    }
+  );
+  let errors = map(
+    layer[1],
+    (error) => {
+      return new DecodeError(
+        error.expected,
+        error.found,
+        append(path$1, error.path)
+      );
+    }
+  );
+  return [layer[0], errors];
+}
 
 // build/dev/javascript/gleam_stdlib/gleam_stdlib.mjs
 var Nil = void 0;
+function identity(x) {
+  return x;
+}
 function to_string(term) {
   return term.toString();
 }
@@ -1833,6 +1861,60 @@ var trim_start_regex = /* @__PURE__ */ new RegExp(
   `^[${unicode_whitespaces}]*`
 );
 var trim_end_regex = /* @__PURE__ */ new RegExp(`[${unicode_whitespaces}]*$`);
+function classify_dynamic(data2) {
+  if (typeof data2 === "string") {
+    return "String";
+  } else if (typeof data2 === "boolean") {
+    return "Bool";
+  } else if (data2 instanceof Result) {
+    return "Result";
+  } else if (data2 instanceof List) {
+    return "List";
+  } else if (data2 instanceof BitArray) {
+    return "BitArray";
+  } else if (data2 instanceof Dict) {
+    return "Dict";
+  } else if (Number.isInteger(data2)) {
+    return "Int";
+  } else if (Array.isArray(data2)) {
+    return `Array`;
+  } else if (typeof data2 === "number") {
+    return "Float";
+  } else if (data2 === null) {
+    return "Nil";
+  } else if (data2 === void 0) {
+    return "Nil";
+  } else {
+    const type = typeof data2;
+    return type.charAt(0).toUpperCase() + type.slice(1);
+  }
+}
+function list(data2, decode2, pushPath, index3, emptyList) {
+  if (!(data2 instanceof List || Array.isArray(data2))) {
+    const error = new DecodeError("List", classify_dynamic(data2), emptyList);
+    return [emptyList, List.fromArray([error])];
+  }
+  const decoded = [];
+  for (const element5 of data2) {
+    const layer = decode2(element5);
+    const [out, errors] = layer;
+    if (errors instanceof NonEmpty) {
+      const [_, errors2] = pushPath(layer, index3.toString());
+      return [emptyList, errors2];
+    }
+    decoded.push(out);
+    index3++;
+  }
+  return [List.fromArray(decoded), emptyList];
+}
+function int(data2) {
+  if (Number.isInteger(data2)) return new Ok(data2);
+  return new Error(0);
+}
+function string(data2) {
+  if (typeof data2 === "string") return new Ok(data2);
+  return new Error("");
+}
 
 // build/dev/javascript/gleam_stdlib/gleam/int.mjs
 function compare2(a, b) {
@@ -1849,7 +1931,96 @@ function compare2(a, b) {
   }
 }
 
+// build/dev/javascript/gleam_stdlib/gleam/string.mjs
+function slice(string5, idx, len) {
+  let $ = len < 0;
+  if ($) {
+    return "";
+  } else {
+    let $1 = idx < 0;
+    if ($1) {
+      let translated_idx = string_length(string5) + idx;
+      let $2 = translated_idx < 0;
+      if ($2) {
+        return "";
+      } else {
+        return string_slice(string5, translated_idx, len);
+      }
+    } else {
+      return string_slice(string5, idx, len);
+    }
+  }
+}
+function concat_loop(loop$strings, loop$accumulator) {
+  while (true) {
+    let strings = loop$strings;
+    let accumulator = loop$accumulator;
+    if (strings instanceof Empty) {
+      return accumulator;
+    } else {
+      let string5 = strings.head;
+      let strings$1 = strings.tail;
+      loop$strings = strings$1;
+      loop$accumulator = accumulator + string5;
+    }
+  }
+}
+function concat2(strings) {
+  return concat_loop(strings, "");
+}
+function repeat_loop(loop$string, loop$times, loop$acc) {
+  while (true) {
+    let string5 = loop$string;
+    let times = loop$times;
+    let acc = loop$acc;
+    let $ = times <= 0;
+    if ($) {
+      return acc;
+    } else {
+      loop$string = string5;
+      loop$times = times - 1;
+      loop$acc = acc + string5;
+    }
+  }
+}
+function repeat(string5, times) {
+  return repeat_loop(string5, times, "");
+}
+function padding(size2, pad_string) {
+  let pad_string_length = string_length(pad_string);
+  let num_pads = divideInt(size2, pad_string_length);
+  let extra = remainderInt(size2, pad_string_length);
+  return repeat(pad_string, num_pads) + slice(pad_string, 0, extra);
+}
+function pad_end(string5, desired_length, pad_string) {
+  let current_length = string_length(string5);
+  let to_pad_length = desired_length - current_length;
+  let $ = to_pad_length <= 0;
+  if ($) {
+    return string5;
+  } else {
+    return string5 + padding(to_pad_length, pad_string);
+  }
+}
+function first(string5) {
+  let $ = pop_grapheme(string5);
+  if ($ instanceof Ok) {
+    let first$1 = $[0][0];
+    return new Ok(first$1);
+  } else {
+    return $;
+  }
+}
+
 // build/dev/javascript/gleam_stdlib/gleam/result.mjs
+function map_error(result, fun) {
+  if (result instanceof Ok) {
+    return result;
+  } else {
+    let error = result[0];
+    return new Error(fun(error));
+  }
+}
 function try$(result, fun) {
   if (result instanceof Ok) {
     let x = result[0];
@@ -1859,8 +2030,127 @@ function try$(result, fun) {
   }
 }
 
+// build/dev/javascript/gleam_json/gleam_json_ffi.mjs
+function decode(string5) {
+  try {
+    const result = JSON.parse(string5);
+    return new Ok(result);
+  } catch (err) {
+    return new Error(getJsonDecodeError(err, string5));
+  }
+}
+function getJsonDecodeError(stdErr, json2) {
+  if (isUnexpectedEndOfInput(stdErr)) return new UnexpectedEndOfInput();
+  return toUnexpectedByteError(stdErr, json2);
+}
+function isUnexpectedEndOfInput(err) {
+  const unexpectedEndOfInputRegex = /((unexpected (end|eof))|(end of data)|(unterminated string)|(json( parse error|\.parse)\: expected '(\:|\}|\])'))/i;
+  return unexpectedEndOfInputRegex.test(err.message);
+}
+function toUnexpectedByteError(err, json2) {
+  let converters = [
+    v8UnexpectedByteError,
+    oldV8UnexpectedByteError,
+    jsCoreUnexpectedByteError,
+    spidermonkeyUnexpectedByteError
+  ];
+  for (let converter of converters) {
+    let result = converter(err, json2);
+    if (result) return result;
+  }
+  return new UnexpectedByte("", 0);
+}
+function v8UnexpectedByteError(err) {
+  const regex = /unexpected token '(.)', ".+" is not valid JSON/i;
+  const match = regex.exec(err.message);
+  if (!match) return null;
+  const byte = toHex(match[1]);
+  return new UnexpectedByte(byte, -1);
+}
+function oldV8UnexpectedByteError(err) {
+  const regex = /unexpected token (.) in JSON at position (\d+)/i;
+  const match = regex.exec(err.message);
+  if (!match) return null;
+  const byte = toHex(match[1]);
+  const position = Number(match[2]);
+  return new UnexpectedByte(byte, position);
+}
+function spidermonkeyUnexpectedByteError(err, json2) {
+  const regex = /(unexpected character|expected .*) at line (\d+) column (\d+)/i;
+  const match = regex.exec(err.message);
+  if (!match) return null;
+  const line = Number(match[2]);
+  const column = Number(match[3]);
+  const position = getPositionFromMultiline(line, column, json2);
+  const byte = toHex(json2[position]);
+  return new UnexpectedByte(byte, position);
+}
+function jsCoreUnexpectedByteError(err) {
+  const regex = /unexpected (identifier|token) "(.)"/i;
+  const match = regex.exec(err.message);
+  if (!match) return null;
+  const byte = toHex(match[2]);
+  return new UnexpectedByte(byte, 0);
+}
+function toHex(char) {
+  return "0x" + char.charCodeAt(0).toString(16).toUpperCase();
+}
+function getPositionFromMultiline(line, column, string5) {
+  if (line === 1) return column - 1;
+  let currentLn = 1;
+  let position = 0;
+  string5.split("").find((char, idx) => {
+    if (char === "\n") currentLn += 1;
+    if (currentLn === line) {
+      position = idx + column;
+      return true;
+    }
+    return false;
+  });
+  return position;
+}
+
+// build/dev/javascript/gleam_json/gleam/json.mjs
+var UnexpectedEndOfInput = class extends CustomType {
+};
+var UnexpectedByte = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var UnexpectedSequence = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var UnableToDecode = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+function do_parse(json2, decoder) {
+  return try$(
+    decode(json2),
+    (dynamic_value) => {
+      let _pipe = run(dynamic_value, decoder);
+      return map_error(
+        _pipe,
+        (var0) => {
+          return new UnableToDecode(var0);
+        }
+      );
+    }
+  );
+}
+function parse(json2, decoder) {
+  return do_parse(json2, decoder);
+}
+
 // build/dev/javascript/gleam_stdlib/gleam/function.mjs
-function identity2(x) {
+function identity3(x) {
   return x;
 }
 
@@ -2503,7 +2793,7 @@ function do_add_event(handlers, mapper, path, name, handler) {
         return new Handler(
           handler2.prevent_default,
           handler2.stop_propagation,
-          identity2(mapper)(handler2.message)
+          identity3(mapper)(handler2.message)
         );
       }
     )
@@ -2533,8 +2823,8 @@ function add_attributes(handlers, mapper, path, attributes) {
   );
 }
 function compose_mapper(mapper, child_mapper) {
-  let $ = isReferenceEqual(mapper, identity2);
-  let $1 = isReferenceEqual(child_mapper, identity2);
+  let $ = isReferenceEqual(mapper, identity3);
+  let $1 = isReferenceEqual(child_mapper, identity3);
   if ($1) {
     return mapper;
   } else if ($) {
@@ -2665,7 +2955,7 @@ function add_children(events, mapper, path, child_index, children) {
 function element2(tag, attributes, children) {
   return element(
     "",
-    identity2,
+    identity3,
     "",
     tag,
     attributes,
@@ -2676,18 +2966,18 @@ function element2(tag, attributes, children) {
   );
 }
 function text2(content) {
-  return text("", identity2, content);
+  return text("", identity3, content);
 }
 function none3() {
-  return text("", identity2, "");
+  return text("", identity3, "");
 }
 function fragment2(children) {
-  return fragment("", identity2, children, empty2());
+  return fragment("", identity3, children, empty2());
 }
 function unsafe_raw_html(namespace, tag, attributes, inner_html) {
   return unsafe_inner_html(
     "",
-    identity2,
+    identity3,
     namespace,
     tag,
     attributes,
@@ -3747,7 +4037,7 @@ function diff(events, old, new$7) {
     root2,
     empty_list,
     empty_list,
-    identity2,
+    identity3,
     tick(events)
   );
 }
@@ -4234,7 +4524,7 @@ function element3(tag, attributes, children) {
   children$1 = $[1];
   return element(
     "",
-    identity2,
+    identity3,
     "",
     tag,
     attributes,
@@ -4252,7 +4542,7 @@ function namespaced2(namespace, tag, attributes, children) {
   children$1 = $[1];
   return element(
     "",
-    identity2,
+    identity3,
     namespace,
     tag,
     attributes,
@@ -4268,7 +4558,7 @@ function fragment3(children) {
   let children$1;
   keyed_children = $[0];
   children$1 = $[1];
-  return fragment("", identity2, children$1, keyed_children);
+  return fragment("", identity3, children$1, keyed_children);
 }
 function div2(attributes, children) {
   return element3("div", attributes, children);
@@ -4975,15 +5265,15 @@ function update2(model, msg) {
         "let_assert",
         FILEPATH,
         "split_flap_char",
-        81,
+        79,
         "update",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 1951,
-          end: 2020,
-          pattern_start: 1962,
-          pattern_end: 1980
+          start: 1885,
+          end: 1954,
+          pattern_start: 1896,
+          pattern_end: 1914
         }
       );
     }
@@ -5027,7 +5317,7 @@ var chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?@#$%^&*()";
 function init(_) {
   return [new Model(chars, " ", new Idle()), none2()];
 }
-var css = '\n  :host {\n    display: inline-block;\n    perspective: 10rem;\n    width: 100%;\n    height: 100%;\n    aspect-ratio: 5/8;\n    container-type: inline-size;\n  }\n\n  @container (width > 0px) {\n    .split-flap {\n      width: 100%;\n      height: 100%;\n      position: relative;\n      font-family: "Fragment Mono", monospace;\n      font-weight: bold;\n      font-size: 120cqw;\n      background: rgb(40, 40, 40);\n      border-radius: 0.5px;\n      box-shadow: inset 0px -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n\n    \n    .split-flap::after {\n      content: "";\n      position: absolute;\n      left: 0;\n      right: 0;\n      top: 50%;\n      height: 3.5cqw;\n      background: #000;\n      z-index: 20;\n    }\n\n    .flap.top {\n      top: 0;\n      transform-origin: bottom;\n      border-radius: 0.5cqw 0.5cqw 0 0;\n      user-select: text;\n    }\n\n    .flap.bottom {\n      bottom: 0;\n      transform-origin: top;\n      border-radius: 0 0 0.5cqw 0.5cqw;\n    }\n\n    .flap.flipping-top {\n      opacity: 0;\n      pointer-events: none;\n      top: 0;\n      transform-origin: bottom;\n      border-radius: 0.5cqw 0.5cqw 0 0;\n      z-index: 10;\n      transform: rotateX(0deg);\n      background: rgb(40, 40, 40);\n    }\n\n    .flap.flipping-bottom {\n      /* Animated flap that rotates down during character change */\n      opacity: 0;\n      pointer-events: none;\n      bottom: 0;\n      transform-origin: top;\n      border-radius: 0 0 0.5cqw 0.5cqw;\n      z-index: 10;\n      transform: rotateX(90deg);\n      background: rgb(40, 40, 40);\n    }\n\n    .flap.flipping-top[data-state="flipping"] {\n      opacity: 1;\n      z-index: 10;\n      box-shadow: 0 0.5cqw 1cqw rgba(0, 0, 0, 0.3);\n      transform: rotateX(-90deg);\n      transition: transform 0.08s ease-in;\n    }\n    \n    .flap.flipping-bottom[data-state="flipping"] {\n      opacity: 1;\n      box-shadow: 0 0.5cqw 1cqw rgba(0, 0, 0, 0.3);\n      z-index: 10;\n      transform: rotateX(0deg);\n      transition: transform 0.02s linear;\n      transition-delay: 0.1s;\n    }\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    z-index: 1;\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n  }\n\n  .flap.top .flap-content {\n    top: 0;\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n\n  .flap.flipping-top .flap-content {\n    top: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
+var css = '\n  :host {\n    display: inline-block;\n    perspective: 10rem;\n    width: 100%;\n    height: 100%;\n    aspect-ratio: 5/8;\n    container-type: inline-size;\n  }\n\n  @container (width > 0px) {\n    .split-flap {\n      width: 100%;\n      height: 100%;\n      position: relative;\n      font-family: "Fragment Mono", monospace;\n      font-weight: bold;\n      font-size: 120cqw;\n      background: rgb(40, 40, 40);\n      border-radius: 5cqw;\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n\n    \n    .split-flap::after {\n      content: "";\n      position: absolute;\n      left: 0;\n      right: 0;\n      top: 50%;\n      height: 3.5cqw;\n      background: rgb(20, 20, 20);\n      z-index: 20;\n    }\n\n    .flap.top {\n      top: 0;\n      transform-origin: bottom;\n      border-radius: 0.5cqw 0.5cqw 0 0;\n      user-select: text;\n    }\n\n    .flap.bottom {\n      bottom: 0;\n      transform-origin: top;\n      border-radius: 0 0 0.5cqw 0.5cqw;\n    }\n\n    .flap.flipping-top {\n      opacity: 0;\n      pointer-events: none;\n      top: 0;\n      transform-origin: bottom;\n      border-radius: 0.5cqw 0.5cqw 0 0;\n      z-index: 10;\n      transform: rotateX(0deg);\n      background: rgb(40, 40, 40);\n    }\n\n    .flap.flipping-bottom {\n      /* Animated flap that rotates down during character change */\n      opacity: 0;\n      pointer-events: none;\n      bottom: 0;\n      transform-origin: top;\n      border-radius: 0 0 0.5cqw 0.5cqw;\n      z-index: 10;\n      transform: rotateX(90deg);\n      background: rgb(40, 40, 40);\n    }\n\n    .flap.flipping-top[data-state="flipping"] {\n      opacity: 1;\n      z-index: 10;\n      box-shadow: 0 0.5cqw 1cqw rgba(0, 0, 0, 0.3);\n      transform: rotateX(-90deg);\n      transition: transform 0.08s ease-in;\n    }\n    \n    .flap.flipping-bottom[data-state="flipping"] {\n      opacity: 1;\n      box-shadow: 0 0.5cqw 1cqw rgba(0, 0, 0, 0.3);\n      z-index: 10;\n      transform: rotateX(0deg);\n      transition: transform 0.02s linear;\n      transition-delay: 0.1s;\n    }\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    z-index: 1;\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n  }\n\n  .flap.top .flap-content {\n    top: 0;\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n\n  .flap.flipping-top .flap-content {\n    top: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
 function view(model) {
   let $ = get_chars(model.char_stack);
   let curr;
@@ -5040,15 +5330,15 @@ function view(model) {
       "let_assert",
       FILEPATH,
       "split_flap_char",
-      107,
+      105,
       "view",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 2651,
-        end: 2709,
-        pattern_start: 2662,
-        pattern_end: 2679
+        start: 2585,
+        end: 2643,
+        pattern_start: 2596,
+        pattern_end: 2613
       }
     );
   }
@@ -5145,16 +5435,9 @@ function register() {
       on_attribute_change(
         "letter",
         (val) => {
-          echo(
-            "on_attribute_change ",
-            void 0,
-            "src/split_flap_char.gleam",
-            17
-          );
           return try$(
             first(val),
             (char) => {
-              echo("char  " + char, void 0, "src/split_flap_char.gleam", 19);
               let $ = contains_string(chars, char);
               if ($) {
                 return new Ok(new SetDestination(val));
@@ -5168,6 +5451,229 @@ function register() {
     ])
   );
   return make_component(component2, "split-flap-char");
+}
+
+// build/dev/javascript/split_flap/split_flap_display.mjs
+var FILEPATH2 = "src/split_flap_display.gleam";
+var SetLines = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var Noop = class extends CustomType {
+};
+var Model2 = class extends CustomType {
+  constructor(rows, cols, lines) {
+    super();
+    this.rows = rows;
+    this.cols = cols;
+    this.lines = lines;
+  }
+};
+function error_string(error) {
+  if (error instanceof UnexpectedEndOfInput) {
+    return "UnexpectedEndOfInput";
+  } else if (error instanceof UnexpectedByte) {
+    let byte = error[0];
+    return "UnexpectedByte(" + byte + ")";
+  } else if (error instanceof UnexpectedSequence) {
+    let sequence = error[0];
+    return "UnexpectedSequence(" + sequence + ")";
+  } else {
+    let errors = error[0];
+    return "UnableToDecode(todo)";
+  }
+}
+function init2(_) {
+  return [new Model2(6, 22, toList([])), none2()];
+}
+function update3(model, msg) {
+  if (msg instanceof SetLines) {
+    let lines = msg[0];
+    return [new Model2(model.rows, model.cols, lines), none2()];
+  } else {
+    return [model, none2()];
+  }
+}
+function zip_longest(list1, list22) {
+  let _block;
+  if (list1 instanceof Empty) {
+    _block = [new None(), toList([])];
+  } else {
+    let h = list1.head;
+    let rest = list1.tail;
+    _block = [new Some(h), rest];
+  }
+  let $ = _block;
+  let head1;
+  let rest1;
+  head1 = $[0];
+  rest1 = $[1];
+  let _block$1;
+  if (list22 instanceof Empty) {
+    _block$1 = [new None(), toList([])];
+  } else {
+    let h = list22.head;
+    let rest = list22.tail;
+    _block$1 = [new Some(h), rest];
+  }
+  let $1 = _block$1;
+  let head2;
+  let rest2;
+  head2 = $1[0];
+  rest2 = $1[1];
+  let _block$2;
+  if (head2 instanceof Some) {
+    if (head1 instanceof Some) {
+      let h2 = head2[0];
+      let h1 = head1[0];
+      _block$2 = new Some([new Some(h1), new Some(h2)]);
+    } else {
+      let h2 = head2[0];
+      _block$2 = new Some([new None(), new Some(h2)]);
+    }
+  } else if (head1 instanceof Some) {
+    let h1 = head1[0];
+    _block$2 = new Some([new Some(h1), new None()]);
+  } else {
+    _block$2 = head1;
+  }
+  let el = _block$2;
+  if (el instanceof Some) {
+    let el$1 = el[0];
+    return prepend2(zip_longest(rest1, rest2), el$1);
+  } else {
+    return toList([]);
+  }
+}
+function row(index3, num_cols, line) {
+  let _block;
+  let _pipe = graphemes(
+    (() => {
+      if (line instanceof Some) {
+        let line$1 = line[0];
+        return pad_end(line$1, num_cols, " ");
+      } else {
+        return repeat(" ", num_cols);
+      }
+    })()
+  );
+  let _pipe$1 = ((_capture) => {
+    return zip_longest(range(0, num_cols - 1), _capture);
+  })(_pipe);
+  _block = filter_map(
+    _pipe$1,
+    (el) => {
+      let $ = el[0];
+      if ($ instanceof Some) {
+        let char = el[1];
+        let col_num = $[0];
+        return new Ok([col_num, char]);
+      } else {
+        return new Error(void 0);
+      }
+    }
+  );
+  let chars2 = _block;
+  return div2(
+    toList([class$("row")]),
+    map(
+      chars2,
+      (cols_and_chars) => {
+        let col_num;
+        let char;
+        col_num = cols_and_chars[0];
+        char = cols_and_chars[1];
+        let key = to_string(index3) + "-" + to_string(col_num);
+        return [key, element4(unwrap(char, " "))];
+      }
+    )
+  );
+}
+var css2 = "\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  split-flap-char {\n    padding: 1cqw 0.3cqw;\n  }\n\n  .display {\n    display: flex;\n    flex-direction: column;\n    gap: 0;\n    border: 1cqw solid rgb(20, 20, 20);\n    border-radius: 0.5cqw;\n    /* background: rgb(40, 40, 40); */\n    background: linear-gradient(250deg, rgb(40, 40, 40) 0%,rgb(60, 60, 60) 25%,rgba(40,40,40,1) 80%);\n    padding: 2cqw 4cqw;\n    box-shadow: inset 0cqw -0.3cqw 1cqw 0.3cqw rgba(0, 0, 0, 0.4)\n  }\n\n  .row {\n    display: flex;\n    flex-direction: row;\n    gap: 0rem;\n  }\n";
+function view2(model) {
+  let _block;
+  let _pipe = zip_longest(range(0, model.rows - 1), model.lines);
+  _block = filter_map(
+    _pipe,
+    (el) => {
+      let $ = el[0];
+      if ($ instanceof Some) {
+        let line = el[1];
+        let row_num = $[0];
+        return new Ok([row_num, line]);
+      } else {
+        return new Error(void 0);
+      }
+    }
+  );
+  let rows_and_lines = _block;
+  return fragment2(
+    toList([
+      style(toList([]), css2),
+      div2(
+        toList([class$("display")]),
+        map(
+          rows_and_lines,
+          (row_and_line) => {
+            let row_num;
+            let line;
+            row_num = row_and_line[0];
+            line = row_and_line[1];
+            return [to_string(row_num), row(row_num, model.cols, line)];
+          }
+        )
+      )
+    ])
+  );
+}
+function register2() {
+  let $ = register();
+  if (!($ instanceof Ok)) {
+    throw makeError(
+      "let_assert",
+      FILEPATH2,
+      "split_flap_display",
+      29,
+      "register",
+      "Pattern match failed, no pattern matched the value.",
+      { value: $, start: 787, end: 832, pattern_start: 798, pattern_end: 803 }
+    );
+  }
+  let component2 = component(
+    init2,
+    update3,
+    view2,
+    toList([
+      on_attribute_change(
+        "lines",
+        (val) => {
+          echo(
+            "on_attribute_change" + val,
+            void 0,
+            "src/split_flap_display.gleam",
+            34
+          );
+          let lines = parse(val, list2(string2));
+          if (lines instanceof Ok) {
+            let lines$1 = lines[0];
+            return new Ok(new SetLines(lines$1));
+          } else {
+            let error = lines[0];
+            echo(
+              "error " + error_string(error),
+              void 0,
+              "src/split_flap_display.gleam",
+              39
+            );
+            return new Ok(new Noop());
+          }
+        }
+      )
+    ])
+  );
+  return make_component(component2, "split-flap-display");
 }
 function echo(value, message, file, line) {
   const grey = "\x1B[90m";
@@ -5372,163 +5878,6 @@ var Echo$Inspector = class {
     return acc;
   }
 };
-
-// build/dev/javascript/split_flap/split_flap_display.mjs
-var FILEPATH2 = "src/split_flap_display.gleam";
-var Noop = class extends CustomType {
-};
-var Model2 = class extends CustomType {
-  constructor(rows, cols, lines) {
-    super();
-    this.rows = rows;
-    this.cols = cols;
-    this.lines = lines;
-  }
-};
-function init2(_) {
-  return [new Model2(6, 25, toList(["NICK POZOULAKIS"])), none2()];
-}
-function update3(model, msg) {
-  return [model, none2()];
-}
-function zip_longest(list1, list22) {
-  let _block;
-  if (list1 instanceof Empty) {
-    _block = [new None(), toList([])];
-  } else {
-    let h = list1.head;
-    let rest = list1.tail;
-    _block = [new Some(h), rest];
-  }
-  let $ = _block;
-  let head1;
-  let rest1;
-  head1 = $[0];
-  rest1 = $[1];
-  let _block$1;
-  if (list22 instanceof Empty) {
-    _block$1 = [new None(), toList([])];
-  } else {
-    let h = list22.head;
-    let rest = list22.tail;
-    _block$1 = [new Some(h), rest];
-  }
-  let $1 = _block$1;
-  let head2;
-  let rest2;
-  head2 = $1[0];
-  rest2 = $1[1];
-  let _block$2;
-  if (head2 instanceof Some) {
-    if (head1 instanceof Some) {
-      let h2 = head2[0];
-      let h1 = head1[0];
-      _block$2 = new Some([new Some(h1), new Some(h2)]);
-    } else {
-      let h2 = head2[0];
-      _block$2 = new Some([new None(), new Some(h2)]);
-    }
-  } else if (head1 instanceof Some) {
-    let h1 = head1[0];
-    _block$2 = new Some([new Some(h1), new None()]);
-  } else {
-    _block$2 = head1;
-  }
-  let el = _block$2;
-  if (el instanceof Some) {
-    let el$1 = el[0];
-    return prepend2(zip_longest(rest1, rest2), el$1);
-  } else {
-    return toList([]);
-  }
-}
-function row(index3, num_cols, line) {
-  let chars2 = graphemes(
-    (() => {
-      if (line instanceof Some) {
-        let line$1 = line[0];
-        return pad_end(line$1, num_cols, " ");
-      } else {
-        return repeat(" ", num_cols);
-      }
-    })()
-  );
-  return div2(
-    toList([class$("row")]),
-    index_map(
-      chars2,
-      (char, col_num) => {
-        let key = to_string(index3) + "-" + to_string(col_num);
-        return [key, element4(char)];
-      }
-    )
-  );
-}
-var css2 = "\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  split-flap-char {\n    padding: 1cqw 0.3cqw;\n    background: rgb(40, 40, 40);\n    border: 0.05cqw solid rgb(30, 30, 30);\n  }\n\n  .display {\n    display: flex;\n    flex-direction: column;\n    gap: 0rem;\n    border: 1cqw solid rgb(20, 20, 20);\n    border-radius: 0.5cqw;\n  }\n\n  .row {\n    display: flex;\n    flex-direction: row;\n    gap: 0rem;\n  }\n";
-function view2(model) {
-  let _block;
-  let _pipe = zip_longest(range(0, model.rows - 1), model.lines);
-  _block = filter_map(
-    _pipe,
-    (el) => {
-      let $ = el[0];
-      if ($ instanceof Some) {
-        let line = el[1];
-        let row_num = $[0];
-        return new Ok([row_num, line]);
-      } else {
-        return new Error(void 0);
-      }
-    }
-  );
-  let rows_and_lines = _block;
-  return fragment2(
-    toList([
-      style(toList([]), css2),
-      div2(
-        toList([class$("display")]),
-        map(
-          rows_and_lines,
-          (row_and_line) => {
-            let row_num;
-            let line;
-            row_num = row_and_line[0];
-            line = row_and_line[1];
-            return [to_string(row_num), row(row_num, model.cols, line)];
-          }
-        )
-      )
-    ])
-  );
-}
-function register2() {
-  let $ = register();
-  if (!($ instanceof Ok)) {
-    throw makeError(
-      "let_assert",
-      FILEPATH2,
-      "split_flap_display",
-      16,
-      "register",
-      "Pattern match failed, no pattern matched the value.",
-      { value: $, start: 366, end: 411, pattern_start: 377, pattern_end: 382 }
-    );
-  }
-  let component2 = component(
-    init2,
-    update3,
-    view2,
-    toList([
-      on_attribute_change(
-        "letter",
-        (val) => {
-          return new Ok(new Noop());
-        }
-      )
-    ])
-  );
-  return make_component(component2, "split-flap-display");
-}
 
 // build/dev/javascript/split_flap/split_flap.mjs
 var FILEPATH3 = "src/split_flap.gleam";
