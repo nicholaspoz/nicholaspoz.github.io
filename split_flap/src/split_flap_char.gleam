@@ -108,6 +108,7 @@ fn view(model: Model) -> Element(Msg) {
     html.style([], css),
 
     html.div([attribute.class("split-flap")], [
+      // TOP FLAP
       html.div([attribute.class("flap top")], [
         html.span([attribute.class("flap-content")], [
           html.text(case model.state {
@@ -117,37 +118,39 @@ fn view(model: Model) -> Element(Msg) {
         ]),
       ]),
 
-      html.div([attribute.class("flap bottom")], [
-        html.span([attribute.class("flap-content")], [html.text(curr)]),
-      ]),
-
-      {
-        // FLIPPING TOP
-        let attrs = [
-          attribute.class("flap flipping-top"),
-          case model.state {
-            Flipping -> attribute.data("state", "flipping")
-            _ -> attribute.none()
-          },
-        ]
-
-        html.div(attrs, [
-          html.span([attribute.class("flap-content")], [html.text(curr)]),
-        ])
+      // BOTTOM FLAP
+      case model.state {
+        Idle -> element.none()
+        _ ->
+          html.div([attribute.class("flap bottom")], [
+            html.span([attribute.class("flap-content")], [html.text(curr)]),
+          ])
       },
 
-      {
-        // FLIPPING BOTTOM
-        let attrs = [
-          attribute.class("flap flipping-bottom"),
-          case model.state {
-            Flipping -> attribute.data("state", "flipping")
-            _ -> attribute.none()
-          },
-        ]
-        html.div(attrs, [
-          html.span([attribute.class("flap-content")], [html.text(next)]),
-        ])
+      // FLIPPING TOP
+      case model.state {
+        Idle -> element.none()
+        Flipping ->
+          html.div(
+            [
+              attribute.class("flap flipping-top"),
+              attribute.data("state", "flipping"),
+            ],
+            [html.span([attribute.class("flap-content")], [html.text(curr)])],
+          )
+      },
+
+      // FLIPPING BOTTOM
+      case model.state {
+        Idle -> element.none()
+        Flipping ->
+          html.div(
+            [
+              attribute.class("flap flipping-bottom"),
+              attribute.data("state", "flipping"),
+            ],
+            [html.span([attribute.class("flap-content")], [html.text(next)])],
+          )
       },
     ]),
   ])
@@ -218,6 +221,7 @@ const css = "
     transform-origin: bottom;
     border-radius: 0.5cqw 0.5cqw 0 0;
     user-select: text;
+    height: 100%
   }
 
   .flap.bottom {
@@ -271,6 +275,7 @@ const css = "
 
   .flap.top .flap-content {
     top: 0;
+    height: 100%
   }
 
   .flap.bottom .flap-content {

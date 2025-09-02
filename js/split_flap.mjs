@@ -5474,7 +5474,7 @@ var chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?@#$%&_()|<>";
 function init(_) {
   return [new Model(chars, " ", new Idle()), none2()];
 }
-var css = '\n  :host {\n    display: inline-block;\n    perspective: 10rem;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  \n  .split-flap {\n    position: relative;\n    width: 100%;\n    height: 100%;\n    aspect-ratio: 5/8;\n    font-family: "Fragment Mono", monospace;\n    font-weight: bold;\n    font-size: 120cqw;\n    background: rgb(40, 40, 40);\n    border-radius: 5cqw;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  \n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 3.5cqw;\n    background: rgb(20, 20, 20);\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    z-index: 1;\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n    z-index: 0;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 0.5cqw 0.5cqw 0 0;\n    user-select: text;\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 0.5cqw 0.5cqw;\n  }\n\n  .flap.flipping-top {\n    opacity: 0;\n    pointer-events: none;\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 0.5cqw 0.5cqw 0 0;\n    z-index: 10;\n    transform: rotateX(0deg);\n    background: rgb(40, 40, 40);\n  }\n\n  .flap.flipping-bottom {\n    /* Animated flap that rotates down during character change */\n    opacity: 0;\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 0.5cqw 0.5cqw;\n    z-index: 10;\n    transform: rotateX(90deg);\n    background: rgb(40, 40, 40);\n  }\n\n  .flap.flipping-top[data-state="flipping"] {\n    opacity: 1;\n    z-index: 10;\n    box-shadow: 0 0.5cqw 1cqw rgba(0, 0, 0, 0.3);\n    transform: rotateX(-90deg);\n    transition: transform 0.05s ease-in;\n  }\n  \n  .flap.flipping-bottom[data-state="flipping"] {\n    opacity: 1;\n    box-shadow: 0 0.5cqw 1cqw rgba(0, 0, 0, 0.3);\n    z-index: 10;\n    transform: rotateX(0deg);\n    transition: transform 0.015s linear;\n    transition-delay: 0.05s;\n  }\n  \n\n  \n\n  .flap.top .flap-content {\n    top: 0;\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n\n  .flap.flipping-top .flap-content {\n    top: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
+var css = '\n  :host {\n    display: inline-block;\n    perspective: 10rem;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  \n  .split-flap {\n    position: relative;\n    width: 100%;\n    height: 100%;\n    aspect-ratio: 5/8;\n    font-family: "Fragment Mono", monospace;\n    font-weight: bold;\n    font-size: 120cqw;\n    background: rgb(40, 40, 40);\n    border-radius: 5cqw;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  \n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 3.5cqw;\n    background: rgb(20, 20, 20);\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    z-index: 1;\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n    z-index: 0;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 0.5cqw 0.5cqw 0 0;\n    user-select: text;\n    height: 100%\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 0.5cqw 0.5cqw;\n  }\n\n  .flap.flipping-top {\n    opacity: 0;\n    pointer-events: none;\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 0.5cqw 0.5cqw 0 0;\n    z-index: 10;\n    transform: rotateX(0deg);\n    background: rgb(40, 40, 40);\n  }\n\n  .flap.flipping-bottom {\n    /* Animated flap that rotates down during character change */\n    opacity: 0;\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 0.5cqw 0.5cqw;\n    z-index: 10;\n    transform: rotateX(90deg);\n    background: rgb(40, 40, 40);\n  }\n\n  .flap.flipping-top[data-state="flipping"] {\n    opacity: 1;\n    z-index: 10;\n    box-shadow: 0 0.5cqw 1cqw rgba(0, 0, 0, 0.3);\n    transform: rotateX(-90deg);\n    transition: transform 0.05s ease-in;\n  }\n  \n  .flap.flipping-bottom[data-state="flipping"] {\n    opacity: 1;\n    box-shadow: 0 0.5cqw 1cqw rgba(0, 0, 0, 0.3);\n    z-index: 10;\n    transform: rotateX(0deg);\n    transition: transform 0.015s linear;\n    transition-delay: 0.05s;\n  }\n  \n\n  \n\n  .flap.top .flap-content {\n    top: 0;\n    height: 100%\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n\n  .flap.flipping-top .flap-content {\n    top: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
 function view(model) {
   let $ = get_chars(model.char_stack);
   let curr;
@@ -5525,58 +5525,59 @@ function view(model) {
               )
             ])
           ),
-          div(
-            toList([class$("flap bottom")]),
-            toList([
-              span(
-                toList([class$("flap-content")]),
-                toList([text3(curr)])
-              )
-            ])
-          ),
           (() => {
-            let attrs = toList([
-              class$("flap flipping-top"),
-              (() => {
-                let $1 = model.state;
-                if ($1 instanceof Flipping) {
-                  return data("state", "flipping");
-                } else {
-                  return none();
-                }
-              })()
-            ]);
-            return div(
-              attrs,
-              toList([
-                span(
-                  toList([class$("flap-content")]),
-                  toList([text3(curr)])
-                )
-              ])
-            );
+            let $1 = model.state;
+            if ($1 instanceof Idle) {
+              return none3();
+            } else {
+              return div(
+                toList([class$("flap bottom")]),
+                toList([
+                  span(
+                    toList([class$("flap-content")]),
+                    toList([text3(curr)])
+                  )
+                ])
+              );
+            }
           })(),
           (() => {
-            let attrs = toList([
-              class$("flap flipping-bottom"),
-              (() => {
-                let $1 = model.state;
-                if ($1 instanceof Flipping) {
-                  return data("state", "flipping");
-                } else {
-                  return none();
-                }
-              })()
-            ]);
-            return div(
-              attrs,
-              toList([
-                span(
-                  toList([class$("flap-content")]),
-                  toList([text3(next)])
-                )
-              ])
-            );
+            let $1 = model.state;
+            if ($1 instanceof Idle) {
+              return none3();
+            } else {
+              return div(
+                toList([
+                  class$("flap flipping-top"),
+                  data("state", "flipping")
+                ]),
+                toList([
+                  span(
+                    toList([class$("flap-content")]),
+                    toList([text3(curr)])
+                  )
+                ])
+              );
+            }
+          })(),
+          (() => {
+            let $1 = model.state;
+            if ($1 instanceof Idle) {
+              return none3();
+            } else {
+              return div(
+                toList([
+                  class$("flap flipping-bottom"),
+                  data("state", "flipping")
+                ]),
+                toList([
+                  span(
+                    toList([class$("flap-content")]),
+                    toList([text3(next)])
+                  )
+                ])
+              );
+            }
           })()
         ])
       )
