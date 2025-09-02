@@ -67,7 +67,8 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
         Ok(x) if x != model.dest -> {
           #(Model(..model, state: Flipping), {
             use dispatch <- effect.from
-            use <- set_timeout(80)
+            // use <- set_timeout(10)
+            use <- set_timeout(10)
             dispatch(EndFlip)
           })
         }
@@ -80,7 +81,7 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
       let next = rest <> first
       #(Model(..model, char_stack: next, state: Idle), {
         use dispatch <- effect.from
-        use <- set_timeout(20)
+        use <- set_timeout(10)
         dispatch(StartFlip)
       })
     }

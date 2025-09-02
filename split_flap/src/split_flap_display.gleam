@@ -155,7 +155,7 @@ fn view(model: Model) -> Element(msg) {
           int.to_string(row_num),
           keyed.div(
             [attribute.class("row")],
-            case keyed_line_elements(line, model.cols) {
+            case keyed_line_elements(line, model.cols, row_num) {
               None -> []
               Some(line) -> line
             },
@@ -167,76 +167,10 @@ fn view(model: Model) -> Element(msg) {
   ])
 }
 
-// fn row(index: Int, num_cols: Int, line: Option(Line)) -> Element(msg) {
-//   let contents = case line {
-//     None -> [Text(string.repeat(" ", num_cols))]
-//     Some(line) -> line.contents
-//   }
-//   // |> zip_longest(list.range(0, num_cols - 1), _)
-//   // |> list.filter_map(fn(el) {
-//   //   case el {
-//   //     #(Some(col_num), char) -> Ok(#(col_num, char))
-//   //     _ -> Error(Nil)
-//   //   }
-//   // })
-
-//   // keyed.div(
-//   //   [attribute.class("row")],
-//   //   list.map(chars, fn(cols_and_chars) {
-//   //     let #(col_num, char) = cols_and_chars
-//   //     let key = int.to_string(index) <> "-" <> int.to_string(col_num)
-//   //     #(key, split_flap_char.element(option.unwrap(char, " ")))
-//   //   }),
-//   // )
-
-//   todo
-// }
-
-// fn line_elements(line: Line, num_cols: Int) -> List(Element(msg)) {
-//   let line_len = 1
-//   let result: List(Content) = []
-
-//   list.fold_until(
-//     line.contents,
-//     from: [],
-//     with: fn(acc: List(Element(msg)), content: Content) {
-//       let parent = case content {
-//         Text(_) -> element.fragment
-//         Link(_, url) -> html.a(
-//           [
-//             attribute.href(url),
-//             attribute.target("_blank"),
-//             attribute.style("display", "contents"),
-//           ],
-//           _,
-//         )
-//       }
-
-//       let children =
-//         list.fold_until(
-//           string.to_graphemes(content.text),
-//           from: [],
-//           with: fn(acc_inner: List(Element(msg)), char: String) {
-//             case int.compare(line_len, with: num_cols) {
-//               Eq | Gt -> Stop(acc)
-//               Lt -> {
-//                 let line_len = line_len + 1
-//                 Continue(list.prepend(acc_inner, split_flap_char.element(char)))
-//               }
-//             }
-//           },
-//         )
-
-//       todo
-//     },
-//   )
-
-//   todo
-// }
-
 fn keyed_line_elements(
   line: Option(List(Content)),
   len: Int,
+  row_num: Int,
 ) -> Option(List(#(String, Element(msg)))) {
   let content = case line {
     Some([h, ..rest]) -> Some(#(h, Some(rest)))
@@ -258,18 +192,19 @@ fn keyed_line_elements(
 
   let parent = case content {
     Text(_) -> keyed.fragment
-    Link(_, url) -> keyed.element(
-      "a",
-      [
-        attribute.href(url),
-        attribute.target("_blank"),
-        attribute.style("display", "contents"),
-      ],
-      _,
-    )
+    Link(_, url) -> keyed.fragment
+    // Link(_, url) -> keyed.element(
+    //   "a",
+    //   [
+    //     attribute.href(url),
+    //     attribute.target("_blank"),
+    //     attribute.style("display", "contents"),
+    //   ],
+    //   _,
+    // )
   }
 
-  let children = char_elements(content.text, len)
+  let children = char_elements(content.text, len, row_num)
   let curr = #(key, parent(children))
 
   let len = len - list.length(children)
@@ -277,17 +212,22 @@ fn keyed_line_elements(
     Eq | Lt -> [curr]
 
     _ -> {
-      let next = keyed_line_elements(rest, len) |> option.unwrap([])
+      let next = keyed_line_elements(rest, len, row_num) |> option.unwrap([])
       list.prepend(next, curr)
     }
   }
 }
 
-fn char_elements(text: String, len: Int) -> List(#(String, Element(msg))) {
+fn char_elements(
+  text: String,
+  len: Int,
+  row_num: Int,
+) -> List(#(String, Element(msg))) {
   string.to_graphemes(text)
   |> list.take(len)
   |> list.index_map(fn(char, index) {
-    #(int.to_string(index), split_flap_char.element(char))
+    let key = int.to_string(row_num) <> "-" <> int.to_string(index)
+    #(key, split_flap_char.element(char))
   })
 }
 

@@ -2387,8 +2387,8 @@ function merge(loop$attributes, loop$merged) {
                   let kind = $.kind;
                   let style1 = $2;
                   let rest = $3.tail;
-                  let style22 = $4.value;
-                  let value = style1 + ";" + style22;
+                  let style2 = $4.value;
+                  let value = style1 + ";" + style2;
                   let attribute$1 = new Attribute(kind, "style", value);
                   loop$attributes = prepend(attribute$1, rest);
                   loop$merged = merged;
@@ -2458,21 +2458,6 @@ function none() {
 }
 function data(key, value) {
   return attribute2("data-" + key, value);
-}
-function style(property3, value) {
-  if (property3 === "") {
-    return class$("");
-  } else if (value === "") {
-    return class$("");
-  } else {
-    return attribute2("style", property3 + ":" + value + ";");
-  }
-}
-function href(url) {
-  return attribute2("href", url);
-}
-function target(value) {
-  return attribute2("target", value);
 }
 
 // build/dev/javascript/lustre/lustre/effect.mjs
@@ -3098,7 +3083,7 @@ function unsafe_raw_html(namespace, tag, attributes, inner_html) {
 function text3(content) {
   return text2(content);
 }
-function style2(attrs, css3) {
+function style(attrs, css3) {
   return unsafe_raw_html("", "style", attrs, css3);
 }
 function div(attrs, children) {
@@ -4849,8 +4834,8 @@ var Runtime = class {
     }
   }
   emit(event2, data2) {
-    const target2 = this.root.host ?? this.root;
-    target2.dispatchEvent(
+    const target = this.root.host ?? this.root;
+    target.dispatchEvent(
       new CustomEvent(event2, {
         detail: data2,
         bubbles: true,
@@ -5344,7 +5329,7 @@ function update2(model, msg) {
           new Model(model.char_stack, model.dest, new Flipping()),
           from(
             (dispatch) => {
-              return set_timeout(80, () => {
+              return set_timeout(10, () => {
                 return dispatch(new EndFlip());
               });
             }
@@ -5374,15 +5359,15 @@ function update2(model, msg) {
         "let_assert",
         FILEPATH,
         "split_flap_char",
-        79,
+        80,
         "update",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 1886,
-          end: 1955,
-          pattern_start: 1897,
-          pattern_end: 1915
+          start: 1924,
+          end: 1993,
+          pattern_start: 1935,
+          pattern_end: 1953
         }
       );
     }
@@ -5391,7 +5376,7 @@ function update2(model, msg) {
       new Model(next, model.dest, new Idle()),
       from(
         (dispatch) => {
-          return set_timeout(20, () => {
+          return set_timeout(10, () => {
             return dispatch(new StartFlip());
           });
         }
@@ -5439,21 +5424,21 @@ function view(model) {
       "let_assert",
       FILEPATH,
       "split_flap_char",
-      105,
+      106,
       "view",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 2586,
-        end: 2644,
-        pattern_start: 2597,
-        pattern_end: 2614
+        start: 2624,
+        end: 2682,
+        pattern_start: 2635,
+        pattern_end: 2652
       }
     );
   }
   return fragment2(
     toList([
-      style2(toList([]), css),
+      style(toList([]), css),
       div(
         toList([class$("split-flap")]),
         toList([
@@ -5714,17 +5699,18 @@ function zip_longest(list1, list22) {
     return toList([]);
   }
 }
-function char_elements(text4, len) {
+function char_elements(text4, len, row_num) {
   let _pipe = graphemes(text4);
   let _pipe$1 = take(_pipe, len);
   return index_map(
     _pipe$1,
     (char, index4) => {
-      return [to_string(index4), element4(char)];
+      let key = to_string(row_num) + "-" + to_string(index4);
+      return [key, element4(char)];
     }
   );
 }
-function keyed_line_elements(line, len) {
+function keyed_line_elements(line, len, row_num) {
   let _block;
   if (line instanceof Some) {
     let $ = line[0];
@@ -5768,20 +5754,10 @@ function keyed_line_elements(line, len) {
         _block$2 = fragment3;
       } else {
         let url = content$1.url;
-        _block$2 = (_capture) => {
-          return element3(
-            "a",
-            toList([
-              href(url),
-              target("_blank"),
-              style("display", "contents")
-            ]),
-            _capture
-          );
-        };
+        _block$2 = fragment3;
       }
       let parent = _block$2;
-      let children = char_elements(content$1.text, len);
+      let children = char_elements(content$1.text, len, row_num);
       let curr = [key, parent(children)];
       let len$1 = len - length(children);
       let $ = compare2(len$1, 0);
@@ -5791,7 +5767,7 @@ function keyed_line_elements(line, len) {
         return toList([curr]);
       } else {
         let _block$3;
-        let _pipe$2 = keyed_line_elements(rest, len$1);
+        let _pipe$2 = keyed_line_elements(rest, len$1, row_num);
         _block$3 = unwrap(_pipe$2, toList([]));
         let next = _block$3;
         return prepend2(next, curr);
@@ -5819,7 +5795,7 @@ function view2(model) {
   let rows_and_lines = _block;
   return fragment2(
     toList([
-      style2(toList([]), css2),
+      style(toList([]), css2),
       div2(
         toList([class$("display")]),
         map2(
@@ -5834,7 +5810,7 @@ function view2(model) {
               div2(
                 toList([class$("row")]),
                 (() => {
-                  let $ = keyed_line_elements(line, model.cols);
+                  let $ = keyed_line_elements(line, model.cols, row_num);
                   if ($ instanceof Some) {
                     let line$1 = $[0];
                     return line$1;
