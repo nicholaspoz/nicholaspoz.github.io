@@ -36,12 +36,12 @@ var List = class {
   // @internal
   countLength() {
     let current = this;
-    let length3 = 0;
+    let length2 = 0;
     while (current) {
       current = current.tail;
-      length3++;
+      length2++;
     }
-    return length3 - 1;
+    return length2 - 1;
   }
 };
 function prepend(element5, tail) {
@@ -361,6 +361,23 @@ function structurallyCompatibleObjects(a, b) {
   if (nonstructural.some((c) => a instanceof c)) return false;
   return a.constructor === b.constructor;
 }
+function remainderInt(a, b) {
+  if (b === 0) {
+    return 0;
+  } else {
+    return a % b;
+  }
+}
+function divideInt(a, b) {
+  return Math.trunc(divideFloat(a, b));
+}
+function divideFloat(a, b) {
+  if (b === 0) {
+    return 0;
+  } else {
+    return a / b;
+  }
+}
 function makeError(variant, file, module, line, fn, message, extra) {
   let error = new globalThis.Error(message);
   error.gleam_error = variant;
@@ -390,22 +407,6 @@ var Some = class extends CustomType {
 };
 var None = class extends CustomType {
 };
-function unwrap(option, default$) {
-  if (option instanceof Some) {
-    let x = option[0];
-    return x;
-  } else {
-    return default$;
-  }
-}
-function map(option, fun) {
-  if (option instanceof Some) {
-    let x = option[0];
-    return new Some(fun(x));
-  } else {
-    return option;
-  }
-}
 
 // build/dev/javascript/gleam_stdlib/dict.mjs
 var referenceMap = /* @__PURE__ */ new WeakMap();
@@ -1116,22 +1117,6 @@ var Ascending = class extends CustomType {
 };
 var Descending = class extends CustomType {
 };
-function length_loop(loop$list, loop$count) {
-  while (true) {
-    let list4 = loop$list;
-    let count = loop$count;
-    if (list4 instanceof Empty) {
-      return count;
-    } else {
-      let list$1 = list4.tail;
-      loop$list = list$1;
-      loop$count = count + 1;
-    }
-  }
-}
-function length(list4) {
-  return length_loop(list4, 0);
-}
 function reverse_and_prepend(loop$prefix, loop$suffix) {
   while (true) {
     let prefix = loop$prefix;
@@ -1193,7 +1178,7 @@ function map_loop(loop$list, loop$fun, loop$acc) {
     }
   }
 }
-function map2(list4, fun) {
+function map(list4, fun) {
   return map_loop(list4, fun, toList([]));
 }
 function index_map_loop(loop$list, loop$fun, loop$index, loop$acc) {
@@ -1666,7 +1651,7 @@ function success(data2) {
     return [data2, toList([])];
   });
 }
-function map3(decoder, transformer) {
+function map2(decoder, transformer) {
   return new Decoder(
     (d) => {
       let $ = decoder.function(d);
@@ -1771,11 +1756,11 @@ function push_path(layer, path) {
     toList([
       (() => {
         let _pipe = int2;
-        return map3(_pipe, to_string);
+        return map2(_pipe, to_string);
       })()
     ])
   );
-  let path$1 = map2(
+  let path$1 = map(
     path,
     (key) => {
       let key$1 = identity(key);
@@ -1788,7 +1773,7 @@ function push_path(layer, path) {
       }
     }
   );
-  let errors = map2(
+  let errors = map(
     layer[1],
     (error) => {
       return new DecodeError(
@@ -1884,6 +1869,21 @@ function identity(x) {
 function to_string(term) {
   return term.toString();
 }
+function string_length(string5) {
+  if (string5 === "") {
+    return 0;
+  }
+  const iterator = graphemes_iterator(string5);
+  if (iterator) {
+    let i = 0;
+    for (const _ of iterator) {
+      i++;
+    }
+    return i;
+  } else {
+    return string5.match(/./gsu).length;
+  }
+}
 function graphemes(string5) {
   const iterator = graphemes_iterator(string5);
   if (iterator) {
@@ -1911,6 +1911,28 @@ function pop_grapheme(string5) {
     return new Ok([first2, string5.slice(first2.length)]);
   } else {
     return new Error(Nil);
+  }
+}
+function string_slice(string5, idx, len) {
+  if (len <= 0 || idx >= string5.length) {
+    return "";
+  }
+  const iterator = graphemes_iterator(string5);
+  if (iterator) {
+    while (idx-- > 0) {
+      iterator.next();
+    }
+    let result = "";
+    while (len-- > 0) {
+      const v = iterator.next().value;
+      if (v === void 0) {
+        break;
+      }
+      result += v.segment;
+    }
+    return result;
+  } else {
+    return string5.match(/./gsu).slice(idx, idx + len).join("");
   }
 }
 function contains_string(haystack, needle) {
@@ -2036,6 +2058,25 @@ function compare2(a, b) {
 }
 
 // build/dev/javascript/gleam_stdlib/gleam/string.mjs
+function slice(string5, idx, len) {
+  let $ = len < 0;
+  if ($) {
+    return "";
+  } else {
+    let $1 = idx < 0;
+    if ($1) {
+      let translated_idx = string_length(string5) + idx;
+      let $2 = translated_idx < 0;
+      if ($2) {
+        return "";
+      } else {
+        return string_slice(string5, translated_idx, len);
+      }
+    } else {
+      return string_slice(string5, idx, len);
+    }
+  }
+}
 function concat_loop(loop$strings, loop$accumulator) {
   while (true) {
     let strings = loop$strings;
@@ -2094,6 +2135,22 @@ function join(strings, separator) {
     let first$1 = strings.head;
     let rest = strings.tail;
     return join_loop(rest, separator, first$1);
+  }
+}
+function padding(size2, pad_string) {
+  let pad_string_length = string_length(pad_string);
+  let num_pads = divideInt(size2, pad_string_length);
+  let extra = remainderInt(size2, pad_string_length);
+  return repeat(pad_string, num_pads) + slice(pad_string, 0, extra);
+}
+function pad_end(string5, desired_length, pad_string) {
+  let current_length = string_length(string5);
+  let to_pad_length = desired_length - current_length;
+  let $ = to_pad_length <= 0;
+  if ($) {
+    return string5;
+  } else {
+    return string5 + padding(to_pad_length, pad_string);
   }
 }
 function first(string5) {
@@ -2459,6 +2516,12 @@ function none() {
 function data(key, value) {
   return attribute2("data-" + key, value);
 }
+function href(url) {
+  return attribute2("href", url);
+}
+function target(value) {
+  return attribute2("target", value);
+}
 
 // build/dev/javascript/lustre/lustre/effect.mjs
 var Effect = class extends CustomType {
@@ -2489,25 +2552,25 @@ function from(effect) {
 function empty2() {
   return null;
 }
-function get(map4, key) {
-  const value = map4?.get(key);
+function get(map3, key) {
+  const value = map3?.get(key);
   if (value != null) {
     return new Ok(value);
   } else {
     return new Error(void 0);
   }
 }
-function has_key2(map4, key) {
-  return map4 && map4.has(key);
+function has_key2(map3, key) {
+  return map3 && map3.has(key);
 }
-function insert2(map4, key, value) {
-  map4 ??= /* @__PURE__ */ new Map();
-  map4.set(key, value);
-  return map4;
+function insert2(map3, key, value) {
+  map3 ??= /* @__PURE__ */ new Map();
+  map3.set(key, value);
+  return map3;
 }
-function remove(map4, key) {
-  map4?.delete(key);
-  return map4;
+function remove(map3, key) {
+  map3?.delete(key);
+  return map3;
 }
 
 // build/dev/javascript/lustre/lustre/vdom/path.mjs
@@ -2881,7 +2944,7 @@ function do_add_event(handlers, mapper, path, name, handler) {
   return insert2(
     handlers,
     event(path, name),
-    map3(
+    map2(
       handler,
       (handler2) => {
         return new Handler(
@@ -4442,20 +4505,20 @@ var Reconciler = class {
       }
     }
   }
-  #updateDebounceThrottle(map4, name, delay) {
-    const debounceOrThrottle = map4.get(name);
+  #updateDebounceThrottle(map3, name, delay) {
+    const debounceOrThrottle = map3.get(name);
     if (delay > 0) {
       if (debounceOrThrottle) {
         debounceOrThrottle.delay = delay;
       } else {
-        map4.set(name, { delay });
+        map3.set(name, { delay });
       }
     } else if (debounceOrThrottle) {
       const { timeout } = debounceOrThrottle;
       if (timeout) {
         clearTimeout(timeout);
       }
-      map4.delete(name);
+      map3.delete(name);
     }
   }
   #handleEvent(attribute3, event2) {
@@ -4834,8 +4897,8 @@ var Runtime = class {
     }
   }
   emit(event2, data2) {
-    const target = this.root.host ?? this.root;
-    target.dispatchEvent(
+    const target2 = this.root.host ?? this.root;
+    target2.dispatchEvent(
       new CustomEvent(event2, {
         detail: data2,
         bubbles: true,
@@ -5329,7 +5392,7 @@ function update2(model, msg) {
           new Model(model.char_stack, model.dest, new Flipping()),
           from(
             (dispatch) => {
-              return set_timeout(10, () => {
+              return set_timeout(50, () => {
                 return dispatch(new EndFlip());
               });
             }
@@ -5359,15 +5422,15 @@ function update2(model, msg) {
         "let_assert",
         FILEPATH,
         "split_flap_char",
-        80,
+        79,
         "update",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 1924,
-          end: 1993,
-          pattern_start: 1935,
-          pattern_end: 1953
+          start: 1887,
+          end: 1956,
+          pattern_start: 1898,
+          pattern_end: 1916
         }
       );
     }
@@ -5376,7 +5439,7 @@ function update2(model, msg) {
       new Model(next, model.dest, new Idle()),
       from(
         (dispatch) => {
-          return set_timeout(10, () => {
+          return set_timeout(15, () => {
             return dispatch(new StartFlip());
           });
         }
@@ -5407,11 +5470,11 @@ function get_chars(stack) {
     }
   }
 }
-var chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.!?@#$%^&*()";
+var chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?@#$%&_()|<>";
 function init(_) {
   return [new Model(chars, " ", new Idle()), none2()];
 }
-var css = '\n  :host {\n    display: inline-block;\n    perspective: 10rem;\n    width: 100%;\n    height: 100%;\n    aspect-ratio: 5/8;\n    container-type: inline-size;\n  }\n\n  @container (width > 0px) {\n    .split-flap {\n      width: 100%;\n      height: 100%;\n      position: relative;\n      font-family: "Fragment Mono", monospace;\n      font-weight: bold;\n      font-size: 120cqw;\n      background: rgb(40, 40, 40);\n      border-radius: 5cqw;\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n\n    \n    .split-flap::after {\n      content: "";\n      position: absolute;\n      left: 0;\n      right: 0;\n      top: 50%;\n      height: 3.5cqw;\n      background: rgb(20, 20, 20);\n      z-index: 20;\n    }\n\n    .flap.top {\n      top: 0;\n      transform-origin: bottom;\n      border-radius: 0.5cqw 0.5cqw 0 0;\n      user-select: text;\n    }\n\n    .flap.bottom {\n      bottom: 0;\n      transform-origin: top;\n      border-radius: 0 0 0.5cqw 0.5cqw;\n    }\n\n    .flap.flipping-top {\n      opacity: 0;\n      pointer-events: none;\n      top: 0;\n      transform-origin: bottom;\n      border-radius: 0.5cqw 0.5cqw 0 0;\n      z-index: 10;\n      transform: rotateX(0deg);\n      background: rgb(40, 40, 40);\n    }\n\n    .flap.flipping-bottom {\n      /* Animated flap that rotates down during character change */\n      opacity: 0;\n      pointer-events: none;\n      bottom: 0;\n      transform-origin: top;\n      border-radius: 0 0 0.5cqw 0.5cqw;\n      z-index: 10;\n      transform: rotateX(90deg);\n      background: rgb(40, 40, 40);\n    }\n\n    .flap.flipping-top[data-state="flipping"] {\n      opacity: 1;\n      z-index: 10;\n      box-shadow: 0 0.5cqw 1cqw rgba(0, 0, 0, 0.3);\n      transform: rotateX(-90deg);\n      transition: transform 0.08s ease-in;\n    }\n    \n    .flap.flipping-bottom[data-state="flipping"] {\n      opacity: 1;\n      box-shadow: 0 0.5cqw 1cqw rgba(0, 0, 0, 0.3);\n      z-index: 10;\n      transform: rotateX(0deg);\n      transition: transform 0.02s linear;\n      transition-delay: 0.1s;\n    }\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    z-index: 1;\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n  }\n\n  .flap.top .flap-content {\n    top: 0;\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n\n  .flap.flipping-top .flap-content {\n    top: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
+var css = '\n  :host {\n    display: inline-block;\n    perspective: 10rem;\n    width: 100%;\n    height: 100%;\n    aspect-ratio: 5/8;\n    container-type: inline-size;\n  }\n\n  @container (width > 0px) {\n    .split-flap {\n      width: 100%;\n      height: 100%;\n      position: relative;\n      font-family: "Fragment Mono", monospace;\n      font-weight: bold;\n      font-size: 120cqw;\n      background: rgb(40, 40, 40);\n      border-radius: 5cqw;\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n\n    \n    .split-flap::after {\n      content: "";\n      position: absolute;\n      left: 0;\n      right: 0;\n      top: 50%;\n      height: 3.5cqw;\n      background: rgb(20, 20, 20);\n      z-index: 20;\n    }\n\n    .flap.top {\n      top: 0;\n      transform-origin: bottom;\n      border-radius: 0.5cqw 0.5cqw 0 0;\n      user-select: text;\n    }\n\n    .flap.bottom {\n      bottom: 0;\n      transform-origin: top;\n      border-radius: 0 0 0.5cqw 0.5cqw;\n    }\n\n    .flap.flipping-top {\n      opacity: 0;\n      pointer-events: none;\n      top: 0;\n      transform-origin: bottom;\n      border-radius: 0.5cqw 0.5cqw 0 0;\n      z-index: 10;\n      transform: rotateX(0deg);\n      background: rgb(40, 40, 40);\n    }\n\n    .flap.flipping-bottom {\n      /* Animated flap that rotates down during character change */\n      opacity: 0;\n      pointer-events: none;\n      bottom: 0;\n      transform-origin: top;\n      border-radius: 0 0 0.5cqw 0.5cqw;\n      z-index: 10;\n      transform: rotateX(90deg);\n      background: rgb(40, 40, 40);\n    }\n\n    .flap.flipping-top[data-state="flipping"] {\n      opacity: 1;\n      z-index: 10;\n      box-shadow: 0 0.5cqw 1cqw rgba(0, 0, 0, 0.3);\n      transform: rotateX(-90deg);\n      transition: transform 0.05s ease-in;\n    }\n    \n    .flap.flipping-bottom[data-state="flipping"] {\n      opacity: 1;\n      box-shadow: 0 0.5cqw 1cqw rgba(0, 0, 0, 0.3);\n      z-index: 10;\n      transform: rotateX(0deg);\n      transition: transform 0.015s linear;\n      transition-delay: 0.05s;\n    }\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    z-index: 1;\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n  }\n\n  .flap.top .flap-content {\n    top: 0;\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n\n  .flap.flipping-top .flap-content {\n    top: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
 function view(model) {
   let $ = get_chars(model.char_stack);
   let curr;
@@ -5424,15 +5487,15 @@ function view(model) {
       "let_assert",
       FILEPATH,
       "split_flap_char",
-      106,
+      105,
       "view",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 2624,
-        end: 2682,
-        pattern_start: 2635,
-        pattern_end: 2652
+        start: 2587,
+        end: 2645,
+        pattern_start: 2598,
+        pattern_end: 2615
       }
     );
   }
@@ -5617,9 +5680,6 @@ function decode_error_string(error) {
   let path = error.path;
   return expected + " | " + found + " | " + join(path, ", ");
 }
-function line_decoder() {
-  return list2(content_decoder());
-}
 function error_string(error) {
   if (error instanceof UnexpectedEndOfInput) {
     return "UnexpectedEndOfInput";
@@ -5632,7 +5692,7 @@ function error_string(error) {
   } else {
     let error$1 = error[0];
     return "UnableToDecode(" + (() => {
-      let _pipe = map2(error$1, decode_error_string);
+      let _pipe = map(error$1, decode_error_string);
       return join(_pipe, "\n");
     })() + ")";
   }
@@ -5699,127 +5759,75 @@ function zip_longest(list1, list22) {
     return toList([]);
   }
 }
-function char_elements(text4, len, row_num) {
-  let _pipe = graphemes(text4);
-  let _pipe$1 = take(_pipe, len);
-  return index_map(
-    _pipe$1,
-    (char, index4) => {
-      let key = to_string(row_num) + "-" + to_string(index4);
-      return [key, element4(char)];
-    }
-  );
+function first_is_some(pair) {
+  let $ = pair[0];
+  if ($ instanceof Some) {
+    let b = pair[1];
+    let a = $[0];
+    return new Ok(b);
+  } else {
+    return new Error(void 0);
+  }
 }
-function keyed_line_elements(line, len, row_num) {
+function row(line, row_num, cols) {
   let _block;
   if (line instanceof Some) {
     let $ = line[0];
-    if ($ instanceof Empty) {
-      if (len === 0) {
-        _block = new None();
-      } else {
-        _block = new Some(
-          [new Text2(repeat(" ", len)), new Some(toList([]))]
-        );
-      }
+    if ($ instanceof Link) {
+      let url = $.url;
+      _block = href(url);
     } else {
-      let h = $.head;
-      let rest = $.tail;
-      _block = new Some([h, new Some(rest)]);
+      _block = none();
     }
   } else {
-    if (len === 0) {
-      _block = new None();
-    } else {
-      _block = new Some(
-        [new Text2(repeat(" ", len)), new Some(toList([]))]
-      );
-    }
+    _block = none();
   }
-  let content = _block;
-  return map(
-    content,
-    (_use0) => {
-      let content$1;
-      let rest;
-      content$1 = _use0[0];
-      rest = _use0[1];
-      let _block$1;
-      let _pipe = unwrap(rest, toList([]));
-      let _pipe$1 = length(_pipe);
-      _block$1 = to_string(_pipe$1);
-      let key = _block$1;
-      let _block$2;
-      if (content$1 instanceof Text2) {
-        _block$2 = fragment3;
-      } else {
-        let url = content$1.url;
-        _block$2 = fragment3;
-      }
-      let parent = _block$2;
-      let children = char_elements(content$1.text, len, row_num);
-      let curr = [key, parent(children)];
-      let len$1 = len - length(children);
-      let $ = compare2(len$1, 0);
-      if ($ instanceof Lt) {
-        return toList([curr]);
-      } else if ($ instanceof Eq) {
-        return toList([curr]);
-      } else {
-        let _block$3;
-        let _pipe$2 = keyed_line_elements(rest, len$1, row_num);
-        _block$3 = unwrap(_pipe$2, toList([]));
-        let next = _block$3;
-        return prepend2(next, curr);
-      }
+  let href_attr = _block;
+  let _block$1;
+  if (line instanceof Some) {
+    let content = line[0];
+    let _pipe2 = content.text;
+    let _pipe$12 = pad_end(_pipe2, cols, " ");
+    _block$1 = slice(_pipe$12, 0, cols);
+  } else {
+    _block$1 = repeat(" ", cols);
+  }
+  let chars2 = _block$1;
+  let _block$2;
+  let _pipe = chars2;
+  let _pipe$1 = graphemes(_pipe);
+  _block$2 = index_map(
+    _pipe$1,
+    (char, idx) => {
+      let key = to_string(row_num) + "-" + to_string(idx);
+      return [key, element4(char)];
     }
+  );
+  let children = _block$2;
+  return element3(
+    "a",
+    toList([class$("row"), target("_blank"), href_attr]),
+    children
   );
 }
-var css2 = "\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  split-flap-char {\n    padding: 1cqw 0.3cqw;\n  }\n\n  .display {\n    display: flex;\n    flex-direction: column;\n    gap: 0;\n    border: 1cqw solid rgb(20, 20, 20);\n    border-radius: 0.5cqw;\n    /* background: rgb(40, 40, 40); */\n    background: linear-gradient(250deg, rgb(40, 40, 40) 0%,rgb(60, 60, 60) 25%,rgba(40,40,40,1) 80%);\n    padding: 2cqw 4cqw;\n    box-shadow: inset 0cqw -0.3cqw 1cqw 0.3cqw rgba(0, 0, 0, 0.4)\n  }\n\n  .row {\n    display: flex;\n    flex-direction: row;\n    gap: 0rem;\n  }\n";
+var css2 = "\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  split-flap-char {\n    padding: 1cqw 0.3cqw;\n  }\n\n  .display {\n    display: flex;\n    flex-direction: column;\n    gap: 0;\n    border: 1cqw solid rgb(20, 20, 20);\n    border-radius: 0.5cqw;\n    /* background: rgb(40, 40, 40); */\n    background: linear-gradient(250deg, rgb(40, 40, 40) 0%,rgb(60, 60, 60) 25%,rgba(40,40,40,1) 80%);\n    padding: 2cqw 4cqw;\n    box-shadow: inset 0cqw -0.3cqw 1cqw 0.3cqw rgba(0, 0, 0, 0.4)\n  }\n\n  .row {\n    display: flex;\n    flex-direction: row;\n    gap: 0rem;\n\n    cursor: default;\n  }\n\n  .row[href] {\n    cursor: pointer;\n  }\n";
 function view2(model) {
   let _block;
-  let _pipe = zip_longest(range(0, model.rows - 1), model.lines);
-  _block = filter_map(
-    _pipe,
-    (el) => {
-      let $ = el[0];
-      if ($ instanceof Some) {
-        let line = el[1];
-        let row_num = $[0];
-        return new Ok([row_num, line]);
-      } else {
-        return new Error(void 0);
-      }
-    }
-  );
-  let rows_and_lines = _block;
+  let _pipe = model.lines;
+  let _pipe$1 = ((_capture) => {
+    return zip_longest(range(0, model.rows - 1), _capture);
+  })(_pipe);
+  _block = filter_map(_pipe$1, first_is_some);
+  let sanitized_lines = _block;
   return fragment2(
     toList([
       style(toList([]), css2),
       div2(
         toList([class$("display")]),
-        map2(
-          rows_and_lines,
-          (row_and_line) => {
-            let row_num;
-            let line;
-            row_num = row_and_line[0];
-            line = row_and_line[1];
-            return [
-              to_string(row_num),
-              div2(
-                toList([class$("row")]),
-                (() => {
-                  let $ = keyed_line_elements(line, model.cols, row_num);
-                  if ($ instanceof Some) {
-                    let line$1 = $[0];
-                    return line$1;
-                  } else {
-                    return toList([]);
-                  }
-                })()
-              )
-            ];
+        index_map(
+          sanitized_lines,
+          (line, line_num) => {
+            return [to_string(line_num), row(line, line_num, model.cols)];
           }
         )
       )
@@ -5833,15 +5841,15 @@ function register2() {
       "let_assert",
       FILEPATH2,
       "split_flap_display",
-      67,
+      63,
       "register",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 1713,
-        end: 1758,
-        pattern_start: 1724,
-        pattern_end: 1729
+        start: 1665,
+        end: 1710,
+        pattern_start: 1676,
+        pattern_end: 1681
       }
     );
   }
@@ -5857,9 +5865,9 @@ function register2() {
             "on_attribute_change" + val,
             void 0,
             "src/split_flap_display.gleam",
-            72
+            68
           );
-          let lines = parse(val, list2(line_decoder()));
+          let lines = parse(val, list2(content_decoder()));
           if (lines instanceof Ok) {
             let lines$1 = lines[0];
             return new Ok(new SetLines(lines$1));
@@ -5869,7 +5877,7 @@ function register2() {
               "error " + error_string(error),
               void 0,
               "src/split_flap_display.gleam",
-              77
+              73
             );
             return new Ok(new Noop());
           }
@@ -5975,11 +5983,11 @@ var Echo$Inspector = class {
     const head = name === "Object" ? "" : name + " ";
     return `//js(${head}{${body}})`;
   }
-  #dict(map4) {
+  #dict(map3) {
     let body = "dict.from_list([";
     let first2 = true;
     let key_value_pairs = [];
-    map4.forEach((value, key) => {
+    map3.forEach((value, key) => {
       key_value_pairs.push([key, value]);
     });
     key_value_pairs.sort();

@@ -3,7 +3,6 @@ import gleam/int
 import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
-import gleam/order.{Eq, Lt}
 import gleam/string
 import lustre
 import lustre/attribute
@@ -36,9 +35,6 @@ fn content_decoder() -> decode.Decoder(Content) {
   }
 }
 
-type Line =
-  List(Content)
-
 fn decode_error_string(error: decode.DecodeError) -> String {
   case error {
     decode.DecodeError(expected:, found:, path:) ->
@@ -46,9 +42,9 @@ fn decode_error_string(error: decode.DecodeError) -> String {
   }
 }
 
-fn line_decoder() -> decode.Decoder(Line) {
-  decode.list(content_decoder())
-}
+// fn line_decoder() -> decode.Decoder(Line) {
+//   decode.list(content_decoder())
+// }
 
 fn error_string(error: json.DecodeError) -> String {
   case error {
@@ -70,7 +66,7 @@ pub fn register() -> Result(Nil, lustre.Error) {
     lustre.component(init, update, view, [
       component.on_attribute_change("lines", fn(val) {
         echo "on_attribute_change" <> val
-        let lines = json.parse(val, using: decode.list(of: line_decoder()))
+        let lines = json.parse(val, using: decode.list(of: content_decoder()))
         case lines {
           Ok(lines) -> Ok(SetLines(lines))
           Error(error) -> {
@@ -89,12 +85,12 @@ pub fn element() -> Element(msg) {
 }
 
 type Msg {
-  SetLines(List(Line))
+  SetLines(List(Content))
   Noop
 }
 
 type Model {
-  Model(rows: Int, cols: Int, lines: List(Line))
+  Model(rows: Int, cols: Int, lines: List(Content))
 }
 
 fn init(_) -> #(Model, Effect(Msg)) {
@@ -134,101 +130,63 @@ fn zip_longest(list1: List(a), list2: List(b)) -> List(#(Option(a), Option(b))) 
   }
 }
 
+fn first_is_some(pair: #(Option(a), b)) -> Result(b, Nil) {
+  case pair {
+    #(Some(a), b) -> Ok(b)
+    _ -> Error(Nil)
+  }
+}
+
 fn view(model: Model) -> Element(msg) {
-  let rows_and_lines =
-    zip_longest(list.range(0, model.rows - 1), model.lines)
-    |> list.filter_map(fn(el) {
-      case el {
-        #(Some(row_num), line) -> Ok(#(row_num, line))
-        _ -> Error(Nil)
-      }
-    })
+  let sanitized_lines =
+    model.lines
+    |> zip_longest(list.range(0, model.rows - 1), _)
+    |> list.filter_map(first_is_some)
 
   element.fragment([
     html.style([], css),
 
     keyed.div(
       [attribute.class("display")],
-      list.map(rows_and_lines, fn(row_and_line) {
-        let #(row_num, line) = row_and_line
-        #(
-          int.to_string(row_num),
-          keyed.div(
-            [attribute.class("row")],
-            case keyed_line_elements(line, model.cols, row_num) {
-              None -> []
-              Some(line) -> line
-            },
-            // #(int.to_string(row_num), line)
-          ),
-        )
+      list.index_map(sanitized_lines, fn(line, line_num) {
+        #(int.to_string(line_num), row(line, row: line_num, cols: model.cols))
       }),
     ),
   ])
 }
 
-fn keyed_line_elements(
-  line: Option(List(Content)),
-  len: Int,
-  row_num: Int,
-) -> Option(List(#(String, Element(msg)))) {
-  let content = case line {
-    Some([h, ..rest]) -> Some(#(h, Some(rest)))
-
-    None | Some([]) -> {
-      case len {
-        0 -> None
-        _ -> {
-          // add padding
-          Some(#(Text(string.repeat(" ", len)), Some([])))
-        }
-      }
-    }
+fn row(line: Option(Content), row row_num: Int, cols cols: Int) -> Element(msg) {
+  let href_attr = case line {
+    Some(Link(_, url:)) -> attribute.href(url)
+    _ -> attribute.none()
   }
 
-  use #(content, rest) <- option.map(content)
+  let chars = case line {
+    Some(content) ->
+      content.text
+      |> string.pad_end(cols, " ")
+      |> string.slice(0, cols)
 
-  let key = option.unwrap(rest, []) |> list.length |> int.to_string
-
-  let parent = case content {
-    Text(_) -> keyed.fragment
-    Link(_, url) -> keyed.fragment
-    // Link(_, url) -> keyed.element(
-    //   "a",
-    //   [
-    //     attribute.href(url),
-    //     attribute.target("_blank"),
-    //     attribute.style("display", "contents"),
-    //   ],
-    //   _,
-    // )
+    None -> string.repeat(" ", cols)
   }
 
-  let children = char_elements(content.text, len, row_num)
-  let curr = #(key, parent(children))
+  let children =
+    chars
+    |> string.to_graphemes
+    |> list.index_map(fn(char, idx) {
+      let key = int.to_string(row_num) <> "-" <> int.to_string(idx)
+      #(key, split_flap_char.element(char))
+    })
 
-  let len = len - list.length(children)
-  case int.compare(len, with: 0) {
-    Eq | Lt -> [curr]
-
-    _ -> {
-      let next = keyed_line_elements(rest, len, row_num) |> option.unwrap([])
-      list.prepend(next, curr)
-    }
-  }
-}
-
-fn char_elements(
-  text: String,
-  len: Int,
-  row_num: Int,
-) -> List(#(String, Element(msg))) {
-  string.to_graphemes(text)
-  |> list.take(len)
-  |> list.index_map(fn(char, index) {
-    let key = int.to_string(row_num) <> "-" <> int.to_string(index)
-    #(key, split_flap_char.element(char))
-  })
+  keyed.element(
+    "a",
+    [
+      attribute.class("row"),
+      attribute.target("_blank"),
+      href_attr,
+    ],
+    children,
+  )
 }
 
 const css = "
@@ -259,5 +217,11 @@ const css = "
     display: flex;
     flex-direction: row;
     gap: 0rem;
+
+    cursor: default;
+  }
+
+  .row[href] {
+    cursor: pointer;
   }
 "

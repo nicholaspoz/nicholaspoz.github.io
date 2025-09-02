@@ -8,7 +8,7 @@ import lustre/effect
 import lustre/element.{type Element}
 import lustre/element/html
 
-pub const chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.!?@#$%^&*()"
+pub const chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?@#$%&_()|<>"
 
 pub fn register() -> Result(Nil, lustre.Error) {
   let component =
@@ -67,8 +67,7 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
         Ok(x) if x != model.dest -> {
           #(Model(..model, state: Flipping), {
             use dispatch <- effect.from
-            // use <- set_timeout(10)
-            use <- set_timeout(10)
+            use <- set_timeout(50)
             dispatch(EndFlip)
           })
         }
@@ -81,7 +80,7 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
       let next = rest <> first
       #(Model(..model, char_stack: next, state: Idle), {
         use dispatch <- effect.from
-        use <- set_timeout(10)
+        use <- set_timeout(15)
         dispatch(StartFlip)
       })
     }
@@ -231,7 +230,7 @@ const css = "
       z-index: 10;
       box-shadow: 0 0.5cqw 1cqw rgba(0, 0, 0, 0.3);
       transform: rotateX(-90deg);
-      transition: transform 0.08s ease-in;
+      transition: transform 0.05s ease-in;
     }
     
     .flap.flipping-bottom[data-state=\"flipping\"] {
@@ -239,8 +238,8 @@ const css = "
       box-shadow: 0 0.5cqw 1cqw rgba(0, 0, 0, 0.3);
       z-index: 10;
       transform: rotateX(0deg);
-      transition: transform 0.02s linear;
-      transition-delay: 0.1s;
+      transition: transform 0.015s linear;
+      transition-delay: 0.05s;
     }
   }
 
