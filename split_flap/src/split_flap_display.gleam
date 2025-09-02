@@ -3,7 +3,7 @@ import gleam/int
 import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
-import gleam/result
+import gleam/order.{Eq, Lt}
 import gleam/string
 import lustre
 import lustre/attribute
@@ -15,13 +15,51 @@ import lustre/element/keyed
 
 import split_flap_char
 
+pub type Content {
+  Text(text: String)
+  Link(text: String, url: String)
+}
+
+fn content_decoder() -> decode.Decoder(Content) {
+  use variant <- decode.field("type", decode.string)
+  case variant {
+    "text" -> {
+      use text <- decode.field("text", decode.string)
+      decode.success(Text(text:))
+    }
+    "link" -> {
+      use text <- decode.field("text", decode.string)
+      use url <- decode.field("url", decode.string)
+      decode.success(Link(text:, url:))
+    }
+    _ -> decode.failure(Text(""), "No variant found")
+  }
+}
+
+type Line =
+  List(Content)
+
+fn decode_error_string(error: decode.DecodeError) -> String {
+  case error {
+    decode.DecodeError(expected:, found:, path:) ->
+      expected <> " | " <> found <> " | " <> string.join(path, ", ")
+  }
+}
+
+fn line_decoder() -> decode.Decoder(Line) {
+  decode.list(content_decoder())
+}
+
 fn error_string(error: json.DecodeError) -> String {
   case error {
     json.UnexpectedEndOfInput -> "UnexpectedEndOfInput"
     json.UnexpectedByte(byte) -> "UnexpectedByte(" <> byte <> ")"
     json.UnexpectedSequence(sequence) ->
       "UnexpectedSequence(" <> sequence <> ")"
-    json.UnableToDecode(errors) -> "UnableToDecode(" <> "todo" <> ")"
+    json.UnableToDecode(error) ->
+      "UnableToDecode("
+      <> list.map(error, decode_error_string) |> string.join("\n")
+      <> ")"
   }
 }
 
@@ -32,7 +70,7 @@ pub fn register() -> Result(Nil, lustre.Error) {
     lustre.component(init, update, view, [
       component.on_attribute_change("lines", fn(val) {
         echo "on_attribute_change" <> val
-        let lines = json.parse(val, using: decode.list(of: decode.string))
+        let lines = json.parse(val, using: decode.list(of: line_decoder()))
         case lines {
           Ok(lines) -> Ok(SetLines(lines))
           Error(error) -> {
@@ -51,12 +89,12 @@ pub fn element() -> Element(msg) {
 }
 
 type Msg {
-  SetLines(List(String))
+  SetLines(List(Line))
   Noop
 }
 
 type Model {
-  Model(rows: Int, cols: Int, lines: List(String))
+  Model(rows: Int, cols: Int, lines: List(Line))
 }
 
 fn init(_) -> #(Model, Effect(Msg)) {
@@ -113,34 +151,144 @@ fn view(model: Model) -> Element(msg) {
       [attribute.class("display")],
       list.map(rows_and_lines, fn(row_and_line) {
         let #(row_num, line) = row_and_line
-        #(int.to_string(row_num), row(row_num, model.cols, line))
+        #(
+          int.to_string(row_num),
+          keyed.div(
+            [attribute.class("row")],
+            case keyed_line_elements(line, model.cols) {
+              None -> []
+              Some(line) -> line
+            },
+            // #(int.to_string(row_num), line)
+          ),
+        )
       }),
     ),
   ])
 }
 
-fn row(index: Int, num_cols: Int, line: Option(String)) -> Element(msg) {
-  let chars =
-    string.to_graphemes(case line {
-      None -> string.repeat(" ", num_cols)
-      Some(line) -> string.pad_end(line, num_cols, " ")
-    })
-    |> zip_longest(list.range(0, num_cols - 1), _)
-    |> list.filter_map(fn(el) {
-      case el {
-        #(Some(col_num), char) -> Ok(#(col_num, char))
-        _ -> Error(Nil)
-      }
-    })
+// fn row(index: Int, num_cols: Int, line: Option(Line)) -> Element(msg) {
+//   let contents = case line {
+//     None -> [Text(string.repeat(" ", num_cols))]
+//     Some(line) -> line.contents
+//   }
+//   // |> zip_longest(list.range(0, num_cols - 1), _)
+//   // |> list.filter_map(fn(el) {
+//   //   case el {
+//   //     #(Some(col_num), char) -> Ok(#(col_num, char))
+//   //     _ -> Error(Nil)
+//   //   }
+//   // })
 
-  keyed.div(
-    [attribute.class("row")],
-    list.map(chars, fn(cols_and_chars) {
-      let #(col_num, char) = cols_and_chars
-      let key = int.to_string(index) <> "-" <> int.to_string(col_num)
-      #(key, split_flap_char.element(option.unwrap(char, " ")))
-    }),
-  )
+//   // keyed.div(
+//   //   [attribute.class("row")],
+//   //   list.map(chars, fn(cols_and_chars) {
+//   //     let #(col_num, char) = cols_and_chars
+//   //     let key = int.to_string(index) <> "-" <> int.to_string(col_num)
+//   //     #(key, split_flap_char.element(option.unwrap(char, " ")))
+//   //   }),
+//   // )
+
+//   todo
+// }
+
+// fn line_elements(line: Line, num_cols: Int) -> List(Element(msg)) {
+//   let line_len = 1
+//   let result: List(Content) = []
+
+//   list.fold_until(
+//     line.contents,
+//     from: [],
+//     with: fn(acc: List(Element(msg)), content: Content) {
+//       let parent = case content {
+//         Text(_) -> element.fragment
+//         Link(_, url) -> html.a(
+//           [
+//             attribute.href(url),
+//             attribute.target("_blank"),
+//             attribute.style("display", "contents"),
+//           ],
+//           _,
+//         )
+//       }
+
+//       let children =
+//         list.fold_until(
+//           string.to_graphemes(content.text),
+//           from: [],
+//           with: fn(acc_inner: List(Element(msg)), char: String) {
+//             case int.compare(line_len, with: num_cols) {
+//               Eq | Gt -> Stop(acc)
+//               Lt -> {
+//                 let line_len = line_len + 1
+//                 Continue(list.prepend(acc_inner, split_flap_char.element(char)))
+//               }
+//             }
+//           },
+//         )
+
+//       todo
+//     },
+//   )
+
+//   todo
+// }
+
+fn keyed_line_elements(
+  line: Option(List(Content)),
+  len: Int,
+) -> Option(List(#(String, Element(msg)))) {
+  let content = case line {
+    Some([h, ..rest]) -> Some(#(h, Some(rest)))
+
+    None | Some([]) -> {
+      case len {
+        0 -> None
+        _ -> {
+          // add padding
+          Some(#(Text(string.repeat(" ", len)), Some([])))
+        }
+      }
+    }
+  }
+
+  use #(content, rest) <- option.map(content)
+
+  let key = option.unwrap(rest, []) |> list.length |> int.to_string
+
+  let parent = case content {
+    Text(_) -> keyed.fragment
+    Link(_, url) -> keyed.element(
+      "a",
+      [
+        attribute.href(url),
+        attribute.target("_blank"),
+        attribute.style("display", "contents"),
+      ],
+      _,
+    )
+  }
+
+  let children = char_elements(content.text, len)
+  let curr = #(key, parent(children))
+
+  let len = len - list.length(children)
+  case int.compare(len, with: 0) {
+    Eq | Lt -> [curr]
+
+    _ -> {
+      let next = keyed_line_elements(rest, len) |> option.unwrap([])
+      list.prepend(next, curr)
+    }
+  }
+}
+
+fn char_elements(text: String, len: Int) -> List(#(String, Element(msg))) {
+  string.to_graphemes(text)
+  |> list.take(len)
+  |> list.index_map(fn(char, index) {
+    #(int.to_string(index), split_flap_char.element(char))
+  })
 }
 
 const css = "
