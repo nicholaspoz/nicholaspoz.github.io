@@ -8,7 +8,7 @@ import lustre/effect
 import lustre/element.{type Element}
 import lustre/element/html
 
-pub const chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?@#$%&_()|<>"
+pub const chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?.@#|%&_()<>"
 
 pub fn register() -> Result(Nil, lustre.Error) {
   let component =

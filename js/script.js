@@ -70,9 +70,18 @@
   const MUSICIAN = [
     row("FREELANCE"),
     row("CELLIST"),
-    row("  ___ ".padStart(12)),
-    row(" |   |".padStart(12)),
-    row("0   0 ".padStart(12)),
+    row(),
+    row(),
+    row(),
+    email(),
+  ];
+
+  const MUSIC_NOTES = [
+    row("FREELANCE"),
+    row("CELLIST"),
+    row("  ___ ".padStart(13)),
+    row(" |   |".padStart(13)),
+    row("0   0 ".padStart(13)),
     email(),
   ];
 
@@ -82,7 +91,25 @@
     row("       TIME"),
     row("    TO"),
     row("       BE"),
-    row("           ALIVE?"),
+    row("          ALIVE?"),
+  ];
+
+  const GLEAM_1 = [
+    row("MADE"),
+    row("FROM"),
+    row("SCRATCH"),
+    row("USING"),
+    row("      GLEAM.RUN", "https://gleam.run"),
+    row(),
+  ];
+
+  const GLEAM_2 = [
+    row("MADE"),
+    row("FROM"),
+    row("SCRATCH"),
+    row("USING"),
+    row("      GLEAM.RUN", "https://gleam.run"),
+    row("<3".padStart(20)),
   ];
 
   function frame(contents, ms) {
@@ -90,13 +117,16 @@
   }
 
   const frames = [
-    frame(NICK, 1_500),
-    frame(NICK_DOT, 1_500),
-    frame(NICK_DOT_BINGO, 2_000),
+    frame(NICK, 1_000),
+    frame(NICK_DOT, 1_000),
+    frame(NICK_DOT_BINGO, 1_200),
     frame(FULL_NAME, 7_000),
     frame(TECH, 8_000),
-    frame(MUSICIAN, 8_000),
+    frame(MUSICIAN, 1_000),
+    frame(MUSIC_NOTES, 7_000),
     frame(WHAT, 7_000),
+    frame(GLEAM_1, 1_000),
+    frame(GLEAM_2, 6_000),
   ];
 
   let index = 0;
@@ -111,16 +141,19 @@
 
   // If the image is not a square, everything explodes and then you die.
   function positionImageOverlay() {
+    const body = document.body;
     const overlay = document.getElementById("rectangle-overlay");
-    if (!overlay) return;
+    if (!overlay || !body) return;
 
     // % of left/top when aspect ratio is 1
     const xOffsetBase = 0.363;
     const yOffsetBase = 0.222;
 
     // actual viewport dimensions
-    const viewWidth = window.innerWidth;
-    const viewHeight = window.innerHeight;
+    const VIEWPORT_MIN_WIDTH = 300;
+    const VIEWPORT_MIN_HEIGHT = 900;
+    const viewWidth = Math.max(VIEWPORT_MIN_WIDTH, body.scrollWidth);
+    const viewHeight = Math.max(VIEWPORT_MIN_HEIGHT, body.scrollHeight);
     const longestSide = Math.max(viewWidth, viewHeight);
 
     let left = xOffsetBase * longestSide;
@@ -134,8 +167,10 @@
     // Account for background-position offset (50% 30%)
     // https://developer.mozilla.org/en-US/docs/Web/CSS/background-position#regarding_percentages
     // TODO these should be css vars
-    const xOffset = (viewWidth - longestSide) * 0.5;
-    const yOffset = (viewHeight - longestSide) * 0.3;
+    const bgPosX = 0.5;
+    const bgPosY = 0.35;
+    const xOffset = (viewWidth - longestSide) * bgPosX;
+    const yOffset = (viewHeight - longestSide) * bgPosY;
 
     // Apply the calculated position and size
     overlay.style.left = `${left + xOffset}px`;
@@ -143,8 +178,18 @@
     overlay.style.width = `${width}px`;
     overlay.style.height = `${height}px`;
 
-    const aspectRatio = window.innerWidth / window.innerHeight;
-    document.documentElement.style.setProperty("--aspect-ratio", aspectRatio);
+    document.documentElement.style.setProperty(
+      "--background-position",
+      `${bgPosX * 100}% ${bgPosY * 100}%`
+    );
+    document.documentElement.style.setProperty(
+      "--viewport-min-width",
+      `${VIEWPORT_MIN_WIDTH}px`
+    );
+    document.documentElement.style.setProperty(
+      "--viewport-min-height",
+      `${VIEWPORT_MIN_HEIGHT}px`
+    );
   }
 
   // Update overlay position on resize and initial load

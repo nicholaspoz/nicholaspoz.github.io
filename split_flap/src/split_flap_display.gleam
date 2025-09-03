@@ -206,7 +206,7 @@ const css = "
     flex-direction: column;
     gap: 0;
     /* background: rgb(40, 40, 40); */
-    background: linear-gradient(250deg, rgb(40, 40, 40) 0%,rgb(60, 60, 60) 25%,rgba(40,40,40,1) 80%);
+    background: linear-gradient(250deg, rgb(40, 40, 40) 0%,rgb(50, 50, 50) 25%,rgba(40,40,40,1) 80%);
     padding: 1cqw 3cqw;
     box-shadow: inset 0cqw -0.3cqw 1cqw 0.3cqw rgba(0, 0, 0, 0.4)
   }
