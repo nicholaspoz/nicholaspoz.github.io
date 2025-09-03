@@ -10,6 +10,21 @@ import lustre/element/html
 
 pub const chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?.@#|%&_()<>"
 
+type Model {
+  Model(char_stack: String, dest: String, state: State)
+}
+
+type State {
+  Idle
+  Flipping
+}
+
+type Msg {
+  SetDestination(String)
+  StartFlip
+  EndFlip
+}
+
 pub fn register() -> Result(Nil, lustre.Error) {
   let component =
     lustre.component(init, update, view, [
@@ -25,32 +40,12 @@ pub fn register() -> Result(Nil, lustre.Error) {
   lustre.register(component, "split-flap-char")
 }
 
-/// Util for convenience to create the element.
 pub fn element(char: String) -> Element(msg) {
   element.element("split-flap-char", [attribute.attribute("letter", char)], [])
 }
 
-// MODEL -----------------------------------------------------------------------
-
-type Model {
-  Model(char_stack: String, dest: String, state: State)
-}
-
-type State {
-  Idle
-  Flipping
-}
-
 fn init(_) -> #(Model, effect.Effect(Msg)) {
   #(Model(chars, " ", Idle), effect.none())
-}
-
-// UPDATE ----------------------------------------------------------------------
-
-type Msg {
-  SetDestination(String)
-  StartFlip
-  EndFlip
 }
 
 fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
@@ -63,15 +58,16 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
     }
 
     StartFlip -> {
-      case string.first(model.char_stack) {
-        Ok(x) if x != model.dest -> {
+      case model.state, string.first(model.char_stack) {
+        Idle, Ok(x) if x != model.dest -> {
           #(Model(..model, state: Flipping), {
             use dispatch <- effect.from
             use <- set_timeout(50)
             dispatch(EndFlip)
           })
         }
-        _ -> #(Model(..model, state: Idle), effect.none())
+
+        _, _ -> #(Model(..model, state: Idle), effect.none())
       }
     }
 
@@ -92,23 +88,18 @@ pub fn set_timeout(_delay: Int, _cb: fn() -> a) -> Nil {
   Nil
 }
 
-// VIEW ------------------------------------------------------------------------
-
-fn get_chars(from stack: String) -> Result(#(String, String), Nil) {
-  case string.to_graphemes(stack) |> list.take(2) {
-    [a, b] -> Ok(#(a, b))
-    _ -> Error(Nil)
-  }
-}
-
+/// The Flap is a horizontal stack of two halves. 
+/// Flipping elements are conditionally rendered, 
+/// otherwise the GPU goes bananas.
+/// 
 fn view(model: Model) -> Element(Msg) {
-  let assert Ok(#(curr, next)) = get_chars(model.char_stack)
+  let assert Ok(#(curr, next)) = curr_and_next_chars(model)
 
   element.fragment([
     html.style([], css),
 
     html.div([attribute.class("split-flap")], [
-      // TOP FLAP
+      // TOP FLAP (always visible)
       html.div([attribute.class("flap top")], [
         html.span([attribute.class("flap-content")], [
           html.text(case model.state {
@@ -156,7 +147,13 @@ fn view(model: Model) -> Element(Msg) {
   ])
 }
 
-/// I just want intellisense for inline css is that so much to ask
+fn curr_and_next_chars(from model: Model) -> Result(#(String, String), Nil) {
+  case string.to_graphemes(model.char_stack) |> list.take(2) {
+    [a, b] -> Ok(#(a, b))
+    _ -> Error(Nil)
+  }
+}
+
 const css = "
   :host {
     display: inline-block;
@@ -166,7 +163,6 @@ const css = "
     container-type: inline-size;
   }
 
-  
   .split-flap {
     position: relative;
     width: 100%;
@@ -180,7 +176,6 @@ const css = "
     box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);
   }
 
-  
   .split-flap::after {
     content: \"\";
     position: absolute;
@@ -270,9 +265,6 @@ const css = "
     transition-delay: 0.05s;
   }
   
-
-  
-
   .flap.top .flap-content {
     top: 0;
     height: 100%
@@ -281,7 +273,6 @@ const css = "
   .flap.bottom .flap-content {
     bottom: 0;
   }
-
 
   .flap.flipping-top .flap-content {
     top: 0;
