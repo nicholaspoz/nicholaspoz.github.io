@@ -3,20 +3,30 @@
   function positionImageOverlay() {
     const body = document.body;
     const overlay = document.getElementById("rectangle-overlay");
-    if (!overlay || !body) return;
+    if (!overlay || !body) {
+      console.log("NO OVERLAY OR BODY");
+      return;
+    }
 
     // % of left/top when aspect ratio is 1
     const xOffsetBase = 0.363;
     const yOffsetBase = 0.222;
 
     // actual viewport dimensions
-    const VIEWPORT_MIN_WIDTH = 400;
+    const VIEWPORT_MIN_WIDTH = 0;
     const VIEWPORT_MIN_HEIGHT = 900;
     // const viewWidth = Math.max(VIEWPORT_MIN_WIDTH, body.scrollWidth);
     const viewWidth = body.scrollWidth;
     // const viewHeight = Math.max(VIEWPORT_MIN_HEIGHT, body.scrollHeight);
     const viewHeight = body.scrollHeight;
     const longestSide = Math.max(viewWidth, viewHeight);
+    console.log("DIMENSIONS", {
+      viewWidth,
+      viewHeight,
+      longestSide,
+      windowWidth: window.innerWidth,
+      windowHeight: window.innerHeight,
+    });
 
     let left = xOffsetBase * longestSide;
     let top = yOffsetBase * longestSide;
@@ -55,7 +65,16 @@
   }
 
   // Update overlay position on resize and initial load
-  window.addEventListener("resize", positionImageOverlay);
+  let timeout = undefined; // holder for timeout id
+  const delay = 0; // delay after event is "complete" to run callback
+
+  window.addEventListener("resize", () => {
+    positionImageOverlay();
+    // if (timeout) {
+    //   clearTimeout(timeout);
+    // }
+    // timeout = setTimeout(positionImageOverlay, delay);
+  });
   positionImageOverlay();
 
   // // Update the DOMContentLoaded listener to include overlay positioning

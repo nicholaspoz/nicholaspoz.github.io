@@ -28,7 +28,6 @@ body {
   /* re-center the square image */
   background-position: var(--background-position);
   background-size: cover;
-  background-repeat: no-repeat;
 
   /* start with blur-up */
   background-image: url("/img/bg-blur.webp");

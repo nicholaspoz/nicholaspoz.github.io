@@ -173,7 +173,7 @@ fn scenes() -> List(Scene) {
       ]),
     ]),
 
-    Scene("musician", [
+    Scene("music", [
       Frame(ms: 1000, lines: [
         Text(text: "FREELANCE"),
         Text(text: "CELLIST"),
