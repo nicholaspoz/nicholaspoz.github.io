@@ -8,7 +8,9 @@ import lustre/effect
 import lustre/element.{type Element}
 import lustre/element/html
 
-pub const chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?.@#|%&_()<>"
+import utils
+
+pub const chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?/\\|@#_()<>"
 
 type Model {
   Model(char_stack: String, dest: String, state: State)
@@ -20,9 +22,10 @@ type State {
 }
 
 type Msg {
-  SetDestination(String)
-  StartFlip
-  EndFlip
+  LetterAttrChanged(String)
+  DestinationChanged
+  FlipStarted
+  FlipEnded
 }
 
 pub fn register() -> Result(Nil, lustre.Error) {
@@ -31,7 +34,7 @@ pub fn register() -> Result(Nil, lustre.Error) {
       component.on_attribute_change("letter", fn(val) {
         use char <- result.try(string.first(val))
         case string.contains(chars, char) {
-          True -> Ok(SetDestination(val))
+          True -> Ok(LetterAttrChanged(val))
           False -> Error(Nil)
         }
       }),
@@ -50,20 +53,20 @@ fn init(_) -> #(Model, effect.Effect(Msg)) {
 
 fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
   case msg {
-    SetDestination(dest) -> {
+    LetterAttrChanged(dest) -> {
       #(Model(..model, dest:), {
         use dispatch <- effect.from
-        dispatch(StartFlip)
+        dispatch(DestinationChanged)
       })
     }
 
-    StartFlip -> {
+    DestinationChanged | FlipEnded -> {
       case model.state, string.first(model.char_stack) {
         Idle, Ok(x) if x != model.dest -> {
           #(Model(..model, state: Flipping), {
             use dispatch <- effect.from
-            use <- set_timeout(50)
-            dispatch(EndFlip)
+            use <- utils.set_timeout(50)
+            dispatch(FlipStarted)
           })
         }
 
@@ -71,21 +74,16 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
       }
     }
 
-    EndFlip -> {
+    FlipStarted -> {
       let assert Ok(#(first, rest)) = string.pop_grapheme(model.char_stack)
       let next = rest <> first
       #(Model(..model, char_stack: next, state: Idle), {
         use dispatch <- effect.from
-        use <- set_timeout(15)
-        dispatch(StartFlip)
+        use <- utils.set_timeout(15)
+        dispatch(FlipEnded)
       })
     }
   }
-}
-
-@external(javascript, "./split_flap.ffi.mjs", "set_timeout")
-pub fn set_timeout(_delay: Int, _cb: fn() -> a) -> Nil {
-  Nil
 }
 
 /// The Flap is a horizontal stack of two halves. 

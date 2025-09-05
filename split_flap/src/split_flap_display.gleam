@@ -27,6 +27,26 @@ pub type Content {
   Link(text: String, url: String)
 }
 
+fn content_to_json(content: Content) -> json.Json {
+  case content {
+    Text(text:) ->
+      json.object([
+        #("type", json.string("text")),
+        #("text", json.string(text)),
+      ])
+    Link(text:, url:) ->
+      json.object([
+        #("type", json.string("link")),
+        #("text", json.string(text)),
+        #("url", json.string(url)),
+      ])
+  }
+}
+
+fn contents_to_json(contents: List(Content)) -> json.Json {
+  json.array(contents, content_to_json)
+}
+
 fn content_decoder() -> decode.Decoder(Content) {
   use variant <- decode.field("type", decode.string)
   case variant {
@@ -44,8 +64,7 @@ fn content_decoder() -> decode.Decoder(Content) {
 }
 
 type Msg {
-  SetLines(List(Content))
-  Noop
+  LinesAttrChanged(List(Content))
 }
 
 pub fn register() -> Result(Nil, lustre.Error) {
@@ -56,10 +75,10 @@ pub fn register() -> Result(Nil, lustre.Error) {
       component.on_attribute_change("lines", fn(val) {
         let lines = json.parse(val, using: decode.list(of: content_decoder()))
         case lines {
-          Ok(lines) -> Ok(SetLines(lines))
+          Ok(lines) -> Ok(LinesAttrChanged(lines))
           Error(error) -> {
             echo "error " <> error_string(error)
-            Ok(Noop)
+            Error(Nil)
           }
         }
       }),
@@ -68,8 +87,14 @@ pub fn register() -> Result(Nil, lustre.Error) {
   lustre.register(component, "split-flap-display")
 }
 
-pub fn element() -> Element(msg) {
-  element.element("split-flap-display", [], [])
+pub fn element(contents: List(Content)) -> Element(msg) {
+  element.element(
+    "split-flap-display",
+    [
+      attribute.attribute("lines", json.to_string(contents_to_json(contents))),
+    ],
+    [],
+  )
 }
 
 fn init(_) -> #(Model, Effect(Msg)) {
@@ -77,10 +102,9 @@ fn init(_) -> #(Model, Effect(Msg)) {
   #(Model([]), effect.none())
 }
 
-fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
+fn update(_model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
   case msg {
-    SetLines(lines) -> #(Model(lines), effect.none())
-    Noop -> #(model, effect.none())
+    LinesAttrChanged(lines) -> #(Model(lines), effect.none())
   }
 }
 
