@@ -7053,7 +7053,7 @@ function scenes() {
             new Text2("       BE"),
             new Text2("          ALIVE")
           ]),
-          4e3
+          3e3
         ),
         new Frame(
           toList([
@@ -7064,7 +7064,7 @@ function scenes() {
             new Text2("       BE"),
             new Text2("          ALIVE?")
           ]),
-          3e3
+          4e3
         )
       ])
     )
@@ -7121,13 +7121,13 @@ function view4(model) {
       div(
         toList([class$("frame")]),
         toList([
+          element5(model.current.lines, 22, 6, new None()),
           element6(
             calculate_progress(model),
             22,
             new Some(new BackClicked2()),
             new Some(new ForwardClicked2())
-          ),
-          element5(model.current.lines, 22, 6, new None())
+          )
         ])
       )
     ])

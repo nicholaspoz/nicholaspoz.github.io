@@ -121,17 +121,17 @@ fn view(model: Model) -> Element(Msg) {
   element.fragment([
     html.style([], css),
     html.div([attribute.class("frame")], [
-      progress_bar.element(
-        progress: calculate_progress(model),
-        cols: 22,
-        on_back: Some(BackClicked),
-        on_forward: Some(ForwardClicked),
-      ),
       split_flap_display.element(
         model.current.lines,
         cols: 22,
         rows: 6,
         chars: None,
+      ),
+      progress_bar.element(
+        progress: calculate_progress(model),
+        cols: 22,
+        on_back: Some(BackClicked),
+        on_forward: Some(ForwardClicked),
       ),
     ]),
   ])
@@ -233,7 +233,7 @@ fn scenes() -> List(Scene) {
     ]),
 
     Scene("!", [
-      Frame(ms: 4000, lines: [
+      Frame(ms: 3000, lines: [
         Text("              WHAT"),
         Text("            A"),
         Text("       TIME"),
@@ -241,7 +241,7 @@ fn scenes() -> List(Scene) {
         Text("       BE"),
         Text("          ALIVE"),
       ]),
-      Frame(ms: 3000, lines: [
+      Frame(ms: 4000, lines: [
         Text("              WHAT"),
         Text("            A"),
         Text("       TIME"),
