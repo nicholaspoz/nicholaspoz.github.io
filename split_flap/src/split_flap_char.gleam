@@ -166,7 +166,7 @@ const css = "
     position: relative;
     width: 100%;
     height: 100%;
-    aspect-ratio: 5/8;
+    aspect-ratio: 1/1.618; /* golden ratio ;) */
     font-family: \"Fragment Mono\", monospace;
     font-weight: bold;
     font-size: 120cqw;

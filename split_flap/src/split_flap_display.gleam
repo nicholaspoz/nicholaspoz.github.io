@@ -243,7 +243,7 @@ const css = "
   }
 
   split-flap-char {
-    padding: 1cqw 0.3cqw;
+    padding: 0.9cqw 0.3cqw;
   }
 
   .display {

@@ -252,6 +252,6 @@ const css = "
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
-    gap: 2cqh;
+    gap: 2.5cqh;
   }
 "
