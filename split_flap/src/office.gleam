@@ -62,5 +62,21 @@ const css = "
     height: 14.4%;
   }
 
-
+  @media (min-width: 1280px) {
+    .office-void-bg {
+      background-image: url(./img/bg-1920.webp);
+    }
+  }
+  
+  @media (min-width: 1920px) {
+    .office-void-bg {
+      background-image: url(./img/bg-2560.webp);
+    }
+  }
+  
+  @media (min-width: 2560px) {
+    .office-void-bg {
+      background-image: url(./img/bg-3840.webp);
+    }
+  }
 "

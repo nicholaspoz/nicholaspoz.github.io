@@ -6330,15 +6330,15 @@ function next_frame(scenes2, current) {
         "let_assert",
         FILEPATH3,
         "bingo",
-        83,
+        82,
         "next_frame",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $1,
-          start: 1985,
-          end: 2029,
-          pattern_start: 1996,
-          pattern_end: 2004
+          start: 1961,
+          end: 2005,
+          pattern_start: 1972,
+          pattern_end: 1980
         }
       );
     }
@@ -6400,15 +6400,15 @@ function current_scene_name(model) {
       "let_assert",
       FILEPATH3,
       "bingo",
-      114,
+      113,
       "current_scene_name",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 2597,
-        end: 2758,
-        pattern_start: 2608,
-        pattern_end: 2617
+        start: 2574,
+        end: 2735,
+        pattern_start: 2585,
+        pattern_end: 2594
       }
     );
   }
@@ -6564,10 +6564,10 @@ function init3(_) {
       "let_assert",
       FILEPATH3,
       "bingo",
-      40,
+      39,
       "init",
       "Pattern match failed, no pattern matched the value.",
-      { value: $, start: 824, end: 871, pattern_start: 835, pattern_end: 850 }
+      { value: $, start: 800, end: 847, pattern_start: 811, pattern_end: 826 }
     );
   }
   let $1 = first2(first_scene.frames);
@@ -6579,10 +6579,10 @@ function init3(_) {
       "let_assert",
       FILEPATH3,
       "bingo",
-      41,
+      40,
       "init",
       "Pattern match failed, no pattern matched the value.",
-      { value: $1, start: 874, end: 933, pattern_start: 885, pattern_end: 900 }
+      { value: $1, start: 850, end: 909, pattern_start: 861, pattern_end: 876 }
     );
   }
   return [
@@ -6594,7 +6594,7 @@ function init3(_) {
 }
 var css3 = "\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n";
 function view3(model) {
-  let current_scene_name$1 = current_scene_name(model);
+  let $ = current_scene_name(model);
   return fragment2(
     toList([
       style(toList([]), css3),
@@ -6609,10 +6609,10 @@ function register3() {
       "let_assert",
       FILEPATH3,
       "bingo",
-      22,
+      21,
       "register",
       "Pattern match failed, no pattern matched the value.",
-      { value: $, start: 436, end: 484, pattern_start: 447, pattern_end: 452 }
+      { value: $, start: 412, end: 460, pattern_start: 423, pattern_end: 428 }
     );
   }
   let component2 = component(init3, update4, view3, toList([]));
@@ -6620,7 +6620,7 @@ function register3() {
 }
 
 // build/dev/javascript/split_flap/office.mjs
-var css4 = "\n  :host {\n    --position-x: 50%;\n    --position-y: 35%;\n    width: 100%;\n    height: 100%;\n    position: relative;\n  }\n  \n  .office-void {\n    width: 100%;\n    height: 100%;\n    position: relative;  \n    overflow: hidden;\n  }\n  \n  .office-void-bg {\n    position: absolute;\n    width: max(100vw, 100vh);\n    height: max(100vw, 100vh);\n    left: var(--position-x);\n    top: var(--position-y);\n    transform: translate(calc(var(--position-x) * -1), calc(var(--position-y) * -1));\n    background-image: url(./img/bg-1280.webp);\n    background-size: cover;\n    background-position: var(--position-x) var(--position-y);\n  }\n  \n  .split-flap-void {\n    position: absolute;\n    /* background: lime; */\n    /* mix-blend-mode: difference; */\n    /* do not, and I repeat, do not touch this\u2014otherwise the flip-flap will be very very sad and I will cry */\n    top: 21.78%;\n    left: 35.77%;\n    width: 28.50%;\n    height: 14.4%;\n  }\n\n\n";
+var css4 = "\n  :host {\n    --position-x: 50%;\n    --position-y: 35%;\n    width: 100%;\n    height: 100%;\n    position: relative;\n  }\n  \n  .office-void {\n    width: 100%;\n    height: 100%;\n    position: relative;  \n    overflow: hidden;\n  }\n  \n  .office-void-bg {\n    position: absolute;\n    width: max(100vw, 100vh);\n    height: max(100vw, 100vh);\n    left: var(--position-x);\n    top: var(--position-y);\n    transform: translate(calc(var(--position-x) * -1), calc(var(--position-y) * -1));\n    background-image: url(./img/bg-1280.webp);\n    background-size: cover;\n    background-position: var(--position-x) var(--position-y);\n  }\n  \n  .split-flap-void {\n    position: absolute;\n    /* background: lime; */\n    /* mix-blend-mode: difference; */\n    /* do not, and I repeat, do not touch this\u2014otherwise the flip-flap will be very very sad and I will cry */\n    top: 21.78%;\n    left: 35.77%;\n    width: 28.50%;\n    height: 14.4%;\n  }\n\n  @media (min-width: 1280px) {\n    .office-void-bg {\n      background-image: url(./img/bg-1920.webp);\n    }\n  }\n  \n  @media (min-width: 1920px) {\n    .office-void-bg {\n      background-image: url(./img/bg-2560.webp);\n    }\n  }\n  \n  @media (min-width: 2560px) {\n    .office-void-bg {\n      background-image: url(./img/bg-3840.webp);\n    }\n  }\n";
 function view4(_) {
   return fragment2(
     toList([
