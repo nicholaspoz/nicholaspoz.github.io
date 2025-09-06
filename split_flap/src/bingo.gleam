@@ -2,7 +2,6 @@ import gleam/list
 import gleam/result
 import gleam/string
 import lustre
-import lustre/attribute
 import lustre/effect.{type Effect}
 import lustre/element.{type Element}
 import lustre/element/html
@@ -102,7 +101,7 @@ fn next_frame_recursive(
 }
 
 fn view(model: Model) -> Element(Msg) {
-  let current_scene_name = current_scene_name(model)
+  let _current_scene_name = current_scene_name(model)
 
   element.fragment([
     html.style([], css),
