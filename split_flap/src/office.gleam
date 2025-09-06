@@ -30,6 +30,7 @@ const css = "
     width: 100%;
     height: 100%;
     position: relative;
+    container-type: inline-size;
   }
   
   .office-void {
@@ -37,16 +38,17 @@ const css = "
     height: 100%;
     position: relative;  
     overflow: hidden;
+    container-type: size;
   }
   
   .office-void-bg {
     position: absolute;
-    width: max(100vw, 100vh);
-    height: max(100vw, 100vh);
+    width: max(100cqw, 100cqh);
+    height: max(100cqw, 100cqh);
     left: var(--position-x);
     top: var(--position-y);
     transform: translate(calc(var(--position-x) * -1), calc(var(--position-y) * -1));
-    background-image: url(./img/bg-1280.webp);
+    background-image: url(./img/bg-3840.webp);
     background-size: cover;
     background-position: var(--position-x) var(--position-y);
   }
@@ -60,23 +62,5 @@ const css = "
     left: 35.77%;
     width: 28.50%;
     height: 14.4%;
-  }
-
-  @media (min-width: 1280px) {
-    .office-void-bg {
-      background-image: url(./img/bg-1920.webp);
-    }
-  }
-  
-  @media (min-width: 1920px) {
-    .office-void-bg {
-      background-image: url(./img/bg-2560.webp);
-    }
-  }
-  
-  @media (min-width: 2560px) {
-    .office-void-bg {
-      background-image: url(./img/bg-3840.webp);
-    }
   }
 "
