@@ -14,12 +14,12 @@ import lustre/element/keyed
 
 import split_flap_char
 
-const num_rows = 6
+const default_rows = 6
 
-const num_cols = 22
+const default_cols = 22
 
 type Model {
-  Model(lines: List(Content))
+  Model(lines: List(Content), cols: Int, rows: Int)
 }
 
 pub type Content {
@@ -64,6 +64,8 @@ fn content_decoder() -> decode.Decoder(Content) {
 }
 
 type Msg {
+  ColsAttrChanged(Int)
+  RowsAttrChanged(Int)
   LinesAttrChanged(List(Content))
 }
 
@@ -73,6 +75,7 @@ pub fn register() -> Result(Nil, lustre.Error) {
   let component =
     lustre.component(init, update, view, [
       component.on_attribute_change("lines", fn(val) {
+        echo "lines " <> val
         let lines = json.parse(val, using: decode.list(of: content_decoder()))
         case lines {
           Ok(lines) -> Ok(LinesAttrChanged(lines))
@@ -82,16 +85,38 @@ pub fn register() -> Result(Nil, lustre.Error) {
           }
         }
       }),
+
+      component.on_attribute_change("cols", fn(val) {
+        echo "cols " <> val
+        case int.parse(val) {
+          Ok(cols) -> Ok(ColsAttrChanged(cols))
+          Error(_) -> Error(Nil)
+        }
+      }),
+
+      component.on_attribute_change("rows", fn(val) {
+        echo "rows " <> val
+        case int.parse(val) {
+          Ok(rows) -> Ok(RowsAttrChanged(rows))
+          Error(_) -> Error(Nil)
+        }
+      }),
     ])
 
   lustre.register(component, "split-flap-display")
 }
 
-pub fn element(contents: List(Content)) -> Element(msg) {
+pub fn element(
+  contents: List(Content),
+  cols cols: Int,
+  rows rows: Int,
+) -> Element(msg) {
   element.element(
     "split-flap-display",
     [
       attribute.attribute("lines", json.to_string(contents_to_json(contents))),
+      attribute.attribute("cols", int.to_string(cols)),
+      attribute.attribute("rows", int.to_string(rows)),
     ],
     [],
   )
@@ -99,19 +124,21 @@ pub fn element(contents: List(Content)) -> Element(msg) {
 
 fn init(_) -> #(Model, Effect(Msg)) {
   // Rows and cols are currently hardcoded and never changed
-  #(Model([]), effect.none())
+  #(Model([], default_cols, default_rows), effect.none())
 }
 
-fn update(_model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
+fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
   case msg {
-    LinesAttrChanged(lines) -> #(Model(lines), effect.none())
+    LinesAttrChanged(lines) -> #(Model(..model, lines:), effect.none())
+    ColsAttrChanged(cols) -> #(Model(..model, cols:), effect.none())
+    RowsAttrChanged(rows) -> #(Model(..model, rows:), effect.none())
   }
 }
 
 fn view(model: Model) -> Element(msg) {
   let sanitized_lines =
     model.lines
-    |> zip_longest(list.range(0, num_rows - 1), _)
+    |> zip_longest(list.range(0, model.rows - 1), _)
     |> list.filter_map(first_is_some)
 
   element.fragment([
@@ -120,13 +147,17 @@ fn view(model: Model) -> Element(msg) {
     keyed.div(
       [attribute.class("display")],
       list.index_map(sanitized_lines, fn(line, line_num) {
-        #(int.to_string(line_num), row(line, row: line_num))
+        #(int.to_string(line_num), row(line, row: line_num, cols: model.cols))
       }),
     ),
   ])
 }
 
-fn row(line: Option(Content), row row_num: Int) -> Element(msg) {
+fn row(
+  line: Option(Content),
+  row row_num: Int,
+  cols num_cols: Int,
+) -> Element(msg) {
   let chars = case line {
     Some(content) ->
       content.text
@@ -208,12 +239,7 @@ const css = "
   :host {
     display: inline-block;
     width: 100%;
-    height: 100%;
-    container-type: inline-size;
-    background: linear-gradient(250deg, rgb(40, 40, 40) 0%,rgb(50, 50, 50) 25%,rgb(40,40,40) 80%);
-    padding: 1cqw 3cqw;
-    box-shadow: inset 0cqw -0.3cqw 1cqw 0.3cqw rgba(0, 0, 0, 0.4);
-    border: 2cqw solid black;
+    height: 100%;    
   }
 
   split-flap-char {
@@ -224,6 +250,8 @@ const css = "
     display: flex;
     flex-direction: column;
     gap: 0; 
+    width: 100%;
+    height: 100%;
   }
 
   .row {

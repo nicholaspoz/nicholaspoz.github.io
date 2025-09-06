@@ -1490,6 +1490,13 @@ var Nil = void 0;
 function identity(x) {
   return x;
 }
+function parse_int(value) {
+  if (/^[-+]?(\d+)$/.test(value)) {
+    return new Ok(parseInt(value));
+  } else {
+    return new Error(Nil);
+  }
+}
 function to_string(term) {
   return term.toString();
 }
@@ -3233,17 +3240,14 @@ function unsafe_raw_html(namespace, tag, attributes, inner_html) {
 function text3(content) {
   return text2(content);
 }
-function style(attrs, css5) {
-  return unsafe_raw_html("", "style", attrs, css5);
+function style(attrs, css4) {
+  return unsafe_raw_html("", "style", attrs, css4);
 }
 function div(attrs, children) {
   return element2("div", attrs, children);
 }
 function span(attrs, children) {
   return element2("span", attrs, children);
-}
-function slot(attrs, fallback) {
-  return element2("slot", attrs, fallback);
 }
 
 // build/dev/javascript/lustre/lustre/vdom/patch.mjs
@@ -4936,10 +4940,10 @@ var virtualiseAttribute = (attr) => {
 // build/dev/javascript/lustre/lustre/runtime/client/runtime.ffi.mjs
 var is_browser = () => !!document();
 var Runtime = class {
-  constructor(root3, [model, effects], view5, update5) {
+  constructor(root3, [model, effects], view4, update5) {
     this.root = root3;
     this.#model = model;
-    this.#view = view5;
+    this.#view = view4;
     this.#update = update5;
     this.root.addEventListener("context-request", (event2) => {
       if (!(event2.context && event2.callback)) return;
@@ -5175,7 +5179,7 @@ var SystemRequestedShutdown = class extends CustomType {
 };
 
 // build/dev/javascript/lustre/lustre/runtime/client/component.ffi.mjs
-var make_component = ({ init: init4, update: update5, view: view5, config }, name) => {
+var make_component = ({ init: init4, update: update5, view: view4, config }, name) => {
   if (!is_browser()) return new Error(new NotABrowser());
   if (!name.includes("-")) return new Error(new BadComponentName(name));
   if (customElements.get(name)) {
@@ -5216,7 +5220,7 @@ var make_component = ({ init: init4, update: update5, view: view5, config }, nam
       this.#runtime = new Runtime(
         this.#shadowRoot,
         [model, effects],
-        view5,
+        view4,
         update5
       );
     }
@@ -5399,17 +5403,14 @@ function on_attribute_change(name, decoder) {
     }
   );
 }
-function named_slot(name, attributes, fallback) {
-  return slot(prepend(attribute2("name", name), attributes), fallback);
-}
 
 // build/dev/javascript/lustre/lustre.mjs
 var App = class extends CustomType {
-  constructor(init4, update5, view5, config) {
+  constructor(init4, update5, view4, config) {
     super();
     this.init = init4;
     this.update = update5;
-    this.view = view5;
+    this.view = view4;
     this.config = config;
   }
 };
@@ -5427,20 +5428,8 @@ var ComponentAlreadyRegistered = class extends CustomType {
 };
 var NotABrowser = class extends CustomType {
 };
-function component(init4, update5, view5, options) {
-  return new App(init4, update5, view5, new$6(options));
-}
-function application(init4, update5, view5) {
-  return new App(init4, update5, view5, new$6(empty_list));
-}
-function simple(init4, update5, view5) {
-  let init$1 = (start_args) => {
-    return [init4(start_args), none()];
-  };
-  let update$1 = (model, msg) => {
-    return [update5(model, msg), none()];
-  };
-  return application(init$1, update$1, view5);
+function component(init4, update5, view4, options) {
+  return new App(init4, update5, view4, new$6(options));
 }
 
 // build/dev/javascript/split_flap/split_flap.ffi.mjs
@@ -5759,9 +5748,11 @@ function register() {
 // build/dev/javascript/split_flap/split_flap_display.mjs
 var FILEPATH2 = "src/split_flap_display.gleam";
 var Model2 = class extends CustomType {
-  constructor(lines) {
+  constructor(lines, cols, rows) {
     super();
     this.lines = lines;
+    this.cols = cols;
+    this.rows = rows;
   }
 };
 var Text2 = class extends CustomType {
@@ -5775,6 +5766,18 @@ var Link = class extends CustomType {
     super();
     this.text = text4;
     this.url = url;
+  }
+};
+var ColsAttrChanged = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var RowsAttrChanged = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
   }
 };
 var LinesAttrChanged = class extends CustomType {
@@ -5837,21 +5840,69 @@ function content_decoder() {
     }
   );
 }
-function element5(contents) {
+function element5(contents, cols, rows) {
   return element2(
     "split-flap-display",
     toList([
-      attribute2("lines", to_string2(contents_to_json(contents)))
+      attribute2("lines", to_string2(contents_to_json(contents))),
+      attribute2("cols", to_string(cols)),
+      attribute2("rows", to_string(rows))
     ]),
     toList([])
   );
 }
-function init2(_) {
-  return [new Model2(toList([])), none()];
+function update3(model, msg) {
+  if (msg instanceof ColsAttrChanged) {
+    let cols = msg[0];
+    return [new Model2(model.lines, cols, model.rows), none()];
+  } else if (msg instanceof RowsAttrChanged) {
+    let rows = msg[0];
+    return [new Model2(model.lines, model.cols, rows), none()];
+  } else {
+    let lines = msg[0];
+    return [new Model2(lines, model.cols, model.rows), none()];
+  }
 }
-function update3(_, msg) {
-  let lines = msg[0];
-  return [new Model2(lines), none()];
+function row(line, row_num, num_cols) {
+  let _block;
+  if (line instanceof Some) {
+    let content = line[0];
+    let _pipe2 = content.text;
+    let _pipe$12 = pad_end(_pipe2, num_cols, " ");
+    _block = slice(_pipe$12, 0, num_cols);
+  } else {
+    _block = repeat(" ", num_cols);
+  }
+  let chars2 = _block;
+  let _block$1;
+  let _pipe = chars2;
+  let _pipe$1 = graphemes(_pipe);
+  _block$1 = index_map(
+    _pipe$1,
+    (char, idx) => {
+      let key = to_string(row_num) + "-" + to_string(idx);
+      return [key, element4(char)];
+    }
+  );
+  let children = _block$1;
+  let _block$2;
+  if (line instanceof Some) {
+    let $ = line[0];
+    if ($ instanceof Link) {
+      let url = $.url;
+      _block$2 = toList([href(url), target("_blank")]);
+    } else {
+      _block$2 = toList([]);
+    }
+  } else {
+    _block$2 = toList([]);
+  }
+  let link_attrs = _block$2;
+  return element3(
+    "a",
+    prepend(class$("row"), link_attrs),
+    children
+  );
 }
 function zip_longest(list1, list22) {
   let _block;
@@ -5936,55 +5987,17 @@ function error_string(error) {
     })() + ")";
   }
 }
-var num_rows = 6;
-var num_cols = 22;
-function row(line, row_num) {
-  let _block;
-  if (line instanceof Some) {
-    let content = line[0];
-    let _pipe2 = content.text;
-    let _pipe$12 = pad_end(_pipe2, num_cols, " ");
-    _block = slice(_pipe$12, 0, num_cols);
-  } else {
-    _block = repeat(" ", num_cols);
-  }
-  let chars2 = _block;
-  let _block$1;
-  let _pipe = chars2;
-  let _pipe$1 = graphemes(_pipe);
-  _block$1 = index_map(
-    _pipe$1,
-    (char, idx) => {
-      let key = to_string(row_num) + "-" + to_string(idx);
-      return [key, element4(char)];
-    }
-  );
-  let children = _block$1;
-  let _block$2;
-  if (line instanceof Some) {
-    let $ = line[0];
-    if ($ instanceof Link) {
-      let url = $.url;
-      _block$2 = toList([href(url), target("_blank")]);
-    } else {
-      _block$2 = toList([]);
-    }
-  } else {
-    _block$2 = toList([]);
-  }
-  let link_attrs = _block$2;
-  return element3(
-    "a",
-    prepend(class$("row"), link_attrs),
-    children
-  );
+var default_rows = 6;
+var default_cols = 22;
+function init2(_) {
+  return [new Model2(toList([]), default_cols, default_rows), none()];
 }
-var css2 = "\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n    background: linear-gradient(250deg, rgb(40, 40, 40) 0%,rgb(50, 50, 50) 25%,rgb(40,40,40) 80%);\n    padding: 1cqw 3cqw;\n    box-shadow: inset 0cqw -0.3cqw 1cqw 0.3cqw rgba(0, 0, 0, 0.4);\n    border: 2cqw solid black;\n  }\n\n  split-flap-char {\n    padding: 1cqw 0.3cqw;\n  }\n\n  .display {\n    display: flex;\n    flex-direction: column;\n    gap: 0; \n  }\n\n  .row {\n    display: flex;\n    flex-direction: row;\n    gap: 0rem;\n\n    cursor: default;\n  }\n\n  .row[href] {\n    cursor: pointer;\n  }\n";
+var css2 = "\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;    \n  }\n\n  split-flap-char {\n    padding: 1cqw 0.3cqw;\n  }\n\n  .display {\n    display: flex;\n    flex-direction: column;\n    gap: 0; \n    width: 100%;\n    height: 100%;\n  }\n\n  .row {\n    display: flex;\n    flex-direction: row;\n    gap: 0rem;\n\n    cursor: default;\n  }\n\n  .row[href] {\n    cursor: pointer;\n  }\n";
 function view2(model) {
   let _block;
   let _pipe = model.lines;
   let _pipe$1 = ((_capture) => {
-    return zip_longest(range(0, num_rows - 1), _capture);
+    return zip_longest(range(0, model.rows - 1), _capture);
   })(_pipe);
   _block = filter_map(_pipe$1, first_is_some);
   let sanitized_lines = _block;
@@ -5996,7 +6009,7 @@ function view2(model) {
         index_map(
           sanitized_lines,
           (line, line_num) => {
-            return [to_string(line_num), row(line, line_num)];
+            return [to_string(line_num), row(line, line_num, model.cols)];
           }
         )
       )
@@ -6010,15 +6023,15 @@ function register2() {
       "let_assert",
       FILEPATH2,
       "split_flap_display",
-      71,
+      73,
       "register",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 1556,
-        end: 1601,
-        pattern_start: 1567,
-        pattern_end: 1572
+        start: 1632,
+        end: 1677,
+        pattern_start: 1643,
+        pattern_end: 1648
       }
     );
   }
@@ -6030,6 +6043,7 @@ function register2() {
       on_attribute_change(
         "lines",
         (val) => {
+          echo("lines " + val, void 0, "src/split_flap_display.gleam", 78);
           let lines = parse(val, list2(content_decoder()));
           if (lines instanceof Ok) {
             let lines$1 = lines[0];
@@ -6040,8 +6054,34 @@ function register2() {
               "error " + error_string(error),
               void 0,
               "src/split_flap_display.gleam",
-              80
+              83
             );
+            return new Error(void 0);
+          }
+        }
+      ),
+      on_attribute_change(
+        "cols",
+        (val) => {
+          echo("cols " + val, void 0, "src/split_flap_display.gleam", 90);
+          let $1 = parse_int(val);
+          if ($1 instanceof Ok) {
+            let cols = $1[0];
+            return new Ok(new ColsAttrChanged(cols));
+          } else {
+            return new Error(void 0);
+          }
+        }
+      ),
+      on_attribute_change(
+        "rows",
+        (val) => {
+          echo("rows " + val, void 0, "src/split_flap_display.gleam", 98);
+          let $1 = parse_int(val);
+          if ($1 instanceof Ok) {
+            let rows = $1[0];
+            return new Ok(new RowsAttrChanged(rows));
+          } else {
             return new Error(void 0);
           }
         }
@@ -6330,15 +6370,15 @@ function next_frame(scenes2, current) {
         "let_assert",
         FILEPATH3,
         "bingo",
-        82,
+        83,
         "next_frame",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $1,
-          start: 1961,
-          end: 2005,
-          pattern_start: 1972,
-          pattern_end: 1980
+          start: 1986,
+          end: 2030,
+          pattern_start: 1997,
+          pattern_end: 2005
         }
       );
     }
@@ -6400,15 +6440,15 @@ function current_scene_name(model) {
       "let_assert",
       FILEPATH3,
       "bingo",
-      113,
+      121,
       "current_scene_name",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 2574,
-        end: 2735,
-        pattern_start: 2585,
-        pattern_end: 2594
+        start: 2790,
+        end: 2951,
+        pattern_start: 2801,
+        pattern_end: 2810
       }
     );
   }
@@ -6444,7 +6484,7 @@ function email() {
 function scenes() {
   return toList([
     new Scene(
-      "home",
+      "HOME",
       toList([
         new Frame(
           toList([
@@ -6493,7 +6533,7 @@ function scenes() {
       ])
     ),
     new Scene(
-      "tech",
+      "TECH",
       toList([
         new Frame(
           toList([
@@ -6509,7 +6549,7 @@ function scenes() {
       ])
     ),
     new Scene(
-      "music",
+      "MUSIC",
       toList([
         new Frame(
           toList([
@@ -6564,10 +6604,10 @@ function init3(_) {
       "let_assert",
       FILEPATH3,
       "bingo",
-      39,
+      40,
       "init",
       "Pattern match failed, no pattern matched the value.",
-      { value: $, start: 800, end: 847, pattern_start: 811, pattern_end: 826 }
+      { value: $, start: 825, end: 872, pattern_start: 836, pattern_end: 851 }
     );
   }
   let $1 = first2(first_scene.frames);
@@ -6579,10 +6619,10 @@ function init3(_) {
       "let_assert",
       FILEPATH3,
       "bingo",
-      40,
+      41,
       "init",
       "Pattern match failed, no pattern matched the value.",
-      { value: $1, start: 850, end: 909, pattern_start: 861, pattern_end: 876 }
+      { value: $1, start: 875, end: 934, pattern_start: 886, pattern_end: 901 }
     );
   }
   return [
@@ -6592,13 +6632,23 @@ function init3(_) {
     })
   ];
 }
-var css3 = "\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n";
+var css3 = "\n  :host {\n    width: 100%;\n    height: 100%;\n  }\n\n\n\n  .frame  {\n    box-sizing: border-box;\n    width: 100%;\n    min-height: stretch;\n    background: linear-gradient(250deg, rgb(40, 40, 40) 0%,rgb(50, 50, 50) 25%,rgb(40,40,40) 80%);\n    padding: 1cqw 10cqw;\n    box-shadow: inset 0cqw -0.3cqw 1cqw 0.3cqw rgba(0, 0, 0, 0.4);\n    border: 1.5cqw solid black;\n\n    display: flex;\n    flex-direction: column;\n    justify-content: space-between;\n    align-items: center;\n    gap: 2cqh;\n  }\n";
 function view3(model) {
-  let $ = current_scene_name(model);
+  let current_scene_name$1 = current_scene_name(model);
   return fragment2(
     toList([
       style(toList([]), css3),
-      element5(model.current.lines)
+      div(
+        toList([class$("frame")]),
+        toList([
+          element5(model.current.lines, 22, 6),
+          element5(
+            toList([new Text2(current_scene_name$1)]),
+            22,
+            1
+          )
+        ])
+      )
     ])
   );
 }
@@ -6609,52 +6659,14 @@ function register3() {
       "let_assert",
       FILEPATH3,
       "bingo",
-      21,
+      22,
       "register",
       "Pattern match failed, no pattern matched the value.",
-      { value: $, start: 412, end: 460, pattern_start: 423, pattern_end: 428 }
+      { value: $, start: 436, end: 484, pattern_start: 447, pattern_end: 452 }
     );
   }
   let component2 = component(init3, update4, view3, toList([]));
-  return make_component(component2, "bingo-display");
-}
-
-// build/dev/javascript/split_flap/office.mjs
-var css4 = "\n  :host {\n    --position-x: 50%;\n    --position-y: 35%;\n    width: 100%;\n    height: 100%;\n    position: relative;\n    container-type: inline-size;\n  }\n  \n  .office-void {\n    width: 100%;\n    height: 100%;\n    position: relative;  \n    overflow: hidden;\n    container-type: size;\n  }\n  \n  .office-void-bg {\n    position: absolute;\n    width: max(100cqw, 100cqh);\n    height: max(100cqw, 100cqh);\n    left: var(--position-x);\n    top: var(--position-y);\n    transform: translate(calc(var(--position-x) * -1), calc(var(--position-y) * -1));\n    background-image: url(./img/bg-3840.webp);\n    background-size: cover;\n    background-position: var(--position-x) var(--position-y);\n  }\n  \n  .split-flap-void {\n    position: absolute;\n    /* background: lime; */\n    /* mix-blend-mode: difference; */\n    /* do not, and I repeat, do not touch this\u2014otherwise the flip-flap will be very very sad and I will cry */\n    top: 21.78%;\n    left: 35.77%;\n    width: 28.50%;\n    height: 14.4%;\n  }\n";
-function view4(_) {
-  return fragment2(
-    toList([
-      style(toList([]), css4),
-      div(
-        toList([class$("office-void")]),
-        toList([
-          div(
-            toList([class$("office-void-bg")]),
-            toList([
-              div(
-                toList([class$("split-flap-void")]),
-                toList([
-                  named_slot("split-flap", toList([]), toList([]))
-                ])
-              )
-            ])
-          )
-        ])
-      )
-    ])
-  );
-}
-function register4() {
-  let component2 = simple(
-    (_) => {
-      return void 0;
-    },
-    (_, _1) => {
-      return void 0;
-    },
-    view4
-  );
-  return make_component(component2, "bingo-office");
+  return make_component(component2, "nick-dot-bingo");
 }
 
 // build/dev/javascript/split_flap/split_flap.mjs
@@ -6666,22 +6678,10 @@ function main() {
       "let_assert",
       FILEPATH4,
       "split_flap",
-      5,
+      4,
       "main",
       "Pattern match failed, no pattern matched the value.",
-      { value: $, start: 46, end: 81, pattern_start: 57, pattern_end: 62 }
-    );
-  }
-  let $1 = register4();
-  if (!($1 instanceof Ok)) {
-    throw makeError(
-      "let_assert",
-      FILEPATH4,
-      "split_flap",
-      6,
-      "main",
-      "Pattern match failed, no pattern matched the value.",
-      { value: $1, start: 84, end: 120, pattern_start: 95, pattern_end: 100 }
+      { value: $, start: 32, end: 67, pattern_start: 43, pattern_end: 48 }
     );
   }
   return void 0;

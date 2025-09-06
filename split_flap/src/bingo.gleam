@@ -2,6 +2,7 @@ import gleam/list
 import gleam/result
 import gleam/string
 import lustre
+import lustre/attribute
 import lustre/effect.{type Effect}
 import lustre/element.{type Element}
 import lustre/element/html
@@ -20,7 +21,7 @@ pub type Scene {
 pub fn register() -> Result(Nil, lustre.Error) {
   let assert Ok(_) = split_flap_display.register()
   let component = lustre.component(init, update, view, [])
-  lustre.register(component, "bingo-display")
+  lustre.register(component, "nick-dot-bingo")
 }
 
 type Model {
@@ -101,11 +102,18 @@ fn next_frame_recursive(
 }
 
 fn view(model: Model) -> Element(Msg) {
-  let _current_scene_name = current_scene_name(model)
+  let current_scene_name = current_scene_name(model)
 
   element.fragment([
     html.style([], css),
-    split_flap_display.element(model.current.lines),
+    html.div([attribute.class("frame")], [
+      split_flap_display.element(model.current.lines, cols: 22, rows: 6),
+      split_flap_display.element(
+        [Text(text: current_scene_name)],
+        cols: 22,
+        rows: 1,
+      ),
+    ]),
   ])
 }
 
@@ -123,7 +131,7 @@ fn current_scene_name(model: Model) -> String {
 
 fn scenes() -> List(Scene) {
   [
-    Scene("home", [
+    Scene("HOME", [
       Frame(ms: 1000, lines: [
         Text(text: "NICK"),
         Text(text: ""),
@@ -159,7 +167,7 @@ fn scenes() -> List(Scene) {
       ]),
     ]),
 
-    Scene("tech", [
+    Scene("TECH", [
       Frame(ms: 8000, lines: [
         Text(text: "FREELANCE"),
         Text(text: "TECHNOLOGIST"),
@@ -170,7 +178,7 @@ fn scenes() -> List(Scene) {
       ]),
     ]),
 
-    Scene("music", [
+    Scene("MUSIC", [
       Frame(ms: 1000, lines: [
         Text(text: "FREELANCE"),
         Text(text: "CELLIST"),
@@ -225,9 +233,25 @@ fn email() {
 
 const css = "
   :host {
-    display: inline-block;
     width: 100%;
     height: 100%;
-    container-type: inline-size;
+  }
+
+
+
+  .frame  {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: stretch;
+    background: linear-gradient(250deg, rgb(40, 40, 40) 0%,rgb(50, 50, 50) 25%,rgb(40,40,40) 80%);
+    padding: 1cqw 10cqw;
+    box-shadow: inset 0cqw -0.3cqw 1cqw 0.3cqw rgba(0, 0, 0, 0.4);
+    border: 1.5cqw solid black;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+    gap: 2cqh;
   }
 "
