@@ -1,5 +1,5 @@
-import gleam/list
-import gleam/option.{None}
+import gleam/list.{Continue, Stop}
+import gleam/option.{None, Some}
 import gleam/result
 import gleam/string
 import lustre
@@ -32,8 +32,9 @@ type Model {
 type Msg {
   FrameStarted
   FrameFinished
-  AutoPlayDisabled
-  AutoPlayEnabled
+  BackClicked
+  ForwardClicked
+  Progressed
 }
 
 fn init(_) -> #(Model, effect.Effect(Msg)) {
@@ -44,6 +45,7 @@ fn init(_) -> #(Model, effect.Effect(Msg)) {
   #(Model(scenes, first_frame, True), {
     use dispatch <- effect.from
     dispatch(FrameStarted)
+    dispatch(Progressed)
   })
 }
 
@@ -70,8 +72,19 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
       }
     }
 
-    AutoPlayDisabled -> #(Model(..model, auto_play: False), effect.none())
-    AutoPlayEnabled -> #(Model(..model, auto_play: True), effect.none())
+    Progressed -> {
+      // hmmm
+      #(model, effect.none())
+    }
+
+    BackClicked -> {
+      echo "BackClicked"
+      #(model, effect.none())
+    }
+    ForwardClicked -> {
+      echo "ForwardClicked"
+      #(model, effect.none())
+    }
   }
 }
 
@@ -108,15 +121,35 @@ fn view(model: Model) -> Element(Msg) {
   element.fragment([
     html.style([], css),
     html.div([attribute.class("frame")], [
+      progress_bar.element(
+        progress: calculate_progress(model),
+        cols: 22,
+        on_back: Some(BackClicked),
+        on_forward: Some(ForwardClicked),
+      ),
       split_flap_display.element(
         model.current.lines,
         cols: 22,
         rows: 6,
         chars: None,
       ),
-      progress_bar.element(50, cols: 22),
     ]),
   ])
+}
+
+fn calculate_progress(model: Model) -> Int {
+  let all_frames = model.scenes |> list.flat_map(fn(scene) { scene.frames })
+
+  let total_frames = list.fold(all_frames, 0, fn(acc, frame) { acc + frame.ms })
+  let progress =
+    list.fold_until(all_frames, 0, fn(acc, frame) {
+      case frame == model.current {
+        True -> Stop(acc)
+        False -> Continue(acc + frame.ms)
+      }
+    })
+
+  progress * 100 / total_frames
 }
 
 fn current_scene_name(model: Model) -> String {
@@ -200,7 +233,15 @@ fn scenes() -> List(Scene) {
     ]),
 
     Scene("!", [
-      Frame(ms: 7000, lines: [
+      Frame(ms: 4000, lines: [
+        Text("              WHAT"),
+        Text("            A"),
+        Text("       TIME"),
+        Text("    TO"),
+        Text("       BE"),
+        Text("          ALIVE"),
+      ]),
+      Frame(ms: 3000, lines: [
         Text("              WHAT"),
         Text("            A"),
         Text("       TIME"),

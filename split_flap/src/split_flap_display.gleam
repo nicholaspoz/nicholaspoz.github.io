@@ -86,7 +86,6 @@ pub fn register() -> Result(Nil, lustre.Error) {
       }),
 
       component.on_attribute_change("cols", fn(val) {
-        echo "cols " <> val
         case int.parse(val) {
           Ok(cols) -> Ok(ColsAttrChanged(cols))
           Error(_) -> Error(Nil)
@@ -94,7 +93,6 @@ pub fn register() -> Result(Nil, lustre.Error) {
       }),
 
       component.on_attribute_change("rows", fn(val) {
-        echo "rows " <> val
         case int.parse(val) {
           Ok(rows) -> Ok(RowsAttrChanged(rows))
           Error(_) -> Error(Nil)
@@ -188,7 +186,7 @@ fn row(
     |> string.to_graphemes
     |> list.index_map(fn(char, idx) {
       let key = int.to_string(row_num) <> "-" <> int.to_string(idx)
-      #(key, split_flap_char.element(char:, char_stack:))
+      #(key, split_flap_char.element(char:, char_stack:, on_click: None))
     })
 
   let link_attrs = case line {

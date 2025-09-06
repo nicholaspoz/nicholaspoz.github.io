@@ -9,6 +9,7 @@ import lustre/component
 import lustre/effect
 import lustre/element.{type Element}
 import lustre/element/html
+import lustre/event
 
 import utils
 
@@ -29,6 +30,7 @@ type Msg {
   DestinationChanged
   FlipStarted
   FlipEnded
+  Clicked
 }
 
 pub fn register() -> Result(Nil, lustre.Error) {
@@ -40,19 +42,12 @@ pub fn register() -> Result(Nil, lustre.Error) {
       }),
 
       component.on_attribute_change("chars", fn(val) {
-        { " " <> val }
+        { val }
         |> string.to_graphemes
+        |> list.filter(fn(char) { char != " " })
         |> list.unique
-        |> list.sort(fn(a, b) {
-          case a, b {
-            " ", " " -> order.Eq
-            " ", _ -> order.Lt
-            _, " " -> order.Gt
-            _, _ -> string.compare(a, b)
-          }
-        })
         |> string.join("")
-        |> echo
+        |> string.append(to: " ")
         |> CharsAttrChanged
         |> Ok
       }),
@@ -64,15 +59,27 @@ pub fn register() -> Result(Nil, lustre.Error) {
 pub fn element(
   char char: String,
   char_stack chars: Option(String),
+  on_click on_click: Option(msg),
 ) -> Element(msg) {
   element.element(
     "split-flap-char",
     [
       attribute.attribute("letter", char),
+
       attribute.attribute("chars", case chars {
         Some(stack) -> stack
         None -> default_chars
       }),
+
+      case on_click {
+        Some(on_click) -> event.on_click(on_click)
+        None -> attribute.none()
+      },
+
+      case on_click {
+        Some(_) -> attribute.style("cursor", "pointer")
+        None -> attribute.none()
+      },
     ],
     [],
   )
@@ -126,6 +133,10 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
         use <- utils.set_timeout(15)
         dispatch(FlipEnded)
       })
+    }
+
+    Clicked -> {
+      #(model, effect.none())
     }
   }
 }
