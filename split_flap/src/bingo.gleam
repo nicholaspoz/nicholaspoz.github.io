@@ -237,8 +237,6 @@ const css = "
     height: 100%;
   }
 
-
-
   .frame  {
     box-sizing: border-box;
     width: 100%;

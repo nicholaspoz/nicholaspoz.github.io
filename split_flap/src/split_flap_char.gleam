@@ -1,4 +1,5 @@
 import gleam/list
+import gleam/order
 import gleam/result
 import gleam/string
 import lustre
@@ -10,10 +11,10 @@ import lustre/element/html
 
 import utils
 
-pub const chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?/\\|@#_()<>"
+pub const default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?/\\|@#_()<>"
 
 type Model {
-  Model(char_stack: String, dest: String, state: State)
+  Model(chars: String, dest: String, state: State)
 }
 
 type State {
@@ -23,6 +24,7 @@ type State {
 
 type Msg {
   LetterAttrChanged(String)
+  CharsAttrChanged(String)
   DestinationChanged
   FlipStarted
   FlipEnded
@@ -33,10 +35,24 @@ pub fn register() -> Result(Nil, lustre.Error) {
     lustre.component(init, update, view, [
       component.on_attribute_change("letter", fn(val) {
         use char <- result.try(string.first(val))
-        case string.contains(chars, char) {
-          True -> Ok(LetterAttrChanged(val))
-          False -> Error(Nil)
-        }
+        Ok(LetterAttrChanged(char))
+      }),
+
+      component.on_attribute_change("chars", fn(val) {
+        { " " <> val }
+        |> string.to_graphemes
+        |> list.unique
+        |> list.sort(fn(a, b) {
+          case a, b {
+            " ", " " -> order.Eq
+            " ", _ -> order.Lt
+            _, " " -> order.Gt
+            _, _ -> string.compare(a, b)
+          }
+        })
+        |> string.join("")
+        |> CharsAttrChanged
+        |> Ok
       }),
     ])
 
@@ -48,20 +64,33 @@ pub fn element(char: String) -> Element(msg) {
 }
 
 fn init(_) -> #(Model, effect.Effect(Msg)) {
-  #(Model(chars, " ", Idle), effect.none())
+  #(Model(default_chars, " ", Idle), effect.none())
 }
 
 fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
   case msg {
-    LetterAttrChanged(dest) -> {
-      #(Model(..model, dest:), {
+    CharsAttrChanged(chars) -> {
+      #(Model(..model, chars:), {
         use dispatch <- effect.from
+
         dispatch(DestinationChanged)
       })
     }
 
+    LetterAttrChanged(dest) -> {
+      case { string.contains(model.chars, dest) } {
+        True -> {
+          #(Model(..model, dest:), {
+            use dispatch <- effect.from
+            dispatch(DestinationChanged)
+          })
+        }
+        False -> #(model, effect.none())
+      }
+    }
+
     DestinationChanged | FlipEnded -> {
-      case model.state, string.first(model.char_stack) {
+      case model.state, string.first(model.chars) {
         Idle, Ok(x) if x != model.dest -> {
           #(Model(..model, state: Flipping), {
             use dispatch <- effect.from
@@ -75,9 +104,9 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
     }
 
     FlipStarted -> {
-      let assert Ok(#(first, rest)) = string.pop_grapheme(model.char_stack)
+      let assert Ok(#(first, rest)) = string.pop_grapheme(model.chars)
       let next = rest <> first
-      #(Model(..model, char_stack: next, state: Idle), {
+      #(Model(..model, chars: next, state: Idle), {
         use dispatch <- effect.from
         use <- utils.set_timeout(15)
         dispatch(FlipEnded)
@@ -146,7 +175,7 @@ fn view(model: Model) -> Element(Msg) {
 }
 
 fn curr_and_next_chars(from model: Model) -> Result(#(String, String), Nil) {
-  case string.to_graphemes(model.char_stack) |> list.take(2) {
+  case string.to_graphemes(model.chars) |> list.take(2) {
     [a, b] -> Ok(#(a, b))
     _ -> Error(Nil)
   }

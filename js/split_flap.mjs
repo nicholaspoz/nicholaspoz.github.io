@@ -1128,6 +1128,19 @@ function compare(a, b) {
 }
 
 // build/dev/javascript/gleam_stdlib/gleam/string.mjs
+function compare2(a, b) {
+  let $ = a === b;
+  if ($) {
+    return new Eq();
+  } else {
+    let $1 = less_than(a, b);
+    if ($1) {
+      return new Lt();
+    } else {
+      return new Gt();
+    }
+  }
+}
 function slice(string5, idx, len) {
   let $ = len < 0;
   if ($) {
@@ -1487,6 +1500,7 @@ function field(field_name, field_decoder, next) {
 
 // build/dev/javascript/gleam_stdlib/gleam_stdlib.mjs
 var Nil = void 0;
+var NOT_FOUND = {};
 function identity(x) {
   return x;
 }
@@ -1544,6 +1558,9 @@ function pop_grapheme(string5) {
     return new Error(Nil);
   }
 }
+function less_than(a, b) {
+  return a < b;
+}
 function string_slice(string5, idx, len) {
   if (len <= 0 || idx >= string5.length) {
     return "";
@@ -1596,6 +1613,19 @@ var trim_start_regex = /* @__PURE__ */ new RegExp(
   `^[${unicode_whitespaces}]*`
 );
 var trim_end_regex = /* @__PURE__ */ new RegExp(`[${unicode_whitespaces}]*$`);
+function new_map() {
+  return Dict.new();
+}
+function map_get(map3, key) {
+  const value = map3.get(key, NOT_FOUND);
+  if (value === NOT_FOUND) {
+    return new Error(Nil);
+  }
+  return new Ok(value);
+}
+function map_insert(key, value, map3) {
+  return map3.set(key, value);
+}
 function classify_dynamic(data2) {
   if (typeof data2 === "string") {
     return "String";
@@ -1671,6 +1701,17 @@ function int(data2) {
 function string(data2) {
   if (typeof data2 === "string") return new Ok(data2);
   return new Error("");
+}
+
+// build/dev/javascript/gleam_stdlib/gleam/dict.mjs
+function do_has_key(key, dict3) {
+  return !isEqual(map_get(dict3, key), new Error(void 0));
+}
+function has_key(dict3, key) {
+  return do_has_key(key, dict3);
+}
+function insert(dict3, key, value) {
+  return map_insert(key, value, dict3);
 }
 
 // build/dev/javascript/gleam_stdlib/gleam/list.mjs
@@ -1868,10 +1909,36 @@ function find2(loop$list, loop$is_desired) {
     }
   }
 }
+function unique_loop(loop$list, loop$seen, loop$acc) {
+  while (true) {
+    let list4 = loop$list;
+    let seen = loop$seen;
+    let acc = loop$acc;
+    if (list4 instanceof Empty) {
+      return reverse(acc);
+    } else {
+      let first$1 = list4.head;
+      let rest$1 = list4.tail;
+      let $ = has_key(seen, first$1);
+      if ($) {
+        loop$list = rest$1;
+        loop$seen = seen;
+        loop$acc = acc;
+      } else {
+        loop$list = rest$1;
+        loop$seen = insert(seen, first$1, void 0);
+        loop$acc = prepend(first$1, acc);
+      }
+    }
+  }
+}
+function unique(list4) {
+  return unique_loop(list4, new_map(), toList([]));
+}
 function sequences(loop$list, loop$compare, loop$growing, loop$direction, loop$prev, loop$acc) {
   while (true) {
     let list4 = loop$list;
-    let compare4 = loop$compare;
+    let compare5 = loop$compare;
     let growing = loop$growing;
     let direction = loop$direction;
     let prev = loop$prev;
@@ -1886,18 +1953,18 @@ function sequences(loop$list, loop$compare, loop$growing, loop$direction, loop$p
     } else {
       let new$1 = list4.head;
       let rest$1 = list4.tail;
-      let $ = compare4(prev, new$1);
+      let $ = compare5(prev, new$1);
       if (direction instanceof Ascending) {
         if ($ instanceof Lt) {
           loop$list = rest$1;
-          loop$compare = compare4;
+          loop$compare = compare5;
           loop$growing = growing$1;
           loop$direction = direction;
           loop$prev = new$1;
           loop$acc = acc;
         } else if ($ instanceof Eq) {
           loop$list = rest$1;
-          loop$compare = compare4;
+          loop$compare = compare5;
           loop$growing = growing$1;
           loop$direction = direction;
           loop$prev = new$1;
@@ -1916,7 +1983,7 @@ function sequences(loop$list, loop$compare, loop$growing, loop$direction, loop$p
             let next = rest$1.head;
             let rest$2 = rest$1.tail;
             let _block$1;
-            let $1 = compare4(new$1, next);
+            let $1 = compare5(new$1, next);
             if ($1 instanceof Lt) {
               _block$1 = new Ascending();
             } else if ($1 instanceof Eq) {
@@ -1926,7 +1993,7 @@ function sequences(loop$list, loop$compare, loop$growing, loop$direction, loop$p
             }
             let direction$1 = _block$1;
             loop$list = rest$2;
-            loop$compare = compare4;
+            loop$compare = compare5;
             loop$growing = toList([new$1]);
             loop$direction = direction$1;
             loop$prev = next;
@@ -1947,7 +2014,7 @@ function sequences(loop$list, loop$compare, loop$growing, loop$direction, loop$p
           let next = rest$1.head;
           let rest$2 = rest$1.tail;
           let _block$1;
-          let $1 = compare4(new$1, next);
+          let $1 = compare5(new$1, next);
           if ($1 instanceof Lt) {
             _block$1 = new Ascending();
           } else if ($1 instanceof Eq) {
@@ -1957,7 +2024,7 @@ function sequences(loop$list, loop$compare, loop$growing, loop$direction, loop$p
           }
           let direction$1 = _block$1;
           loop$list = rest$2;
-          loop$compare = compare4;
+          loop$compare = compare5;
           loop$growing = toList([new$1]);
           loop$direction = direction$1;
           loop$prev = next;
@@ -1977,7 +2044,7 @@ function sequences(loop$list, loop$compare, loop$growing, loop$direction, loop$p
           let next = rest$1.head;
           let rest$2 = rest$1.tail;
           let _block$1;
-          let $1 = compare4(new$1, next);
+          let $1 = compare5(new$1, next);
           if ($1 instanceof Lt) {
             _block$1 = new Ascending();
           } else if ($1 instanceof Eq) {
@@ -1987,7 +2054,7 @@ function sequences(loop$list, loop$compare, loop$growing, loop$direction, loop$p
           }
           let direction$1 = _block$1;
           loop$list = rest$2;
-          loop$compare = compare4;
+          loop$compare = compare5;
           loop$growing = toList([new$1]);
           loop$direction = direction$1;
           loop$prev = next;
@@ -1995,7 +2062,7 @@ function sequences(loop$list, loop$compare, loop$growing, loop$direction, loop$p
         }
       } else {
         loop$list = rest$1;
-        loop$compare = compare4;
+        loop$compare = compare5;
         loop$growing = growing$1;
         loop$direction = direction;
         loop$prev = new$1;
@@ -2008,7 +2075,7 @@ function merge_ascendings(loop$list1, loop$list2, loop$compare, loop$acc) {
   while (true) {
     let list1 = loop$list1;
     let list22 = loop$list2;
-    let compare4 = loop$compare;
+    let compare5 = loop$compare;
     let acc = loop$acc;
     if (list1 instanceof Empty) {
       let list4 = list22;
@@ -2021,21 +2088,21 @@ function merge_ascendings(loop$list1, loop$list2, loop$compare, loop$acc) {
       let rest1 = list1.tail;
       let first22 = list22.head;
       let rest2 = list22.tail;
-      let $ = compare4(first1, first22);
+      let $ = compare5(first1, first22);
       if ($ instanceof Lt) {
         loop$list1 = rest1;
         loop$list2 = list22;
-        loop$compare = compare4;
+        loop$compare = compare5;
         loop$acc = prepend(first1, acc);
       } else if ($ instanceof Eq) {
         loop$list1 = list1;
         loop$list2 = rest2;
-        loop$compare = compare4;
+        loop$compare = compare5;
         loop$acc = prepend(first22, acc);
       } else {
         loop$list1 = list1;
         loop$list2 = rest2;
-        loop$compare = compare4;
+        loop$compare = compare5;
         loop$acc = prepend(first22, acc);
       }
     }
@@ -2044,7 +2111,7 @@ function merge_ascendings(loop$list1, loop$list2, loop$compare, loop$acc) {
 function merge_ascending_pairs(loop$sequences, loop$compare, loop$acc) {
   while (true) {
     let sequences2 = loop$sequences;
-    let compare4 = loop$compare;
+    let compare5 = loop$compare;
     let acc = loop$acc;
     if (sequences2 instanceof Empty) {
       return reverse(acc);
@@ -2060,11 +2127,11 @@ function merge_ascending_pairs(loop$sequences, loop$compare, loop$acc) {
         let descending = merge_ascendings(
           ascending1,
           ascending2,
-          compare4,
+          compare5,
           toList([])
         );
         loop$sequences = rest$1;
-        loop$compare = compare4;
+        loop$compare = compare5;
         loop$acc = prepend(descending, acc);
       }
     }
@@ -2074,7 +2141,7 @@ function merge_descendings(loop$list1, loop$list2, loop$compare, loop$acc) {
   while (true) {
     let list1 = loop$list1;
     let list22 = loop$list2;
-    let compare4 = loop$compare;
+    let compare5 = loop$compare;
     let acc = loop$acc;
     if (list1 instanceof Empty) {
       let list4 = list22;
@@ -2087,21 +2154,21 @@ function merge_descendings(loop$list1, loop$list2, loop$compare, loop$acc) {
       let rest1 = list1.tail;
       let first22 = list22.head;
       let rest2 = list22.tail;
-      let $ = compare4(first1, first22);
+      let $ = compare5(first1, first22);
       if ($ instanceof Lt) {
         loop$list1 = list1;
         loop$list2 = rest2;
-        loop$compare = compare4;
+        loop$compare = compare5;
         loop$acc = prepend(first22, acc);
       } else if ($ instanceof Eq) {
         loop$list1 = rest1;
         loop$list2 = list22;
-        loop$compare = compare4;
+        loop$compare = compare5;
         loop$acc = prepend(first1, acc);
       } else {
         loop$list1 = rest1;
         loop$list2 = list22;
-        loop$compare = compare4;
+        loop$compare = compare5;
         loop$acc = prepend(first1, acc);
       }
     }
@@ -2110,7 +2177,7 @@ function merge_descendings(loop$list1, loop$list2, loop$compare, loop$acc) {
 function merge_descending_pairs(loop$sequences, loop$compare, loop$acc) {
   while (true) {
     let sequences2 = loop$sequences;
-    let compare4 = loop$compare;
+    let compare5 = loop$compare;
     let acc = loop$acc;
     if (sequences2 instanceof Empty) {
       return reverse(acc);
@@ -2126,11 +2193,11 @@ function merge_descending_pairs(loop$sequences, loop$compare, loop$acc) {
         let ascending = merge_descendings(
           descending1,
           descending2,
-          compare4,
+          compare5,
           toList([])
         );
         loop$sequences = rest$1;
-        loop$compare = compare4;
+        loop$compare = compare5;
         loop$acc = prepend(ascending, acc);
       }
     }
@@ -2140,7 +2207,7 @@ function merge_all(loop$sequences, loop$direction, loop$compare) {
   while (true) {
     let sequences2 = loop$sequences;
     let direction = loop$direction;
-    let compare4 = loop$compare;
+    let compare5 = loop$compare;
     if (sequences2 instanceof Empty) {
       return sequences2;
     } else if (direction instanceof Ascending) {
@@ -2149,10 +2216,10 @@ function merge_all(loop$sequences, loop$direction, loop$compare) {
         let sequence = sequences2.head;
         return sequence;
       } else {
-        let sequences$1 = merge_ascending_pairs(sequences2, compare4, toList([]));
+        let sequences$1 = merge_ascending_pairs(sequences2, compare5, toList([]));
         loop$sequences = sequences$1;
         loop$direction = new Descending();
-        loop$compare = compare4;
+        loop$compare = compare5;
       }
     } else {
       let $ = sequences2.tail;
@@ -2160,15 +2227,15 @@ function merge_all(loop$sequences, loop$direction, loop$compare) {
         let sequence = sequences2.head;
         return reverse(sequence);
       } else {
-        let sequences$1 = merge_descending_pairs(sequences2, compare4, toList([]));
+        let sequences$1 = merge_descending_pairs(sequences2, compare5, toList([]));
         loop$sequences = sequences$1;
         loop$direction = new Ascending();
-        loop$compare = compare4;
+        loop$compare = compare5;
       }
     }
   }
 }
-function sort(list4, compare4) {
+function sort(list4, compare5) {
   if (list4 instanceof Empty) {
     return list4;
   } else {
@@ -2180,7 +2247,7 @@ function sort(list4, compare4) {
       let y = $.head;
       let rest$1 = $.tail;
       let _block;
-      let $1 = compare4(x, y);
+      let $1 = compare5(x, y);
       if ($1 instanceof Lt) {
         _block = new Ascending();
       } else if ($1 instanceof Eq) {
@@ -2191,13 +2258,13 @@ function sort(list4, compare4) {
       let direction = _block;
       let sequences$1 = sequences(
         rest$1,
-        compare4,
+        compare5,
         toList([x]),
         direction,
         y,
         toList([])
       );
-      return merge_all(sequences$1, new Ascending(), compare4);
+      return merge_all(sequences$1, new Ascending(), compare5);
     }
   }
 }
@@ -2417,7 +2484,7 @@ var option_none = /* @__PURE__ */ new None();
 var GT = /* @__PURE__ */ new Gt();
 var LT = /* @__PURE__ */ new Lt();
 var EQ = /* @__PURE__ */ new Eq();
-function compare3(a, b) {
+function compare4(a, b) {
   if (a.name === b.name) {
     return EQ;
   } else if (a.name < b.name) {
@@ -2585,7 +2652,7 @@ function prepare(attributes) {
     } else {
       let _pipe = attributes;
       let _pipe$1 = sort(_pipe, (a, b) => {
-        return compare3(b, a);
+        return compare4(b, a);
       });
       return merge(_pipe$1, empty_list);
     }
@@ -3450,7 +3517,7 @@ function diff_attributes(loop$controlled, loop$path, loop$mapper, loop$events, l
       let remaining_new = new$7.tail;
       let prev = old.head;
       let remaining_old = old.tail;
-      let $ = compare3(prev, next);
+      let $ = compare4(prev, next);
       if ($ instanceof Lt) {
         if (prev instanceof Event2) {
           let name = prev.name;
@@ -5440,9 +5507,9 @@ function set_timeout(delay, cb) {
 // build/dev/javascript/split_flap/split_flap_char.mjs
 var FILEPATH = "src/split_flap_char.gleam";
 var Model = class extends CustomType {
-  constructor(char_stack, dest, state) {
+  constructor(chars, dest, state) {
     super();
-    this.char_stack = char_stack;
+    this.chars = chars;
     this.dest = dest;
     this.state = state;
   }
@@ -5452,6 +5519,12 @@ var Idle = class extends CustomType {
 var Flipping = class extends CustomType {
 };
 var LetterAttrChanged = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var CharsAttrChanged = class extends CustomType {
   constructor($0) {
     super();
     this[0] = $0;
@@ -5473,20 +5546,35 @@ function element4(char) {
 function update2(model, msg) {
   if (msg instanceof LetterAttrChanged) {
     let dest = msg[0];
+    let $ = contains_string(model.chars, dest);
+    if ($) {
+      return [
+        new Model(model.chars, dest, model.state),
+        from(
+          (dispatch) => {
+            return dispatch(new DestinationChanged());
+          }
+        )
+      ];
+    } else {
+      return [model, none()];
+    }
+  } else if (msg instanceof CharsAttrChanged) {
+    let chars = msg[0];
     return [
-      new Model(model.char_stack, dest, model.state),
+      new Model(chars, model.dest, model.state),
       from((dispatch) => {
         return dispatch(new DestinationChanged());
       })
     ];
   } else if (msg instanceof DestinationChanged) {
     let $ = model.state;
-    let $1 = first(model.char_stack);
+    let $1 = first(model.chars);
     if ($1 instanceof Ok && $ instanceof Idle) {
       let x = $1[0];
       if (x !== model.dest) {
         return [
-          new Model(model.char_stack, model.dest, new Flipping()),
+          new Model(model.chars, model.dest, new Flipping()),
           from(
             (dispatch) => {
               return set_timeout(
@@ -5499,19 +5587,13 @@ function update2(model, msg) {
           )
         ];
       } else {
-        return [
-          new Model(model.char_stack, model.dest, new Idle()),
-          none()
-        ];
+        return [new Model(model.chars, model.dest, new Idle()), none()];
       }
     } else {
-      return [
-        new Model(model.char_stack, model.dest, new Idle()),
-        none()
-      ];
+      return [new Model(model.chars, model.dest, new Idle()), none()];
     }
   } else if (msg instanceof FlipStarted) {
-    let $ = pop_grapheme(model.char_stack);
+    let $ = pop_grapheme(model.chars);
     let first3;
     let rest;
     if ($ instanceof Ok) {
@@ -5522,15 +5604,15 @@ function update2(model, msg) {
         "let_assert",
         FILEPATH,
         "split_flap_char",
-        78,
+        107,
         "update",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 1790,
-          end: 1859,
-          pattern_start: 1801,
-          pattern_end: 1819
+          start: 2476,
+          end: 2540,
+          pattern_start: 2487,
+          pattern_end: 2505
         }
       );
     }
@@ -5550,12 +5632,12 @@ function update2(model, msg) {
     ];
   } else {
     let $ = model.state;
-    let $1 = first(model.char_stack);
+    let $1 = first(model.chars);
     if ($1 instanceof Ok && $ instanceof Idle) {
       let x = $1[0];
       if (x !== model.dest) {
         return [
-          new Model(model.char_stack, model.dest, new Flipping()),
+          new Model(model.chars, model.dest, new Flipping()),
           from(
             (dispatch) => {
               return set_timeout(
@@ -5568,22 +5650,16 @@ function update2(model, msg) {
           )
         ];
       } else {
-        return [
-          new Model(model.char_stack, model.dest, new Idle()),
-          none()
-        ];
+        return [new Model(model.chars, model.dest, new Idle()), none()];
       }
     } else {
-      return [
-        new Model(model.char_stack, model.dest, new Idle()),
-        none()
-      ];
+      return [new Model(model.chars, model.dest, new Idle()), none()];
     }
   }
 }
 function curr_and_next_chars(model) {
   let $ = (() => {
-    let _pipe = graphemes(model.char_stack);
+    let _pipe = graphemes(model.chars);
     return take(_pipe, 2);
   })();
   if ($ instanceof Empty) {
@@ -5604,9 +5680,9 @@ function curr_and_next_chars(model) {
     }
   }
 }
-var chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?/\\|@#_()<>";
+var default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?/\\|@#_()<>";
 function init(_) {
-  return [new Model(chars, " ", new Idle()), none()];
+  return [new Model(default_chars, " ", new Idle()), none()];
 }
 var css = '\n  :host {\n    display: inline-block;\n    perspective: 10rem;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  .split-flap {\n    /* TODO -webkit-font-smoothing */\n    position: relative;\n    width: 100%;\n    height: 100%;\n    aspect-ratio: 1/1.618; /* golden ratio ;) */\n    font-family: "Fragment Mono", monospace;\n    font-weight: bold;\n    font-size: 120cqw;\n    background: rgb(40, 40, 40);\n    border-radius: 5cqw;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .split-flap::selection {\n    background: white;\n    color: black;\n  }\n\n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 3.5cqw;\n    background: rgb(20, 20, 20);\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    z-index: 1;\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n    z-index: 0;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 0.5cqw 0.5cqw 0 0;\n    user-select: text;\n    height: 100%\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 0.5cqw 0.5cqw;\n  }\n\n  .flap.flipping-top {\n    opacity: 0;\n    pointer-events: none;\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 0.5cqw 0.5cqw 0 0;\n    z-index: 10;\n    transform: rotateX(0deg);\n    background: rgb(40, 40, 40);\n  }\n\n  .flap.flipping-bottom {\n    /* Animated flap that rotates down during character change */\n    opacity: 0;\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 0.5cqw 0.5cqw;\n    z-index: 10;\n    transform: rotateX(90deg);\n    background: rgb(40, 40, 40);\n  }\n\n  .flap.flipping-top[data-state="flipping"] {\n    opacity: 1;\n    z-index: 10;\n    box-shadow: 0 0.5cqw 1cqw rgba(0, 0, 0, 0.3);\n    transform: rotateX(-90deg);\n    transition: transform 0.05s ease-in;\n  }\n  \n  .flap.flipping-bottom[data-state="flipping"] {\n    opacity: 1;\n    box-shadow: 0 0.5cqw 1cqw rgba(0, 0, 0, 0.3);\n    z-index: 10;\n    transform: rotateX(0deg);\n    transition: transform 0.015s linear;\n    transition-delay: 0.05s;\n  }\n  \n  .flap.top .flap-content {\n    top: 0;\n    height: 100%\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n  .flap.flipping-top .flap-content {\n    top: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
 function view(model) {
@@ -5621,15 +5697,15 @@ function view(model) {
       "let_assert",
       FILEPATH,
       "split_flap_char",
-      94,
+      123,
       "view",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 2256,
-        end: 2313,
-        pattern_start: 2267,
-        pattern_end: 2284
+        start: 2932,
+        end: 2989,
+        pattern_start: 2943,
+        pattern_end: 2960
       }
     );
   }
@@ -5730,14 +5806,36 @@ function register() {
           return try$(
             first(val),
             (char) => {
-              let $ = contains_string(chars, char);
-              if ($) {
-                return new Ok(new LetterAttrChanged(val));
+              return new Ok(new LetterAttrChanged(char));
+            }
+          );
+        }
+      ),
+      on_attribute_change(
+        "chars",
+        (val) => {
+          let _pipe = " " + val;
+          let _pipe$1 = graphemes(_pipe);
+          let _pipe$2 = unique(_pipe$1);
+          let _pipe$3 = sort(
+            _pipe$2,
+            (a, b) => {
+              if (b === " ") {
+                if (a === " ") {
+                  return new Eq();
+                } else {
+                  return new Gt();
+                }
+              } else if (a === " ") {
+                return new Lt();
               } else {
-                return new Error(void 0);
+                return compare2(a, b);
               }
             }
           );
+          let _pipe$4 = join(_pipe$3, "");
+          let _pipe$5 = new CharsAttrChanged(_pipe$4);
+          return new Ok(_pipe$5);
         }
       )
     ])
@@ -5873,9 +5971,9 @@ function row(line, row_num, num_cols) {
   } else {
     _block = repeat(" ", num_cols);
   }
-  let chars2 = _block;
+  let chars = _block;
   let _block$1;
-  let _pipe = chars2;
+  let _pipe = chars;
   let _pipe$1 = graphemes(_pipe);
   _block$1 = index_map(
     _pipe$1,
@@ -6632,7 +6730,7 @@ function init3(_) {
     })
   ];
 }
-var css3 = "\n  :host {\n    width: 100%;\n    height: 100%;\n  }\n\n\n\n  .frame  {\n    box-sizing: border-box;\n    width: 100%;\n    min-height: stretch;\n    background: linear-gradient(250deg, rgb(40, 40, 40) 0%,rgb(50, 50, 50) 25%,rgb(40,40,40) 80%);\n    padding: 1cqw 10cqw;\n    box-shadow: inset 0cqw -0.3cqw 1cqw 0.3cqw rgba(0, 0, 0, 0.4);\n    border: 1.5cqw solid black;\n\n    display: flex;\n    flex-direction: column;\n    justify-content: space-between;\n    align-items: center;\n    gap: 2.5cqh;\n  }\n";
+var css3 = "\n  :host {\n    width: 100%;\n    height: 100%;\n  }\n\n  .frame  {\n    box-sizing: border-box;\n    width: 100%;\n    min-height: stretch;\n    background: linear-gradient(250deg, rgb(40, 40, 40) 0%,rgb(50, 50, 50) 25%,rgb(40,40,40) 80%);\n    padding: 1cqw 10cqw;\n    box-shadow: inset 0cqw -0.3cqw 1cqw 0.3cqw rgba(0, 0, 0, 0.4);\n    border: 1.5cqw solid black;\n\n    display: flex;\n    flex-direction: column;\n    justify-content: space-between;\n    align-items: center;\n    gap: 2.5cqh;\n  }\n";
 function view3(model) {
   let current_scene_name$1 = current_scene_name(model);
   return fragment2(
