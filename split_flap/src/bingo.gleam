@@ -1,5 +1,4 @@
 import gleam/list
-import gleam/option.{type Option, None, Some}
 import gleam/result
 import gleam/string
 import lustre
@@ -107,7 +106,6 @@ fn view(model: Model) -> Element(Msg) {
 
   element.fragment([
     html.style([], css),
-    html.span([attribute.class("panel")], [html.text(current_scene_name)]),
     split_flap_display.element(model.current.lines),
   ])
 }
@@ -227,24 +225,10 @@ fn email() {
 }
 
 const css = "
-
   :host {
     display: inline-block;
     width: 100%;
     height: 100%;
     container-type: inline-size;
-  }
-
-  .panel {
-    display: inline;
-    position: absolute;
-    top: 0;
-    width: 15cqw;
-    overflow: hidden;
-    height: 100%;
-    left: 105%;
-    padding: 1cqw 3cqw;
-    background: rgba(0, 0, 0, 0.5);
-    font-size: 3cqw;
   }
 "

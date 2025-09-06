@@ -175,6 +175,11 @@ const css = "
     box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);
   }
 
+  .split-flap::selection {
+    background: white;
+    color: black;
+  }
+
   .split-flap::after {
     content: \"\";
     position: absolute;

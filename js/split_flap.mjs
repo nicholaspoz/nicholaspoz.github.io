@@ -3233,14 +3233,17 @@ function unsafe_raw_html(namespace, tag, attributes, inner_html) {
 function text3(content) {
   return text2(content);
 }
-function style(attrs, css4) {
-  return unsafe_raw_html("", "style", attrs, css4);
+function style(attrs, css5) {
+  return unsafe_raw_html("", "style", attrs, css5);
 }
 function div(attrs, children) {
   return element2("div", attrs, children);
 }
 function span(attrs, children) {
   return element2("span", attrs, children);
+}
+function slot(attrs, fallback) {
+  return element2("slot", attrs, fallback);
 }
 
 // build/dev/javascript/lustre/lustre/vdom/patch.mjs
@@ -4933,10 +4936,10 @@ var virtualiseAttribute = (attr) => {
 // build/dev/javascript/lustre/lustre/runtime/client/runtime.ffi.mjs
 var is_browser = () => !!document();
 var Runtime = class {
-  constructor(root3, [model, effects], view4, update5) {
+  constructor(root3, [model, effects], view5, update5) {
     this.root = root3;
     this.#model = model;
-    this.#view = view4;
+    this.#view = view5;
     this.#update = update5;
     this.root.addEventListener("context-request", (event2) => {
       if (!(event2.context && event2.callback)) return;
@@ -5172,7 +5175,7 @@ var SystemRequestedShutdown = class extends CustomType {
 };
 
 // build/dev/javascript/lustre/lustre/runtime/client/component.ffi.mjs
-var make_component = ({ init: init4, update: update5, view: view4, config }, name) => {
+var make_component = ({ init: init4, update: update5, view: view5, config }, name) => {
   if (!is_browser()) return new Error(new NotABrowser());
   if (!name.includes("-")) return new Error(new BadComponentName(name));
   if (customElements.get(name)) {
@@ -5213,7 +5216,7 @@ var make_component = ({ init: init4, update: update5, view: view4, config }, nam
       this.#runtime = new Runtime(
         this.#shadowRoot,
         [model, effects],
-        view4,
+        view5,
         update5
       );
     }
@@ -5396,14 +5399,17 @@ function on_attribute_change(name, decoder) {
     }
   );
 }
+function named_slot(name, attributes, fallback) {
+  return slot(prepend(attribute2("name", name), attributes), fallback);
+}
 
 // build/dev/javascript/lustre/lustre.mjs
 var App = class extends CustomType {
-  constructor(init4, update5, view4, config) {
+  constructor(init4, update5, view5, config) {
     super();
     this.init = init4;
     this.update = update5;
-    this.view = view4;
+    this.view = view5;
     this.config = config;
   }
 };
@@ -5421,8 +5427,20 @@ var ComponentAlreadyRegistered = class extends CustomType {
 };
 var NotABrowser = class extends CustomType {
 };
-function component(init4, update5, view4, options) {
-  return new App(init4, update5, view4, new$6(options));
+function component(init4, update5, view5, options) {
+  return new App(init4, update5, view5, new$6(options));
+}
+function application(init4, update5, view5) {
+  return new App(init4, update5, view5, new$6(empty_list));
+}
+function simple(init4, update5, view5) {
+  let init$1 = (start_args) => {
+    return [init4(start_args), none()];
+  };
+  let update$1 = (model, msg) => {
+    return [update5(model, msg), none()];
+  };
+  return application(init$1, update$1, view5);
 }
 
 // build/dev/javascript/split_flap/split_flap.ffi.mjs
@@ -5601,7 +5619,7 @@ var chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?/\\|@#_()<>";
 function init(_) {
   return [new Model(chars, " ", new Idle()), none()];
 }
-var css = '\n  :host {\n    display: inline-block;\n    perspective: 10rem;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  .split-flap {\n    /* TODO -webkit-font-smoothing */\n    position: relative;\n    width: 100%;\n    height: 100%;\n    aspect-ratio: 5/8;\n    font-family: "Fragment Mono", monospace;\n    font-weight: bold;\n    font-size: 120cqw;\n    background: rgb(40, 40, 40);\n    border-radius: 5cqw;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 3.5cqw;\n    background: rgb(20, 20, 20);\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    z-index: 1;\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n    z-index: 0;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 0.5cqw 0.5cqw 0 0;\n    user-select: text;\n    height: 100%\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 0.5cqw 0.5cqw;\n  }\n\n  .flap.flipping-top {\n    opacity: 0;\n    pointer-events: none;\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 0.5cqw 0.5cqw 0 0;\n    z-index: 10;\n    transform: rotateX(0deg);\n    background: rgb(40, 40, 40);\n  }\n\n  .flap.flipping-bottom {\n    /* Animated flap that rotates down during character change */\n    opacity: 0;\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 0.5cqw 0.5cqw;\n    z-index: 10;\n    transform: rotateX(90deg);\n    background: rgb(40, 40, 40);\n  }\n\n  .flap.flipping-top[data-state="flipping"] {\n    opacity: 1;\n    z-index: 10;\n    box-shadow: 0 0.5cqw 1cqw rgba(0, 0, 0, 0.3);\n    transform: rotateX(-90deg);\n    transition: transform 0.05s ease-in;\n  }\n  \n  .flap.flipping-bottom[data-state="flipping"] {\n    opacity: 1;\n    box-shadow: 0 0.5cqw 1cqw rgba(0, 0, 0, 0.3);\n    z-index: 10;\n    transform: rotateX(0deg);\n    transition: transform 0.015s linear;\n    transition-delay: 0.05s;\n  }\n  \n  .flap.top .flap-content {\n    top: 0;\n    height: 100%\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n  .flap.flipping-top .flap-content {\n    top: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
+var css = '\n  :host {\n    display: inline-block;\n    perspective: 10rem;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  .split-flap {\n    /* TODO -webkit-font-smoothing */\n    position: relative;\n    width: 100%;\n    height: 100%;\n    aspect-ratio: 5/8;\n    font-family: "Fragment Mono", monospace;\n    font-weight: bold;\n    font-size: 120cqw;\n    background: rgb(40, 40, 40);\n    border-radius: 5cqw;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .split-flap::selection {\n    background: white;\n    color: black;\n  }\n\n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 3.5cqw;\n    background: rgb(20, 20, 20);\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    z-index: 1;\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n    z-index: 0;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 0.5cqw 0.5cqw 0 0;\n    user-select: text;\n    height: 100%\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 0.5cqw 0.5cqw;\n  }\n\n  .flap.flipping-top {\n    opacity: 0;\n    pointer-events: none;\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 0.5cqw 0.5cqw 0 0;\n    z-index: 10;\n    transform: rotateX(0deg);\n    background: rgb(40, 40, 40);\n  }\n\n  .flap.flipping-bottom {\n    /* Animated flap that rotates down during character change */\n    opacity: 0;\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 0.5cqw 0.5cqw;\n    z-index: 10;\n    transform: rotateX(90deg);\n    background: rgb(40, 40, 40);\n  }\n\n  .flap.flipping-top[data-state="flipping"] {\n    opacity: 1;\n    z-index: 10;\n    box-shadow: 0 0.5cqw 1cqw rgba(0, 0, 0, 0.3);\n    transform: rotateX(-90deg);\n    transition: transform 0.05s ease-in;\n  }\n  \n  .flap.flipping-bottom[data-state="flipping"] {\n    opacity: 1;\n    box-shadow: 0 0.5cqw 1cqw rgba(0, 0, 0, 0.3);\n    z-index: 10;\n    transform: rotateX(0deg);\n    transition: transform 0.015s linear;\n    transition-delay: 0.05s;\n  }\n  \n  .flap.top .flap-content {\n    top: 0;\n    height: 100%\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n  .flap.flipping-top .flap-content {\n    top: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
 function view(model) {
   let $ = curr_and_next_chars(model);
   let curr;
@@ -5961,7 +5979,7 @@ function row(line, row_num) {
     children
   );
 }
-var css2 = "\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  split-flap-char {\n    padding: 1cqw 0.3cqw;\n  }\n\n  .display {\n    display: flex;\n    flex-direction: column;\n    gap: 0;\n    /* background: rgb(40, 40, 40); */\n    background: linear-gradient(250deg, rgb(40, 40, 40) 0%,rgb(50, 50, 50) 25%,rgba(40,40,40,1) 80%);\n    padding: 1cqw 3cqw;\n    box-shadow: inset 0cqw -0.3cqw 1cqw 0.3cqw rgba(0, 0, 0, 0.4)\n  }\n\n  .row {\n    display: flex;\n    flex-direction: row;\n    gap: 0rem;\n\n    cursor: default;\n  }\n\n  .row[href] {\n    cursor: pointer;\n  }\n";
+var css2 = "\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n    background: linear-gradient(250deg, rgb(40, 40, 40) 0%,rgb(50, 50, 50) 25%,rgb(40,40,40) 80%);\n    padding: 1cqw 3cqw;\n    box-shadow: inset 0cqw -0.3cqw 1cqw 0.3cqw rgba(0, 0, 0, 0.4);\n    border: 2cqw solid black;\n  }\n\n  split-flap-char {\n    padding: 1cqw 0.3cqw;\n  }\n\n  .display {\n    display: flex;\n    flex-direction: column;\n    gap: 0; \n  }\n\n  .row {\n    display: flex;\n    flex-direction: row;\n    gap: 0rem;\n\n    cursor: default;\n  }\n\n  .row[href] {\n    cursor: pointer;\n  }\n";
 function view2(model) {
   let _block;
   let _pipe = model.lines;
@@ -6312,15 +6330,15 @@ function next_frame(scenes2, current) {
         "let_assert",
         FILEPATH3,
         "bingo",
-        84,
+        83,
         "next_frame",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $1,
-          start: 2031,
-          end: 2075,
-          pattern_start: 2042,
-          pattern_end: 2050
+          start: 1985,
+          end: 2029,
+          pattern_start: 1996,
+          pattern_end: 2004
         }
       );
     }
@@ -6382,15 +6400,15 @@ function current_scene_name(model) {
       "let_assert",
       FILEPATH3,
       "bingo",
-      116,
+      114,
       "current_scene_name",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 2719,
-        end: 2880,
-        pattern_start: 2730,
-        pattern_end: 2739
+        start: 2597,
+        end: 2758,
+        pattern_start: 2608,
+        pattern_end: 2617
       }
     );
   }
@@ -6546,10 +6564,10 @@ function init3(_) {
       "let_assert",
       FILEPATH3,
       "bingo",
-      41,
+      40,
       "init",
       "Pattern match failed, no pattern matched the value.",
-      { value: $, start: 870, end: 917, pattern_start: 881, pattern_end: 896 }
+      { value: $, start: 824, end: 871, pattern_start: 835, pattern_end: 850 }
     );
   }
   let $1 = first2(first_scene.frames);
@@ -6561,10 +6579,10 @@ function init3(_) {
       "let_assert",
       FILEPATH3,
       "bingo",
-      42,
+      41,
       "init",
       "Pattern match failed, no pattern matched the value.",
-      { value: $1, start: 920, end: 979, pattern_start: 931, pattern_end: 946 }
+      { value: $1, start: 874, end: 933, pattern_start: 885, pattern_end: 900 }
     );
   }
   return [
@@ -6574,16 +6592,12 @@ function init3(_) {
     })
   ];
 }
-var css3 = "\n\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  .panel {\n    display: inline;\n    position: absolute;\n    top: 0;\n    width: 15cqw;\n    overflow: hidden;\n    height: 100%;\n    left: 105%;\n    padding: 1cqw 3cqw;\n    background: rgba(0, 0, 0, 0.5);\n    font-size: 3cqw;\n  }\n";
+var css3 = "\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n";
 function view3(model) {
   let current_scene_name$1 = current_scene_name(model);
   return fragment2(
     toList([
       style(toList([]), css3),
-      span(
-        toList([class$("panel")]),
-        toList([text3(current_scene_name$1)])
-      ),
       element5(model.current.lines)
     ])
   );
@@ -6595,14 +6609,52 @@ function register3() {
       "let_assert",
       FILEPATH3,
       "bingo",
-      23,
+      22,
       "register",
       "Pattern match failed, no pattern matched the value.",
-      { value: $, start: 482, end: 530, pattern_start: 493, pattern_end: 498 }
+      { value: $, start: 436, end: 484, pattern_start: 447, pattern_end: 452 }
     );
   }
   let component2 = component(init3, update4, view3, toList([]));
   return make_component(component2, "bingo-display");
+}
+
+// build/dev/javascript/split_flap/office.mjs
+var css4 = "\n  :host {\n    --position-x: 50%;\n    --position-y: 35%;\n    width: 100%;\n    height: 100%;\n    position: relative;\n  }\n  \n  .office-void {\n    width: 100%;\n    height: 100%;\n    position: relative;  \n    overflow: hidden;\n  }\n  \n  .office-void-bg {\n    position: absolute;\n    width: max(100vw, 100vh);\n    height: max(100vw, 100vh);\n    left: var(--position-x);\n    top: var(--position-y);\n    transform: translate(calc(var(--position-x) * -1), calc(var(--position-y) * -1));\n    background-image: url(./img/bg-1280.webp);\n    background-size: cover;\n    background-position: var(--position-x) var(--position-y);\n  }\n  \n  .split-flap-void {\n    position: absolute;\n    /* background: lime; */\n    /* mix-blend-mode: difference; */\n    /* do not, and I repeat, do not touch this\u2014otherwise the flip-flap will be very very sad and I will cry */\n    top: 21.78%;\n    left: 35.77%;\n    width: 28.50%;\n    height: 14.4%;\n  }\n\n\n";
+function view4(_) {
+  return fragment2(
+    toList([
+      style(toList([]), css4),
+      div(
+        toList([class$("office-void")]),
+        toList([
+          div(
+            toList([class$("office-void-bg")]),
+            toList([
+              div(
+                toList([class$("split-flap-void")]),
+                toList([
+                  named_slot("split-flap", toList([]), toList([]))
+                ])
+              )
+            ])
+          )
+        ])
+      )
+    ])
+  );
+}
+function register4() {
+  let component2 = simple(
+    (_) => {
+      return void 0;
+    },
+    (_, _1) => {
+      return void 0;
+    },
+    view4
+  );
+  return make_component(component2, "bingo-office");
 }
 
 // build/dev/javascript/split_flap/split_flap.mjs
@@ -6614,10 +6666,22 @@ function main() {
       "let_assert",
       FILEPATH4,
       "split_flap",
-      4,
+      5,
       "main",
       "Pattern match failed, no pattern matched the value.",
-      { value: $, start: 32, end: 67, pattern_start: 43, pattern_end: 48 }
+      { value: $, start: 46, end: 81, pattern_start: 57, pattern_end: 62 }
+    );
+  }
+  let $1 = register4();
+  if (!($1 instanceof Ok)) {
+    throw makeError(
+      "let_assert",
+      FILEPATH4,
+      "split_flap",
+      6,
+      "main",
+      "Pattern match failed, no pattern matched the value.",
+      { value: $1, start: 84, end: 120, pattern_start: 95, pattern_end: 100 }
     );
   }
   return void 0;
