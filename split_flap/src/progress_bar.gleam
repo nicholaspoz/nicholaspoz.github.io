@@ -1,0 +1,97 @@
+import gleam/int
+import gleam/option.{Some}
+import gleam/result
+import gleam/string
+import lustre
+import lustre/attribute
+import lustre/component
+import lustre/effect
+import lustre/element.{type Element}
+import lustre/element/html
+
+import split_flap_char
+import split_flap_display.{Text}
+
+pub fn register() -> Result(Nil, lustre.Error) {
+  let component =
+    lustre.component(init, update, view, [
+      component.on_attribute_change("progress", fn(val) {
+        use parsed <- result.try(int.parse(val))
+        Ok(ProgressAttrChanged(parsed))
+      }),
+
+      component.on_attribute_change("cols", fn(val) {
+        use parsed <- result.try(int.parse(val))
+        Ok(ColsAttrChanged(int.max(parsed, 2)))
+      }),
+    ])
+  lustre.register(component, "progress-bar")
+}
+
+pub fn element(progress: Int, cols cols: Int) -> Element(msg) {
+  element.element(
+    "progress-bar",
+    [
+      attribute.attribute("progress", int.to_string(progress)),
+      attribute.attribute("cols", int.to_string(cols)),
+    ],
+    [],
+  )
+}
+
+type Model {
+  Model(progress: Int, cols: Int)
+}
+
+type Msg {
+  ProgressAttrChanged(Int)
+  ColsAttrChanged(Int)
+}
+
+fn init(_) -> #(Model, effect.Effect(Msg)) {
+  #(Model(0, 2), effect.none())
+}
+
+fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
+  case msg {
+    ColsAttrChanged(cols) -> #(Model(..model, cols:), effect.none())
+    ProgressAttrChanged(progress) -> #(Model(..model, progress:), effect.none())
+  }
+}
+
+fn view(model: Model) -> Element(Msg) {
+  element.fragment([
+    html.style([], css(model.cols)),
+    html.div([attribute.class("progress-bar")], [
+      split_flap_char.element("<", Some("<")),
+      split_flap_display.element(
+        [Text(text: "%%%")],
+        cols: model.cols - 2,
+        rows: 1,
+        chars: Some(" %"),
+      ),
+      split_flap_char.element(">", Some(">")),
+    ]),
+  ])
+}
+
+fn css(cols: Int) -> String {
+  "
+  :host {
+    display: inline-block;
+    width: 100%;
+  }
+
+  split-flap-char {
+    padding: 0.9cqw 0.3cqw;
+  }
+
+  .progress-bar {
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr <cols>fr 1fr;
+    gap: 0;
+  }
+  "
+  |> string.replace("<cols>", int.to_string(cols))
+}

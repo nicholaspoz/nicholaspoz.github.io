@@ -19,7 +19,7 @@ const default_rows = 6
 const default_cols = 22
 
 type Model {
-  Model(lines: List(Content), cols: Int, rows: Int)
+  Model(lines: List(Content), cols: Int, rows: Int, chars: Option(String))
 }
 
 pub type Content {
@@ -67,15 +67,14 @@ type Msg {
   ColsAttrChanged(Int)
   RowsAttrChanged(Int)
   LinesAttrChanged(List(Content))
+  CharsAttrChanged(String)
 }
 
 pub fn register() -> Result(Nil, lustre.Error) {
-  let assert Ok(_) = split_flap_char.register()
-
   let component =
     lustre.component(init, update, view, [
       component.on_attribute_change("lines", fn(val) {
-        echo "lines " <> val
+        // echo "lines " <> val
         let lines = json.parse(val, using: decode.list(of: content_decoder()))
         case lines {
           Ok(lines) -> Ok(LinesAttrChanged(lines))
@@ -101,6 +100,10 @@ pub fn register() -> Result(Nil, lustre.Error) {
           Error(_) -> Error(Nil)
         }
       }),
+
+      component.on_attribute_change("chars", fn(val) {
+        Ok(CharsAttrChanged(val))
+      }),
     ])
 
   lustre.register(component, "split-flap-display")
@@ -110,6 +113,7 @@ pub fn element(
   contents: List(Content),
   cols cols: Int,
   rows rows: Int,
+  chars chars: Option(String),
 ) -> Element(msg) {
   element.element(
     "split-flap-display",
@@ -117,6 +121,10 @@ pub fn element(
       attribute.attribute("lines", json.to_string(contents_to_json(contents))),
       attribute.attribute("cols", int.to_string(cols)),
       attribute.attribute("rows", int.to_string(rows)),
+      case chars {
+        Some(stack) -> attribute.attribute("chars", stack)
+        None -> attribute.none()
+      },
     ],
     [],
   )
@@ -124,7 +132,7 @@ pub fn element(
 
 fn init(_) -> #(Model, Effect(Msg)) {
   // Rows and cols are currently hardcoded and never changed
-  #(Model([], default_cols, default_rows), effect.none())
+  #(Model([], default_cols, default_rows, None), effect.none())
 }
 
 fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
@@ -132,6 +140,10 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     LinesAttrChanged(lines) -> #(Model(..model, lines:), effect.none())
     ColsAttrChanged(cols) -> #(Model(..model, cols:), effect.none())
     RowsAttrChanged(rows) -> #(Model(..model, rows:), effect.none())
+    CharsAttrChanged(chars) -> #(
+      Model(..model, chars: Some(chars)),
+      effect.none(),
+    )
   }
 }
 
@@ -147,7 +159,10 @@ fn view(model: Model) -> Element(msg) {
     keyed.div(
       [attribute.class("display")],
       list.index_map(sanitized_lines, fn(line, line_num) {
-        #(int.to_string(line_num), row(line, row: line_num, cols: model.cols))
+        #(
+          int.to_string(line_num),
+          row(line, row: line_num, cols: model.cols, chars: model.chars),
+        )
       }),
     ),
   ])
@@ -157,6 +172,7 @@ fn row(
   line: Option(Content),
   row row_num: Int,
   cols num_cols: Int,
+  chars char_stack: Option(String),
 ) -> Element(msg) {
   let chars = case line {
     Some(content) ->
@@ -172,7 +188,7 @@ fn row(
     |> string.to_graphemes
     |> list.index_map(fn(char, idx) {
       let key = int.to_string(row_num) <> "-" <> int.to_string(idx)
-      #(key, split_flap_char.element(char))
+      #(key, split_flap_char.element(char:, char_stack:))
     })
 
   let link_attrs = case line {

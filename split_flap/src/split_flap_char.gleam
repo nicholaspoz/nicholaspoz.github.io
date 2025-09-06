@@ -1,4 +1,5 @@
 import gleam/list
+import gleam/option.{type Option, None, Some}
 import gleam/order
 import gleam/result
 import gleam/string
@@ -51,6 +52,7 @@ pub fn register() -> Result(Nil, lustre.Error) {
           }
         })
         |> string.join("")
+        |> echo
         |> CharsAttrChanged
         |> Ok
       }),
@@ -59,8 +61,21 @@ pub fn register() -> Result(Nil, lustre.Error) {
   lustre.register(component, "split-flap-char")
 }
 
-pub fn element(char: String) -> Element(msg) {
-  element.element("split-flap-char", [attribute.attribute("letter", char)], [])
+pub fn element(
+  char char: String,
+  char_stack chars: Option(String),
+) -> Element(msg) {
+  element.element(
+    "split-flap-char",
+    [
+      attribute.attribute("letter", char),
+      attribute.attribute("chars", case chars {
+        Some(stack) -> stack
+        None -> default_chars
+      }),
+    ],
+    [],
+  )
 }
 
 fn init(_) -> #(Model, effect.Effect(Msg)) {

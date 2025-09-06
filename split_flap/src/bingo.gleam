@@ -1,4 +1,5 @@
 import gleam/list
+import gleam/option.{None}
 import gleam/result
 import gleam/string
 import lustre
@@ -7,6 +8,7 @@ import lustre/effect.{type Effect}
 import lustre/element.{type Element}
 import lustre/element/html
 
+import progress_bar
 import split_flap_display.{type Content, Link, Text}
 import utils
 
@@ -19,7 +21,6 @@ pub type Scene {
 }
 
 pub fn register() -> Result(Nil, lustre.Error) {
-  let assert Ok(_) = split_flap_display.register()
   let component = lustre.component(init, update, view, [])
   lustre.register(component, "nick-dot-bingo")
 }
@@ -102,17 +103,18 @@ fn next_frame_recursive(
 }
 
 fn view(model: Model) -> Element(Msg) {
-  let current_scene_name = current_scene_name(model)
+  let _current_scene_name = current_scene_name(model)
 
   element.fragment([
     html.style([], css),
     html.div([attribute.class("frame")], [
-      split_flap_display.element(model.current.lines, cols: 22, rows: 6),
       split_flap_display.element(
-        [Text(text: current_scene_name)],
+        model.current.lines,
         cols: 22,
-        rows: 1,
+        rows: 6,
+        chars: None,
       ),
+      progress_bar.element(50, cols: 22),
     ]),
   ])
 }

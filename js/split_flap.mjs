@@ -44,8 +44,8 @@ var List = class {
     return length2 - 1;
   }
 };
-function prepend(element6, tail) {
-  return new NonEmpty(element6, tail);
+function prepend(element7, tail) {
+  return new NonEmpty(element7, tail);
 }
 function toList(elements, tail) {
   return List.fromArray(elements, tail);
@@ -1126,8 +1126,22 @@ function compare(a, b) {
     }
   }
 }
+function max(a, b) {
+  let $ = a > b;
+  if ($) {
+    return a;
+  } else {
+    return b;
+  }
+}
 
 // build/dev/javascript/gleam_stdlib/gleam/string.mjs
+function replace(string5, pattern, substitute) {
+  let _pipe = string5;
+  let _pipe$1 = identity(_pipe);
+  let _pipe$2 = string_replace(_pipe$1, pattern, substitute);
+  return identity(_pipe$2);
+}
 function compare2(a, b) {
   let $ = a === b;
   if ($) {
@@ -1514,6 +1528,9 @@ function parse_int(value) {
 function to_string(term) {
   return term.toString();
 }
+function string_replace(string5, target2, substitute) {
+  return string5.replaceAll(target2, substitute);
+}
 function string_length(string5) {
   if (string5 === "") {
     return 0;
@@ -1682,8 +1699,8 @@ function list(data2, decode2, pushPath, index4, emptyList) {
     return [emptyList, List.fromArray([error])];
   }
   const decoded = [];
-  for (const element6 of data2) {
-    const layer = decode2(element6);
+  for (const element7 of data2) {
+    const layer = decode2(element7);
     const [out, errors] = layer;
     if (errors instanceof NonEmpty) {
       const [_, errors2] = pushPath(layer, index4.toString());
@@ -2674,6 +2691,9 @@ function attribute2(name, value) {
 function class$(name) {
   return attribute2("class", name);
 }
+function none() {
+  return class$("");
+}
 function data(key, value) {
   return attribute2("data-" + key, value);
 }
@@ -2698,7 +2718,7 @@ var empty = /* @__PURE__ */ new Effect(
   /* @__PURE__ */ toList([]),
   /* @__PURE__ */ toList([])
 );
-function none() {
+function none2() {
   return empty;
 }
 function from(effect) {
@@ -3286,7 +3306,7 @@ function element2(tag, attributes, children) {
 function text2(content) {
   return text("", identity2, content);
 }
-function none2() {
+function none3() {
   return text("", identity2, "");
 }
 function fragment2(children) {
@@ -3307,8 +3327,8 @@ function unsafe_raw_html(namespace, tag, attributes, inner_html) {
 function text3(content) {
   return text2(content);
 }
-function style(attrs, css4) {
-  return unsafe_raw_html("", "style", attrs, css4);
+function style(attrs, css5) {
+  return unsafe_raw_html("", "style", attrs, css5);
 }
 function div(attrs, children) {
   return element2("div", attrs, children);
@@ -4893,7 +4913,7 @@ var virtualise = (root3) => {
     const placeholder = document().createTextNode("");
     insertMetadataChild(text_kind, rootMeta, placeholder, 0, null);
     root3.replaceChildren(placeholder);
-    return none2();
+    return none3();
   }
   if (virtualisableRootChildren === 1) {
     const children2 = virtualiseChildNodes(rootMeta, root3);
@@ -5007,11 +5027,11 @@ var virtualiseAttribute = (attr) => {
 // build/dev/javascript/lustre/lustre/runtime/client/runtime.ffi.mjs
 var is_browser = () => !!document();
 var Runtime = class {
-  constructor(root3, [model, effects], view4, update5) {
+  constructor(root3, [model, effects], view5, update6) {
     this.root = root3;
     this.#model = model;
-    this.#view = view4;
-    this.#update = update5;
+    this.#view = view5;
+    this.#update = update6;
     this.root.addEventListener("context-request", (event2) => {
       if (!(event2.context && event2.callback)) return;
       if (!this.#contexts.has(event2.context)) return;
@@ -5246,7 +5266,7 @@ var SystemRequestedShutdown = class extends CustomType {
 };
 
 // build/dev/javascript/lustre/lustre/runtime/client/component.ffi.mjs
-var make_component = ({ init: init4, update: update5, view: view4, config }, name) => {
+var make_component = ({ init: init5, update: update6, view: view5, config }, name) => {
   if (!is_browser()) return new Error(new NotABrowser());
   if (!name.includes("-")) return new Error(new BadComponentName(name));
   if (customElements.get(name)) {
@@ -5260,7 +5280,7 @@ var make_component = ({ init: init4, update: update5, view: view4, config }, nam
     attributes.set(name2, decoder);
     observedAttributes.push(name2);
   }
-  const [model, effects] = init4(void 0);
+  const [model, effects] = init5(void 0);
   const component2 = class Component extends HTMLElement {
     static get observedAttributes() {
       return observedAttributes;
@@ -5287,8 +5307,8 @@ var make_component = ({ init: init4, update: update5, view: view4, config }, nam
       this.#runtime = new Runtime(
         this.#shadowRoot,
         [model, effects],
-        view4,
-        update5
+        view5,
+        update6
       );
     }
     // CUSTOM ELEMENT LIFECYCLE METHODS ----------------------------------------
@@ -5431,7 +5451,7 @@ var Option = class extends CustomType {
   }
 };
 function new$6(options) {
-  let init4 = new Config2(
+  let init5 = new Config2(
     true,
     true,
     false,
@@ -5445,7 +5465,7 @@ function new$6(options) {
   );
   return fold2(
     options,
-    init4,
+    init5,
     (config, option) => {
       return option.apply(config);
     }
@@ -5473,11 +5493,11 @@ function on_attribute_change(name, decoder) {
 
 // build/dev/javascript/lustre/lustre.mjs
 var App = class extends CustomType {
-  constructor(init4, update5, view4, config) {
+  constructor(init5, update6, view5, config) {
     super();
-    this.init = init4;
-    this.update = update5;
-    this.view = view4;
+    this.init = init5;
+    this.update = update6;
+    this.view = view5;
     this.config = config;
   }
 };
@@ -5495,8 +5515,8 @@ var ComponentAlreadyRegistered = class extends CustomType {
 };
 var NotABrowser = class extends CustomType {
 };
-function component(init4, update5, view4, options) {
-  return new App(init4, update5, view4, new$6(options));
+function component(init5, update6, view5, options) {
+  return new App(init5, update6, view5, new$6(options));
 }
 
 // build/dev/javascript/split_flap/split_flap.ffi.mjs
@@ -5536,13 +5556,6 @@ var FlipStarted = class extends CustomType {
 };
 var FlipEnded = class extends CustomType {
 };
-function element4(char) {
-  return element2(
-    "split-flap-char",
-    toList([attribute2("letter", char)]),
-    toList([])
-  );
-}
 function update2(model, msg) {
   if (msg instanceof LetterAttrChanged) {
     let dest = msg[0];
@@ -5557,7 +5570,7 @@ function update2(model, msg) {
         )
       ];
     } else {
-      return [model, none()];
+      return [model, none2()];
     }
   } else if (msg instanceof CharsAttrChanged) {
     let chars = msg[0];
@@ -5587,10 +5600,10 @@ function update2(model, msg) {
           )
         ];
       } else {
-        return [new Model(model.chars, model.dest, new Idle()), none()];
+        return [new Model(model.chars, model.dest, new Idle()), none2()];
       }
     } else {
-      return [new Model(model.chars, model.dest, new Idle()), none()];
+      return [new Model(model.chars, model.dest, new Idle()), none2()];
     }
   } else if (msg instanceof FlipStarted) {
     let $ = pop_grapheme(model.chars);
@@ -5604,15 +5617,15 @@ function update2(model, msg) {
         "let_assert",
         FILEPATH,
         "split_flap_char",
-        107,
+        122,
         "update",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 2476,
-          end: 2540,
-          pattern_start: 2487,
-          pattern_end: 2505
+          start: 2731,
+          end: 2795,
+          pattern_start: 2742,
+          pattern_end: 2760
         }
       );
     }
@@ -5650,10 +5663,10 @@ function update2(model, msg) {
           )
         ];
       } else {
-        return [new Model(model.chars, model.dest, new Idle()), none()];
+        return [new Model(model.chars, model.dest, new Idle()), none2()];
       }
     } else {
-      return [new Model(model.chars, model.dest, new Idle()), none()];
+      return [new Model(model.chars, model.dest, new Idle()), none2()];
     }
   }
 }
@@ -5681,8 +5694,28 @@ function curr_and_next_chars(model) {
   }
 }
 var default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?/\\|@#_()<>";
+function element4(char, chars) {
+  return element2(
+    "split-flap-char",
+    toList([
+      attribute2("letter", char),
+      attribute2(
+        "chars",
+        (() => {
+          if (chars instanceof Some) {
+            let stack = chars[0];
+            return stack;
+          } else {
+            return default_chars;
+          }
+        })()
+      )
+    ]),
+    toList([])
+  );
+}
 function init(_) {
-  return [new Model(default_chars, " ", new Idle()), none()];
+  return [new Model(default_chars, " ", new Idle()), none2()];
 }
 var css = '\n  :host {\n    display: inline-block;\n    perspective: 10rem;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  .split-flap {\n    /* TODO -webkit-font-smoothing */\n    position: relative;\n    width: 100%;\n    height: 100%;\n    aspect-ratio: 1/1.618; /* golden ratio ;) */\n    font-family: "Fragment Mono", monospace;\n    font-weight: bold;\n    font-size: 120cqw;\n    background: rgb(40, 40, 40);\n    border-radius: 5cqw;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .split-flap::selection {\n    background: white;\n    color: black;\n  }\n\n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 3.5cqw;\n    background: rgb(20, 20, 20);\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    z-index: 1;\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n    z-index: 0;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 0.5cqw 0.5cqw 0 0;\n    user-select: text;\n    height: 100%\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 0.5cqw 0.5cqw;\n  }\n\n  .flap.flipping-top {\n    opacity: 0;\n    pointer-events: none;\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 0.5cqw 0.5cqw 0 0;\n    z-index: 10;\n    transform: rotateX(0deg);\n    background: rgb(40, 40, 40);\n  }\n\n  .flap.flipping-bottom {\n    /* Animated flap that rotates down during character change */\n    opacity: 0;\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 0.5cqw 0.5cqw;\n    z-index: 10;\n    transform: rotateX(90deg);\n    background: rgb(40, 40, 40);\n  }\n\n  .flap.flipping-top[data-state="flipping"] {\n    opacity: 1;\n    z-index: 10;\n    box-shadow: 0 0.5cqw 1cqw rgba(0, 0, 0, 0.3);\n    transform: rotateX(-90deg);\n    transition: transform 0.05s ease-in;\n  }\n  \n  .flap.flipping-bottom[data-state="flipping"] {\n    opacity: 1;\n    box-shadow: 0 0.5cqw 1cqw rgba(0, 0, 0, 0.3);\n    z-index: 10;\n    transform: rotateX(0deg);\n    transition: transform 0.015s linear;\n    transition-delay: 0.05s;\n  }\n  \n  .flap.top .flap-content {\n    top: 0;\n    height: 100%\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n  .flap.flipping-top .flap-content {\n    top: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
 function view(model) {
@@ -5697,15 +5730,15 @@ function view(model) {
       "let_assert",
       FILEPATH,
       "split_flap_char",
-      123,
+      138,
       "view",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 2932,
-        end: 2989,
-        pattern_start: 2943,
-        pattern_end: 2960
+        start: 3187,
+        end: 3244,
+        pattern_start: 3198,
+        pattern_end: 3215
       }
     );
   }
@@ -5738,7 +5771,7 @@ function view(model) {
           (() => {
             let $1 = model.state;
             if ($1 instanceof Idle) {
-              return none2();
+              return none3();
             } else {
               return div(
                 toList([class$("flap bottom")]),
@@ -5754,7 +5787,7 @@ function view(model) {
           (() => {
             let $1 = model.state;
             if ($1 instanceof Idle) {
-              return none2();
+              return none3();
             } else {
               return div(
                 toList([
@@ -5773,7 +5806,7 @@ function view(model) {
           (() => {
             let $1 = model.state;
             if ($1 instanceof Idle) {
-              return none2();
+              return none3();
             } else {
               return div(
                 toList([
@@ -5834,6 +5867,7 @@ function register() {
             }
           );
           let _pipe$4 = join(_pipe$3, "");
+          echo(_pipe$4, void 0, "src/split_flap_char.gleam", 55);
           let _pipe$5 = new CharsAttrChanged(_pipe$4);
           return new Ok(_pipe$5);
         }
@@ -5841,352 +5875,6 @@ function register() {
     ])
   );
   return make_component(component2, "split-flap-char");
-}
-
-// build/dev/javascript/split_flap/split_flap_display.mjs
-var FILEPATH2 = "src/split_flap_display.gleam";
-var Model2 = class extends CustomType {
-  constructor(lines, cols, rows) {
-    super();
-    this.lines = lines;
-    this.cols = cols;
-    this.rows = rows;
-  }
-};
-var Text2 = class extends CustomType {
-  constructor(text4) {
-    super();
-    this.text = text4;
-  }
-};
-var Link = class extends CustomType {
-  constructor(text4, url) {
-    super();
-    this.text = text4;
-    this.url = url;
-  }
-};
-var ColsAttrChanged = class extends CustomType {
-  constructor($0) {
-    super();
-    this[0] = $0;
-  }
-};
-var RowsAttrChanged = class extends CustomType {
-  constructor($0) {
-    super();
-    this[0] = $0;
-  }
-};
-var LinesAttrChanged = class extends CustomType {
-  constructor($0) {
-    super();
-    this[0] = $0;
-  }
-};
-function content_to_json(content) {
-  if (content instanceof Text2) {
-    let text4 = content.text;
-    return object2(
-      toList([["type", string3("text")], ["text", string3(text4)]])
-    );
-  } else {
-    let text4 = content.text;
-    let url = content.url;
-    return object2(
-      toList([
-        ["type", string3("link")],
-        ["text", string3(text4)],
-        ["url", string3(url)]
-      ])
-    );
-  }
-}
-function contents_to_json(contents) {
-  return array2(contents, content_to_json);
-}
-function content_decoder() {
-  return field(
-    "type",
-    string2,
-    (variant) => {
-      if (variant === "text") {
-        return field(
-          "text",
-          string2,
-          (text4) => {
-            return success(new Text2(text4));
-          }
-        );
-      } else if (variant === "link") {
-        return field(
-          "text",
-          string2,
-          (text4) => {
-            return field(
-              "url",
-              string2,
-              (url) => {
-                return success(new Link(text4, url));
-              }
-            );
-          }
-        );
-      } else {
-        return failure(new Text2(""), "No variant found");
-      }
-    }
-  );
-}
-function element5(contents, cols, rows) {
-  return element2(
-    "split-flap-display",
-    toList([
-      attribute2("lines", to_string2(contents_to_json(contents))),
-      attribute2("cols", to_string(cols)),
-      attribute2("rows", to_string(rows))
-    ]),
-    toList([])
-  );
-}
-function update3(model, msg) {
-  if (msg instanceof ColsAttrChanged) {
-    let cols = msg[0];
-    return [new Model2(model.lines, cols, model.rows), none()];
-  } else if (msg instanceof RowsAttrChanged) {
-    let rows = msg[0];
-    return [new Model2(model.lines, model.cols, rows), none()];
-  } else {
-    let lines = msg[0];
-    return [new Model2(lines, model.cols, model.rows), none()];
-  }
-}
-function row(line, row_num, num_cols) {
-  let _block;
-  if (line instanceof Some) {
-    let content = line[0];
-    let _pipe2 = content.text;
-    let _pipe$12 = pad_end(_pipe2, num_cols, " ");
-    _block = slice(_pipe$12, 0, num_cols);
-  } else {
-    _block = repeat(" ", num_cols);
-  }
-  let chars = _block;
-  let _block$1;
-  let _pipe = chars;
-  let _pipe$1 = graphemes(_pipe);
-  _block$1 = index_map(
-    _pipe$1,
-    (char, idx) => {
-      let key = to_string(row_num) + "-" + to_string(idx);
-      return [key, element4(char)];
-    }
-  );
-  let children = _block$1;
-  let _block$2;
-  if (line instanceof Some) {
-    let $ = line[0];
-    if ($ instanceof Link) {
-      let url = $.url;
-      _block$2 = toList([href(url), target("_blank")]);
-    } else {
-      _block$2 = toList([]);
-    }
-  } else {
-    _block$2 = toList([]);
-  }
-  let link_attrs = _block$2;
-  return element3(
-    "a",
-    prepend(class$("row"), link_attrs),
-    children
-  );
-}
-function zip_longest(list1, list22) {
-  let _block;
-  if (list1 instanceof Empty) {
-    _block = [new None(), toList([])];
-  } else {
-    let h = list1.head;
-    let rest = list1.tail;
-    _block = [new Some(h), rest];
-  }
-  let $ = _block;
-  let head1;
-  let rest1;
-  head1 = $[0];
-  rest1 = $[1];
-  let _block$1;
-  if (list22 instanceof Empty) {
-    _block$1 = [new None(), toList([])];
-  } else {
-    let h = list22.head;
-    let rest = list22.tail;
-    _block$1 = [new Some(h), rest];
-  }
-  let $1 = _block$1;
-  let head2;
-  let rest2;
-  head2 = $1[0];
-  rest2 = $1[1];
-  let _block$2;
-  if (head2 instanceof Some) {
-    if (head1 instanceof Some) {
-      let h2 = head2[0];
-      let h1 = head1[0];
-      _block$2 = new Some([new Some(h1), new Some(h2)]);
-    } else {
-      let h2 = head2[0];
-      _block$2 = new Some([new None(), new Some(h2)]);
-    }
-  } else if (head1 instanceof Some) {
-    let h1 = head1[0];
-    _block$2 = new Some([new Some(h1), new None()]);
-  } else {
-    _block$2 = head1;
-  }
-  let el = _block$2;
-  if (el instanceof Some) {
-    let el$1 = el[0];
-    return prepend(el$1, zip_longest(rest1, rest2));
-  } else {
-    return toList([]);
-  }
-}
-function first_is_some(pair) {
-  let $ = pair[0];
-  if ($ instanceof Some) {
-    let b = pair[1];
-    return new Ok(b);
-  } else {
-    return new Error(void 0);
-  }
-}
-function decode_error_string(error) {
-  let expected = error.expected;
-  let found = error.found;
-  let path = error.path;
-  return expected + " | " + found + " | " + join(path, ", ");
-}
-function error_string(error) {
-  if (error instanceof UnexpectedEndOfInput) {
-    return "UnexpectedEndOfInput";
-  } else if (error instanceof UnexpectedByte) {
-    let byte = error[0];
-    return "UnexpectedByte(" + byte + ")";
-  } else if (error instanceof UnexpectedSequence) {
-    let sequence = error[0];
-    return "UnexpectedSequence(" + sequence + ")";
-  } else {
-    let error$1 = error[0];
-    return "UnableToDecode(" + (() => {
-      let _pipe = map(error$1, decode_error_string);
-      return join(_pipe, "\n");
-    })() + ")";
-  }
-}
-var default_rows = 6;
-var default_cols = 22;
-function init2(_) {
-  return [new Model2(toList([]), default_cols, default_rows), none()];
-}
-var css2 = "\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;    \n  }\n\n  split-flap-char {\n    padding: 0.9cqw 0.3cqw;\n  }\n\n  .display {\n    display: flex;\n    flex-direction: column;\n    gap: 0; \n    width: 100%;\n    height: 100%;\n  }\n\n  .row {\n    display: flex;\n    flex-direction: row;\n    gap: 0rem;\n\n    cursor: default;\n  }\n\n  .row[href] {\n    cursor: pointer;\n  }\n";
-function view2(model) {
-  let _block;
-  let _pipe = model.lines;
-  let _pipe$1 = ((_capture) => {
-    return zip_longest(range(0, model.rows - 1), _capture);
-  })(_pipe);
-  _block = filter_map(_pipe$1, first_is_some);
-  let sanitized_lines = _block;
-  return fragment2(
-    toList([
-      style(toList([]), css2),
-      div2(
-        toList([class$("display")]),
-        index_map(
-          sanitized_lines,
-          (line, line_num) => {
-            return [to_string(line_num), row(line, line_num, model.cols)];
-          }
-        )
-      )
-    ])
-  );
-}
-function register2() {
-  let $ = register();
-  if (!($ instanceof Ok)) {
-    throw makeError(
-      "let_assert",
-      FILEPATH2,
-      "split_flap_display",
-      73,
-      "register",
-      "Pattern match failed, no pattern matched the value.",
-      {
-        value: $,
-        start: 1632,
-        end: 1677,
-        pattern_start: 1643,
-        pattern_end: 1648
-      }
-    );
-  }
-  let component2 = component(
-    init2,
-    update3,
-    view2,
-    toList([
-      on_attribute_change(
-        "lines",
-        (val) => {
-          echo("lines " + val, void 0, "src/split_flap_display.gleam", 78);
-          let lines = parse(val, list2(content_decoder()));
-          if (lines instanceof Ok) {
-            let lines$1 = lines[0];
-            return new Ok(new LinesAttrChanged(lines$1));
-          } else {
-            let error = lines[0];
-            echo(
-              "error " + error_string(error),
-              void 0,
-              "src/split_flap_display.gleam",
-              83
-            );
-            return new Error(void 0);
-          }
-        }
-      ),
-      on_attribute_change(
-        "cols",
-        (val) => {
-          echo("cols " + val, void 0, "src/split_flap_display.gleam", 90);
-          let $1 = parse_int(val);
-          if ($1 instanceof Ok) {
-            let cols = $1[0];
-            return new Ok(new ColsAttrChanged(cols));
-          } else {
-            return new Error(void 0);
-          }
-        }
-      ),
-      on_attribute_change(
-        "rows",
-        (val) => {
-          echo("rows " + val, void 0, "src/split_flap_display.gleam", 98);
-          let $1 = parse_int(val);
-          if ($1 instanceof Ok) {
-            let rows = $1[0];
-            return new Ok(new RowsAttrChanged(rows));
-          } else {
-            return new Error(void 0);
-          }
-        }
-      )
-    ])
-  );
-  return make_component(component2, "split-flap-display");
 }
 function echo(value, message, file, line) {
   const grey = "\x1B[90m";
@@ -6314,15 +6002,15 @@ var Echo$Inspector = class {
     let list_out = "[";
     let current = list4;
     while (current instanceof NonEmpty) {
-      let element6 = current.head;
+      let element7 = current.head;
       current = current.tail;
       if (list_out !== "[") {
         list_out += ", ";
       }
-      list_out += this.inspect(element6);
+      list_out += this.inspect(element7);
       if (char_out) {
-        if (Number.isInteger(element6) && element6 >= 32 && element6 <= 126) {
-          char_out += String.fromCharCode(element6);
+        if (Number.isInteger(element7) && element7 >= 32 && element7 <= 126) {
+          char_out += String.fromCharCode(element7);
         } else {
           char_out = null;
         }
@@ -6392,8 +6080,678 @@ var Echo$Inspector = class {
   }
 };
 
+// build/dev/javascript/split_flap/split_flap_display.mjs
+var Model2 = class extends CustomType {
+  constructor(lines, cols, rows, chars) {
+    super();
+    this.lines = lines;
+    this.cols = cols;
+    this.rows = rows;
+    this.chars = chars;
+  }
+};
+var Text2 = class extends CustomType {
+  constructor(text4) {
+    super();
+    this.text = text4;
+  }
+};
+var Link = class extends CustomType {
+  constructor(text4, url) {
+    super();
+    this.text = text4;
+    this.url = url;
+  }
+};
+var ColsAttrChanged = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var RowsAttrChanged = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var LinesAttrChanged = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var CharsAttrChanged2 = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+function content_to_json(content) {
+  if (content instanceof Text2) {
+    let text4 = content.text;
+    return object2(
+      toList([["type", string3("text")], ["text", string3(text4)]])
+    );
+  } else {
+    let text4 = content.text;
+    let url = content.url;
+    return object2(
+      toList([
+        ["type", string3("link")],
+        ["text", string3(text4)],
+        ["url", string3(url)]
+      ])
+    );
+  }
+}
+function contents_to_json(contents) {
+  return array2(contents, content_to_json);
+}
+function content_decoder() {
+  return field(
+    "type",
+    string2,
+    (variant) => {
+      if (variant === "text") {
+        return field(
+          "text",
+          string2,
+          (text4) => {
+            return success(new Text2(text4));
+          }
+        );
+      } else if (variant === "link") {
+        return field(
+          "text",
+          string2,
+          (text4) => {
+            return field(
+              "url",
+              string2,
+              (url) => {
+                return success(new Link(text4, url));
+              }
+            );
+          }
+        );
+      } else {
+        return failure(new Text2(""), "No variant found");
+      }
+    }
+  );
+}
+function element5(contents, cols, rows, chars) {
+  return element2(
+    "split-flap-display",
+    toList([
+      attribute2("lines", to_string2(contents_to_json(contents))),
+      attribute2("cols", to_string(cols)),
+      attribute2("rows", to_string(rows)),
+      (() => {
+        if (chars instanceof Some) {
+          let stack = chars[0];
+          return attribute2("chars", stack);
+        } else {
+          return none();
+        }
+      })()
+    ]),
+    toList([])
+  );
+}
+function update3(model, msg) {
+  if (msg instanceof ColsAttrChanged) {
+    let cols = msg[0];
+    return [
+      new Model2(model.lines, cols, model.rows, model.chars),
+      none2()
+    ];
+  } else if (msg instanceof RowsAttrChanged) {
+    let rows = msg[0];
+    return [
+      new Model2(model.lines, model.cols, rows, model.chars),
+      none2()
+    ];
+  } else if (msg instanceof LinesAttrChanged) {
+    let lines = msg[0];
+    return [
+      new Model2(lines, model.cols, model.rows, model.chars),
+      none2()
+    ];
+  } else {
+    let chars = msg[0];
+    return [
+      new Model2(model.lines, model.cols, model.rows, new Some(chars)),
+      none2()
+    ];
+  }
+}
+function row(line, row_num, num_cols, char_stack) {
+  let _block;
+  if (line instanceof Some) {
+    let content = line[0];
+    let _pipe2 = content.text;
+    let _pipe$12 = pad_end(_pipe2, num_cols, " ");
+    _block = slice(_pipe$12, 0, num_cols);
+  } else {
+    _block = repeat(" ", num_cols);
+  }
+  let chars = _block;
+  let _block$1;
+  let _pipe = chars;
+  let _pipe$1 = graphemes(_pipe);
+  _block$1 = index_map(
+    _pipe$1,
+    (char, idx) => {
+      let key = to_string(row_num) + "-" + to_string(idx);
+      return [key, element4(char, char_stack)];
+    }
+  );
+  let children = _block$1;
+  let _block$2;
+  if (line instanceof Some) {
+    let $ = line[0];
+    if ($ instanceof Link) {
+      let url = $.url;
+      _block$2 = toList([href(url), target("_blank")]);
+    } else {
+      _block$2 = toList([]);
+    }
+  } else {
+    _block$2 = toList([]);
+  }
+  let link_attrs = _block$2;
+  return element3(
+    "a",
+    prepend(class$("row"), link_attrs),
+    children
+  );
+}
+function zip_longest(list1, list22) {
+  let _block;
+  if (list1 instanceof Empty) {
+    _block = [new None(), toList([])];
+  } else {
+    let h = list1.head;
+    let rest = list1.tail;
+    _block = [new Some(h), rest];
+  }
+  let $ = _block;
+  let head1;
+  let rest1;
+  head1 = $[0];
+  rest1 = $[1];
+  let _block$1;
+  if (list22 instanceof Empty) {
+    _block$1 = [new None(), toList([])];
+  } else {
+    let h = list22.head;
+    let rest = list22.tail;
+    _block$1 = [new Some(h), rest];
+  }
+  let $1 = _block$1;
+  let head2;
+  let rest2;
+  head2 = $1[0];
+  rest2 = $1[1];
+  let _block$2;
+  if (head2 instanceof Some) {
+    if (head1 instanceof Some) {
+      let h2 = head2[0];
+      let h1 = head1[0];
+      _block$2 = new Some([new Some(h1), new Some(h2)]);
+    } else {
+      let h2 = head2[0];
+      _block$2 = new Some([new None(), new Some(h2)]);
+    }
+  } else if (head1 instanceof Some) {
+    let h1 = head1[0];
+    _block$2 = new Some([new Some(h1), new None()]);
+  } else {
+    _block$2 = head1;
+  }
+  let el = _block$2;
+  if (el instanceof Some) {
+    let el$1 = el[0];
+    return prepend(el$1, zip_longest(rest1, rest2));
+  } else {
+    return toList([]);
+  }
+}
+function first_is_some(pair) {
+  let $ = pair[0];
+  if ($ instanceof Some) {
+    let b = pair[1];
+    return new Ok(b);
+  } else {
+    return new Error(void 0);
+  }
+}
+function decode_error_string(error) {
+  let expected = error.expected;
+  let found = error.found;
+  let path = error.path;
+  return expected + " | " + found + " | " + join(path, ", ");
+}
+function error_string(error) {
+  if (error instanceof UnexpectedEndOfInput) {
+    return "UnexpectedEndOfInput";
+  } else if (error instanceof UnexpectedByte) {
+    let byte = error[0];
+    return "UnexpectedByte(" + byte + ")";
+  } else if (error instanceof UnexpectedSequence) {
+    let sequence = error[0];
+    return "UnexpectedSequence(" + sequence + ")";
+  } else {
+    let error$1 = error[0];
+    return "UnableToDecode(" + (() => {
+      let _pipe = map(error$1, decode_error_string);
+      return join(_pipe, "\n");
+    })() + ")";
+  }
+}
+var default_rows = 6;
+var default_cols = 22;
+function init2(_) {
+  return [
+    new Model2(toList([]), default_cols, default_rows, new None()),
+    none2()
+  ];
+}
+var css2 = "\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;    \n  }\n\n  split-flap-char {\n    padding: 0.9cqw 0.3cqw;\n  }\n\n  .display {\n    display: flex;\n    flex-direction: column;\n    gap: 0; \n    width: 100%;\n    height: 100%;\n  }\n\n  .row {\n    display: flex;\n    flex-direction: row;\n    gap: 0rem;\n\n    cursor: default;\n  }\n\n  .row[href] {\n    cursor: pointer;\n  }\n";
+function view2(model) {
+  let _block;
+  let _pipe = model.lines;
+  let _pipe$1 = ((_capture) => {
+    return zip_longest(range(0, model.rows - 1), _capture);
+  })(_pipe);
+  _block = filter_map(_pipe$1, first_is_some);
+  let sanitized_lines = _block;
+  return fragment2(
+    toList([
+      style(toList([]), css2),
+      div2(
+        toList([class$("display")]),
+        index_map(
+          sanitized_lines,
+          (line, line_num) => {
+            return [
+              to_string(line_num),
+              row(line, line_num, model.cols, model.chars)
+            ];
+          }
+        )
+      )
+    ])
+  );
+}
+function register2() {
+  let component2 = component(
+    init2,
+    update3,
+    view2,
+    toList([
+      on_attribute_change(
+        "lines",
+        (val) => {
+          let lines = parse(val, list2(content_decoder()));
+          if (lines instanceof Ok) {
+            let lines$1 = lines[0];
+            return new Ok(new LinesAttrChanged(lines$1));
+          } else {
+            let error = lines[0];
+            echo2(
+              "error " + error_string(error),
+              void 0,
+              "src/split_flap_display.gleam",
+              82
+            );
+            return new Error(void 0);
+          }
+        }
+      ),
+      on_attribute_change(
+        "cols",
+        (val) => {
+          echo2("cols " + val, void 0, "src/split_flap_display.gleam", 89);
+          let $ = parse_int(val);
+          if ($ instanceof Ok) {
+            let cols = $[0];
+            return new Ok(new ColsAttrChanged(cols));
+          } else {
+            return new Error(void 0);
+          }
+        }
+      ),
+      on_attribute_change(
+        "rows",
+        (val) => {
+          echo2("rows " + val, void 0, "src/split_flap_display.gleam", 97);
+          let $ = parse_int(val);
+          if ($ instanceof Ok) {
+            let rows = $[0];
+            return new Ok(new RowsAttrChanged(rows));
+          } else {
+            return new Error(void 0);
+          }
+        }
+      ),
+      on_attribute_change(
+        "chars",
+        (val) => {
+          return new Ok(new CharsAttrChanged2(val));
+        }
+      )
+    ])
+  );
+  return make_component(component2, "split-flap-display");
+}
+function echo2(value, message, file, line) {
+  const grey = "\x1B[90m";
+  const reset_color = "\x1B[39m";
+  const file_line = `${file}:${line}`;
+  const inspector = new Echo$Inspector2();
+  const string_value = inspector.inspect(value);
+  const string_message = message === void 0 ? "" : " " + message;
+  if (globalThis.process?.stderr?.write) {
+    const string5 = `${grey}${file_line}${reset_color}${string_message}
+${string_value}
+`;
+    globalThis.process.stderr.write(string5);
+  } else if (globalThis.Deno) {
+    const string5 = `${grey}${file_line}${reset_color}${string_message}
+${string_value}
+`;
+    globalThis.Deno.stderr.writeSync(new TextEncoder().encode(string5));
+  } else {
+    const string5 = `${file_line}
+${string_value}`;
+    globalThis.console.log(string5);
+  }
+  return value;
+}
+var Echo$Inspector2 = class {
+  #references = /* @__PURE__ */ new Set();
+  #isDict(value) {
+    try {
+      return value instanceof Dict;
+    } catch {
+      return false;
+    }
+  }
+  #float(float2) {
+    const string5 = float2.toString().replace("+", "");
+    if (string5.indexOf(".") >= 0) {
+      return string5;
+    } else {
+      const index4 = string5.indexOf("e");
+      if (index4 >= 0) {
+        return string5.slice(0, index4) + ".0" + string5.slice(index4);
+      } else {
+        return string5 + ".0";
+      }
+    }
+  }
+  inspect(v) {
+    const t = typeof v;
+    if (v === true) return "True";
+    if (v === false) return "False";
+    if (v === null) return "//js(null)";
+    if (v === void 0) return "Nil";
+    if (t === "string") return this.#string(v);
+    if (t === "bigint" || Number.isInteger(v)) return v.toString();
+    if (t === "number") return this.#float(v);
+    if (v instanceof UtfCodepoint) return this.#utfCodepoint(v);
+    if (v instanceof BitArray) return this.#bit_array(v);
+    if (v instanceof RegExp) return `//js(${v})`;
+    if (v instanceof Date) return `//js(Date("${v.toISOString()}"))`;
+    if (v instanceof globalThis.Error) return `//js(${v.toString()})`;
+    if (v instanceof Function) {
+      const args = [];
+      for (const i of Array(v.length).keys())
+        args.push(String.fromCharCode(i + 97));
+      return `//fn(${args.join(", ")}) { ... }`;
+    }
+    if (this.#references.size === this.#references.add(v).size) {
+      return "//js(circular reference)";
+    }
+    let printed;
+    if (Array.isArray(v)) {
+      printed = `#(${v.map((v2) => this.inspect(v2)).join(", ")})`;
+    } else if (v instanceof List) {
+      printed = this.#list(v);
+    } else if (v instanceof CustomType) {
+      printed = this.#customType(v);
+    } else if (this.#isDict(v)) {
+      printed = this.#dict(v);
+    } else if (v instanceof Set) {
+      return `//js(Set(${[...v].map((v2) => this.inspect(v2)).join(", ")}))`;
+    } else {
+      printed = this.#object(v);
+    }
+    this.#references.delete(v);
+    return printed;
+  }
+  #object(v) {
+    const name = Object.getPrototypeOf(v)?.constructor?.name || "Object";
+    const props = [];
+    for (const k of Object.keys(v)) {
+      props.push(`${this.inspect(k)}: ${this.inspect(v[k])}`);
+    }
+    const body = props.length ? " " + props.join(", ") + " " : "";
+    const head = name === "Object" ? "" : name + " ";
+    return `//js(${head}{${body}})`;
+  }
+  #dict(map3) {
+    let body = "dict.from_list([";
+    let first3 = true;
+    let key_value_pairs = [];
+    map3.forEach((value, key) => {
+      key_value_pairs.push([key, value]);
+    });
+    key_value_pairs.sort();
+    key_value_pairs.forEach(([key, value]) => {
+      if (!first3) body = body + ", ";
+      body = body + "#(" + this.inspect(key) + ", " + this.inspect(value) + ")";
+      first3 = false;
+    });
+    return body + "])";
+  }
+  #customType(record) {
+    const props = Object.keys(record).map((label) => {
+      const value = this.inspect(record[label]);
+      return isNaN(parseInt(label)) ? `${label}: ${value}` : value;
+    }).join(", ");
+    return props ? `${record.constructor.name}(${props})` : record.constructor.name;
+  }
+  #list(list4) {
+    if (list4 instanceof Empty) {
+      return "[]";
+    }
+    let char_out = 'charlist.from_string("';
+    let list_out = "[";
+    let current = list4;
+    while (current instanceof NonEmpty) {
+      let element7 = current.head;
+      current = current.tail;
+      if (list_out !== "[") {
+        list_out += ", ";
+      }
+      list_out += this.inspect(element7);
+      if (char_out) {
+        if (Number.isInteger(element7) && element7 >= 32 && element7 <= 126) {
+          char_out += String.fromCharCode(element7);
+        } else {
+          char_out = null;
+        }
+      }
+    }
+    if (char_out) {
+      return char_out + '")';
+    } else {
+      return list_out + "]";
+    }
+  }
+  #string(str) {
+    let new_str = '"';
+    for (let i = 0; i < str.length; i++) {
+      const char = str[i];
+      switch (char) {
+        case "\n":
+          new_str += "\\n";
+          break;
+        case "\r":
+          new_str += "\\r";
+          break;
+        case "	":
+          new_str += "\\t";
+          break;
+        case "\f":
+          new_str += "\\f";
+          break;
+        case "\\":
+          new_str += "\\\\";
+          break;
+        case '"':
+          new_str += '\\"';
+          break;
+        default:
+          if (char < " " || char > "~" && char < "\xA0") {
+            new_str += "\\u{" + char.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0") + "}";
+          } else {
+            new_str += char;
+          }
+      }
+    }
+    new_str += '"';
+    return new_str;
+  }
+  #utfCodepoint(codepoint2) {
+    return `//utfcodepoint(${String.fromCodePoint(codepoint2.value)})`;
+  }
+  #bit_array(bits) {
+    if (bits.bitSize === 0) {
+      return "<<>>";
+    }
+    let acc = "<<";
+    for (let i = 0; i < bits.byteSize - 1; i++) {
+      acc += bits.byteAt(i).toString();
+      acc += ", ";
+    }
+    if (bits.byteSize * 8 === bits.bitSize) {
+      acc += bits.byteAt(bits.byteSize - 1).toString();
+    } else {
+      const trailingBitsCount = bits.bitSize % 8;
+      acc += bits.byteAt(bits.byteSize - 1) >> 8 - trailingBitsCount;
+      acc += `:size(${trailingBitsCount})`;
+    }
+    acc += ">>";
+    return acc;
+  }
+};
+
+// build/dev/javascript/split_flap/progress_bar.mjs
+var Model3 = class extends CustomType {
+  constructor(progress, cols) {
+    super();
+    this.progress = progress;
+    this.cols = cols;
+  }
+};
+var ProgressAttrChanged = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var ColsAttrChanged2 = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+function element6(progress, cols) {
+  return element2(
+    "progress-bar",
+    toList([
+      attribute2("progress", to_string(progress)),
+      attribute2("cols", to_string(cols))
+    ]),
+    toList([])
+  );
+}
+function init3(_) {
+  return [new Model3(0, 2), none2()];
+}
+function update4(model, msg) {
+  if (msg instanceof ProgressAttrChanged) {
+    let progress = msg[0];
+    return [new Model3(progress, model.cols), none2()];
+  } else {
+    let cols = msg[0];
+    return [new Model3(model.progress, cols), none2()];
+  }
+}
+function css3(cols) {
+  let _pipe = "\n  :host {\n    display: inline-block;\n    width: 100%;\n  }\n\n  split-flap-char {\n    padding: 0.9cqw 0.3cqw;\n  }\n\n  .progress-bar {\n    width: 100%;\n    display: grid;\n    grid-template-columns: 1fr <cols>fr 1fr;\n    gap: 0;\n  }\n  ";
+  return replace(_pipe, "<cols>", to_string(cols));
+}
+function view3(model) {
+  return fragment2(
+    toList([
+      style(toList([]), css3(model.cols)),
+      div(
+        toList([class$("progress-bar")]),
+        toList([
+          element4("<", new Some("<")),
+          element5(
+            toList([new Text2("%%%")]),
+            model.cols - 2,
+            1,
+            new Some(" %")
+          ),
+          element4(">", new Some(">"))
+        ])
+      )
+    ])
+  );
+}
+function register3() {
+  let component2 = component(
+    init3,
+    update4,
+    view3,
+    toList([
+      on_attribute_change(
+        "progress",
+        (val) => {
+          return try$(
+            parse_int(val),
+            (parsed) => {
+              return new Ok(new ProgressAttrChanged(parsed));
+            }
+          );
+        }
+      ),
+      on_attribute_change(
+        "cols",
+        (val) => {
+          return try$(
+            parse_int(val),
+            (parsed) => {
+              return new Ok(new ColsAttrChanged2(max(parsed, 2)));
+            }
+          );
+        }
+      )
+    ])
+  );
+  return make_component(component2, "progress-bar");
+}
+
 // build/dev/javascript/split_flap/bingo.mjs
-var FILEPATH3 = "src/bingo.gleam";
+var FILEPATH2 = "src/bingo.gleam";
 var Frame = class extends CustomType {
   constructor(lines, ms) {
     super();
@@ -6408,7 +6766,7 @@ var Scene = class extends CustomType {
     this.frames = frames;
   }
 };
-var Model3 = class extends CustomType {
+var Model4 = class extends CustomType {
   constructor(scenes2, current, auto_play) {
     super();
     this.scenes = scenes2;
@@ -6466,24 +6824,24 @@ function next_frame(scenes2, current) {
     } else {
       throw makeError(
         "let_assert",
-        FILEPATH3,
+        FILEPATH2,
         "bingo",
-        83,
+        84,
         "next_frame",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $1,
-          start: 1986,
-          end: 2030,
-          pattern_start: 1997,
-          pattern_end: 2005
+          start: 1982,
+          end: 2026,
+          pattern_start: 1993,
+          pattern_end: 2001
         }
       );
     }
     return next;
   }
 }
-function update4(model, msg) {
+function update5(model, msg) {
   if (msg instanceof FrameStarted) {
     return [
       model,
@@ -6503,18 +6861,18 @@ function update4(model, msg) {
     if ($) {
       let next = next_frame(model.scenes, model.current);
       return [
-        new Model3(model.scenes, next, model.auto_play),
+        new Model4(model.scenes, next, model.auto_play),
         from((dispatch) => {
           return dispatch(new FrameStarted());
         })
       ];
     } else {
-      return [model, none()];
+      return [model, none2()];
     }
   } else if (msg instanceof AutoPlayDisabled) {
-    return [new Model3(model.scenes, model.current, false), none()];
+    return [new Model4(model.scenes, model.current, false), none2()];
   } else {
-    return [new Model3(model.scenes, model.current, true), none()];
+    return [new Model4(model.scenes, model.current, true), none2()];
   }
 }
 function current_scene_name(model) {
@@ -6536,17 +6894,17 @@ function current_scene_name(model) {
   } else {
     throw makeError(
       "let_assert",
-      FILEPATH3,
+      FILEPATH2,
       "bingo",
-      121,
+      123,
       "current_scene_name",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 2790,
-        end: 2951,
-        pattern_start: 2801,
-        pattern_end: 2810
+        start: 2763,
+        end: 2924,
+        pattern_start: 2774,
+        pattern_end: 2783
       }
     );
   }
@@ -6691,7 +7049,7 @@ function scenes() {
     )
   ]);
 }
-function init3(_) {
+function init4(_) {
   let scenes$1 = scenes();
   let $ = first2(scenes$1);
   let first_scene;
@@ -6700,12 +7058,12 @@ function init3(_) {
   } else {
     throw makeError(
       "let_assert",
-      FILEPATH3,
+      FILEPATH2,
       "bingo",
-      40,
+      41,
       "init",
       "Pattern match failed, no pattern matched the value.",
-      { value: $, start: 825, end: 872, pattern_start: 836, pattern_end: 851 }
+      { value: $, start: 821, end: 868, pattern_start: 832, pattern_end: 847 }
     );
   }
   let $1 = first2(first_scene.frames);
@@ -6715,71 +7073,91 @@ function init3(_) {
   } else {
     throw makeError(
       "let_assert",
-      FILEPATH3,
+      FILEPATH2,
       "bingo",
-      41,
+      42,
       "init",
       "Pattern match failed, no pattern matched the value.",
-      { value: $1, start: 875, end: 934, pattern_start: 886, pattern_end: 901 }
+      { value: $1, start: 871, end: 930, pattern_start: 882, pattern_end: 897 }
     );
   }
   return [
-    new Model3(scenes$1, first_frame, true),
+    new Model4(scenes$1, first_frame, true),
     from((dispatch) => {
       return dispatch(new FrameStarted());
     })
   ];
 }
-var css3 = "\n  :host {\n    width: 100%;\n    height: 100%;\n  }\n\n  .frame  {\n    box-sizing: border-box;\n    width: 100%;\n    min-height: stretch;\n    background: linear-gradient(250deg, rgb(40, 40, 40) 0%,rgb(50, 50, 50) 25%,rgb(40,40,40) 80%);\n    padding: 1cqw 10cqw;\n    box-shadow: inset 0cqw -0.3cqw 1cqw 0.3cqw rgba(0, 0, 0, 0.4);\n    border: 1.5cqw solid black;\n\n    display: flex;\n    flex-direction: column;\n    justify-content: space-between;\n    align-items: center;\n    gap: 2.5cqh;\n  }\n";
-function view3(model) {
-  let current_scene_name$1 = current_scene_name(model);
+var css4 = "\n  :host {\n    width: 100%;\n    height: 100%;\n  }\n\n  .frame  {\n    box-sizing: border-box;\n    width: 100%;\n    min-height: stretch;\n    background: linear-gradient(250deg, rgb(40, 40, 40) 0%,rgb(50, 50, 50) 25%,rgb(40,40,40) 80%);\n    padding: 1cqw 10cqw;\n    box-shadow: inset 0cqw -0.3cqw 1cqw 0.3cqw rgba(0, 0, 0, 0.4);\n    border: 1.5cqw solid black;\n\n    display: flex;\n    flex-direction: column;\n    justify-content: space-between;\n    align-items: center;\n    gap: 2.5cqh;\n  }\n";
+function view4(model) {
+  let $ = current_scene_name(model);
   return fragment2(
     toList([
-      style(toList([]), css3),
+      style(toList([]), css4),
       div(
         toList([class$("frame")]),
         toList([
-          element5(model.current.lines, 22, 6),
-          element5(
-            toList([new Text2(current_scene_name$1)]),
-            22,
-            1
-          )
+          element5(model.current.lines, 22, 6, new None()),
+          element6(50, 22)
         ])
       )
     ])
   );
 }
-function register3() {
-  let $ = register2();
-  if (!($ instanceof Ok)) {
-    throw makeError(
-      "let_assert",
-      FILEPATH3,
-      "bingo",
-      22,
-      "register",
-      "Pattern match failed, no pattern matched the value.",
-      { value: $, start: 436, end: 484, pattern_start: 447, pattern_end: 452 }
-    );
-  }
-  let component2 = component(init3, update4, view3, toList([]));
+function register4() {
+  let component2 = component(init4, update5, view4, toList([]));
   return make_component(component2, "nick-dot-bingo");
 }
 
 // build/dev/javascript/split_flap/split_flap.mjs
-var FILEPATH4 = "src/split_flap.gleam";
+var FILEPATH3 = "src/split_flap.gleam";
 function main() {
-  let $ = register3();
+  let $ = register();
   if (!($ instanceof Ok)) {
     throw makeError(
       "let_assert",
-      FILEPATH4,
+      FILEPATH3,
       "split_flap",
-      4,
+      7,
       "main",
       "Pattern match failed, no pattern matched the value.",
-      { value: $, start: 32, end: 67, pattern_start: 43, pattern_end: 48 }
+      { value: $, start: 101, end: 146, pattern_start: 112, pattern_end: 117 }
+    );
+  }
+  let $1 = register2();
+  if (!($1 instanceof Ok)) {
+    throw makeError(
+      "let_assert",
+      FILEPATH3,
+      "split_flap",
+      8,
+      "main",
+      "Pattern match failed, no pattern matched the value.",
+      { value: $1, start: 149, end: 197, pattern_start: 160, pattern_end: 165 }
+    );
+  }
+  let $2 = register3();
+  if (!($2 instanceof Ok)) {
+    throw makeError(
+      "let_assert",
+      FILEPATH3,
+      "split_flap",
+      9,
+      "main",
+      "Pattern match failed, no pattern matched the value.",
+      { value: $2, start: 200, end: 242, pattern_start: 211, pattern_end: 216 }
+    );
+  }
+  let $3 = register4();
+  if (!($3 instanceof Ok)) {
+    throw makeError(
+      "let_assert",
+      FILEPATH3,
+      "split_flap",
+      10,
+      "main",
+      "Pattern match failed, no pattern matched the value.",
+      { value: $3, start: 245, end: 280, pattern_start: 256, pattern_end: 261 }
     );
   }
   return void 0;
