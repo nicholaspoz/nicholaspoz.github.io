@@ -1,6 +1,8 @@
-import split_flap_display
+import bingo
+import office
 
 pub fn main() {
-  let assert Ok(_) = split_flap_display.register()
+  let assert Ok(_) = bingo.register()
+  let assert Ok(_) = office.register()
   Nil
 }
