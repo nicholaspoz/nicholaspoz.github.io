@@ -276,23 +276,26 @@ fn email() {
 
 const css = "
   :host {
-    width: 100%;
-    height: 100%;
+    
   }
 
   .frame  {
-    box-sizing: border-box;
     width: 100%;
-    min-height: stretch;
+    height: 100%;
+    min-height: fit-content;
+    overflow: scroll;
+    scrollbar-background: rgb(40, 40, 40);
+    
     background: linear-gradient(250deg, rgb(40, 40, 40) 0%,rgb(50, 50, 50) 25%,rgb(40,40,40) 80%);
-    padding: 1cqw 10cqw;
-    box-shadow: inset 0cqw -0.3cqw 1cqw 0.3cqw rgba(0, 0, 0, 0.4);
-    border: 1.5cqw solid black;
+    padding: 10cqh 15cqw;
+    padding-bottom: 5cqh;
+    /* This is in px on purpose*/
+    box-shadow: inset 0px 3px 10px 10px rgba(0, 0, 0, 0.25);
 
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: center;
-    gap: 2.5cqh;
+    progress-bar {
+      margin-top: 5cqh;
+    }
   }
+
+  
 "

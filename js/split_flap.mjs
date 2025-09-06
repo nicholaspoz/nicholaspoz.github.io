@@ -274,8 +274,8 @@ function bitArrayPrintDeprecationWarning(name, message) {
 }
 var Result = class _Result extends CustomType {
   // @internal
-  static isResult(data2) {
-    return data2 instanceof _Result;
+  static isResult(data) {
+    return data instanceof _Result;
   }
 };
 var Ok = class extends Result {
@@ -1275,8 +1275,8 @@ var Decoder = class extends CustomType {
     this.function = function$;
   }
 };
-function run(data2, decoder) {
-  let $ = decoder.function(data2);
+function run(data, decoder) {
+  let $ = decoder.function(data);
   let maybe_invalid_data;
   let errors;
   maybe_invalid_data = $[0];
@@ -1287,26 +1287,26 @@ function run(data2, decoder) {
     return new Error(errors);
   }
 }
-function success(data2) {
+function success(data) {
   return new Decoder((_) => {
-    return [data2, toList([])];
+    return [data, toList([])];
   });
 }
 function map2(decoder, transformer) {
   return new Decoder(
     (d) => {
       let $ = decoder.function(d);
-      let data2;
+      let data;
       let errors;
-      data2 = $[0];
+      data = $[0];
       errors = $[1];
-      return [transformer(data2), errors];
+      return [transformer(data), errors];
     }
   );
 }
 function run_decoders(loop$data, loop$failure, loop$decoders) {
   while (true) {
-    let data2 = loop$data;
+    let data = loop$data;
     let failure2 = loop$failure;
     let decoders = loop$decoders;
     if (decoders instanceof Empty) {
@@ -1314,7 +1314,7 @@ function run_decoders(loop$data, loop$failure, loop$decoders) {
     } else {
       let decoder = decoders.head;
       let decoders$1 = decoders.tail;
-      let $ = decoder.function(data2);
+      let $ = decoder.function(data);
       let layer;
       let errors;
       layer = $;
@@ -1322,7 +1322,7 @@ function run_decoders(loop$data, loop$failure, loop$decoders) {
       if (errors instanceof Empty) {
         return layer;
       } else {
-        loop$data = data2;
+        loop$data = data;
         loop$failure = failure2;
         loop$decoders = decoders$1;
       }
@@ -1350,8 +1350,8 @@ function decode_error(expected, found) {
     new DecodeError(expected, classify_dynamic(found), toList([]))
   ]);
 }
-function run_dynamic_function(data2, name, f) {
-  let $ = f(data2);
+function run_dynamic_function(data, name, f) {
+  let $ = f(data);
   if ($ instanceof Ok) {
     let data$1 = $[0];
     return [data$1, toList([])];
@@ -1359,12 +1359,12 @@ function run_dynamic_function(data2, name, f) {
     let zero = $[0];
     return [
       zero,
-      toList([new DecodeError(name, classify_dynamic(data2), toList([]))])
+      toList([new DecodeError(name, classify_dynamic(data), toList([]))])
     ];
   }
 }
-function decode_int(data2) {
-  return run_dynamic_function(data2, "Int", int);
+function decode_int(data) {
+  return run_dynamic_function(data, "Int", int);
 }
 function failure(zero, expected) {
   return new Decoder((d) => {
@@ -1372,15 +1372,15 @@ function failure(zero, expected) {
   });
 }
 var int2 = /* @__PURE__ */ new Decoder(decode_int);
-function decode_string(data2) {
-  return run_dynamic_function(data2, "String", string);
+function decode_string(data) {
+  return run_dynamic_function(data, "String", string);
 }
 var string2 = /* @__PURE__ */ new Decoder(decode_string);
 function list2(inner) {
   return new Decoder(
-    (data2) => {
+    (data) => {
       return list(
-        data2,
+        data,
         inner.function,
         (p, k) => {
           return push_path(p, toList([k]));
@@ -1431,15 +1431,15 @@ function index3(loop$path, loop$position, loop$inner, loop$data, loop$handle_mis
     let path = loop$path;
     let position = loop$position;
     let inner = loop$inner;
-    let data2 = loop$data;
+    let data = loop$data;
     let handle_miss = loop$handle_miss;
     if (path instanceof Empty) {
-      let _pipe = inner(data2);
+      let _pipe = inner(data);
       return push_path(_pipe, reverse(position));
     } else {
       let key = path.head;
       let path$1 = path.tail;
-      let $ = index2(data2, key);
+      let $ = index2(data, key);
       if ($ instanceof Ok) {
         let $1 = $[0];
         if ($1 instanceof Some) {
@@ -1450,16 +1450,16 @@ function index3(loop$path, loop$position, loop$inner, loop$data, loop$handle_mis
           loop$data = data$1;
           loop$handle_miss = handle_miss;
         } else {
-          return handle_miss(data2, prepend(key, position));
+          return handle_miss(data, prepend(key, position));
         }
       } else {
         let kind = $[0];
-        let $1 = inner(data2);
+        let $1 = inner(data);
         let default$;
         default$ = $1[0];
         let _pipe = [
           default$,
-          toList([new DecodeError(kind, classify_dynamic(data2), toList([]))])
+          toList([new DecodeError(kind, classify_dynamic(data), toList([]))])
         ];
         return push_path(_pipe, reverse(position));
       }
@@ -1468,14 +1468,14 @@ function index3(loop$path, loop$position, loop$inner, loop$data, loop$handle_mis
 }
 function subfield(field_path, field_decoder, next) {
   return new Decoder(
-    (data2) => {
+    (data) => {
       let $ = index3(
         field_path,
         toList([]),
         field_decoder.function,
-        data2,
-        (data3, position) => {
-          let $12 = field_decoder.function(data3);
+        data,
+        (data2, position) => {
+          let $12 = field_decoder.function(data2);
           let default$;
           default$ = $12[0];
           let _pipe = [
@@ -1489,7 +1489,7 @@ function subfield(field_path, field_decoder, next) {
       let errors1;
       out = $[0];
       errors1 = $[1];
-      let $1 = next(out).function(data2);
+      let $1 = next(out).function(data);
       let out$1;
       let errors2;
       out$1 = $1[0];
@@ -1630,63 +1630,63 @@ function map_get(map4, key) {
 function map_insert(key, value, map4) {
   return map4.set(key, value);
 }
-function classify_dynamic(data2) {
-  if (typeof data2 === "string") {
+function classify_dynamic(data) {
+  if (typeof data === "string") {
     return "String";
-  } else if (typeof data2 === "boolean") {
+  } else if (typeof data === "boolean") {
     return "Bool";
-  } else if (data2 instanceof Result) {
+  } else if (data instanceof Result) {
     return "Result";
-  } else if (data2 instanceof List) {
+  } else if (data instanceof List) {
     return "List";
-  } else if (data2 instanceof BitArray) {
+  } else if (data instanceof BitArray) {
     return "BitArray";
-  } else if (data2 instanceof Dict) {
+  } else if (data instanceof Dict) {
     return "Dict";
-  } else if (Number.isInteger(data2)) {
+  } else if (Number.isInteger(data)) {
     return "Int";
-  } else if (Array.isArray(data2)) {
+  } else if (Array.isArray(data)) {
     return `Array`;
-  } else if (typeof data2 === "number") {
+  } else if (typeof data === "number") {
     return "Float";
-  } else if (data2 === null) {
+  } else if (data === null) {
     return "Nil";
-  } else if (data2 === void 0) {
+  } else if (data === void 0) {
     return "Nil";
   } else {
-    const type = typeof data2;
+    const type = typeof data;
     return type.charAt(0).toUpperCase() + type.slice(1);
   }
 }
-function index2(data2, key) {
-  if (data2 instanceof Dict || data2 instanceof WeakMap || data2 instanceof Map) {
+function index2(data, key) {
+  if (data instanceof Dict || data instanceof WeakMap || data instanceof Map) {
     const token = {};
-    const entry = data2.get(key, token);
+    const entry = data.get(key, token);
     if (entry === token) return new Ok(new None());
     return new Ok(new Some(entry));
   }
   const key_is_int = Number.isInteger(key);
-  if (key_is_int && key >= 0 && key < 8 && data2 instanceof List) {
+  if (key_is_int && key >= 0 && key < 8 && data instanceof List) {
     let i = 0;
-    for (const value of data2) {
+    for (const value of data) {
       if (i === key) return new Ok(new Some(value));
       i++;
     }
     return new Error("Indexable");
   }
-  if (key_is_int && Array.isArray(data2) || data2 && typeof data2 === "object" || data2 && Object.getPrototypeOf(data2) === Object.prototype) {
-    if (key in data2) return new Ok(new Some(data2[key]));
+  if (key_is_int && Array.isArray(data) || data && typeof data === "object" || data && Object.getPrototypeOf(data) === Object.prototype) {
+    if (key in data) return new Ok(new Some(data[key]));
     return new Ok(new None());
   }
   return new Error(key_is_int ? "Indexable" : "Dict");
 }
-function list(data2, decode2, pushPath, index4, emptyList) {
-  if (!(data2 instanceof List || Array.isArray(data2))) {
-    const error = new DecodeError("List", classify_dynamic(data2), emptyList);
+function list(data, decode2, pushPath, index4, emptyList) {
+  if (!(data instanceof List || Array.isArray(data))) {
+    const error = new DecodeError("List", classify_dynamic(data), emptyList);
     return [emptyList, List.fromArray([error])];
   }
   const decoded = [];
-  for (const element7 of data2) {
+  for (const element7 of data) {
     const layer = decode2(element7);
     const [out, errors] = layer;
     if (errors instanceof NonEmpty) {
@@ -1698,12 +1698,12 @@ function list(data2, decode2, pushPath, index4, emptyList) {
   }
   return [List.fromArray(decoded), emptyList];
 }
-function int(data2) {
-  if (Number.isInteger(data2)) return new Ok(data2);
+function int(data) {
+  if (Number.isInteger(data)) return new Ok(data);
   return new Error(0);
 }
-function string(data2) {
-  if (typeof data2 === "string") return new Ok(data2);
+function string(data) {
+  if (typeof data === "string") return new Ok(data);
   return new Error("");
 }
 
@@ -2769,9 +2769,6 @@ function class$(name) {
 function none() {
   return class$("");
 }
-function data(key, value) {
-  return attribute2("data-" + key, value);
-}
 function style(property3, value) {
   if (property3 === "") {
     return class$("");
@@ -2812,9 +2809,9 @@ function from(effect) {
   };
   return new Effect(toList([task]), empty.before_paint, empty.after_paint);
 }
-function event2(name, data2) {
+function event2(name, data) {
   let task = (actions) => {
-    return actions.emit(name, data2);
+    return actions.emit(name, data);
   };
   return new Effect(toList([task]), empty.before_paint, empty.after_paint);
 }
@@ -4474,7 +4471,7 @@ function diff(events, old, new$8) {
 var setTimeout = globalThis.setTimeout;
 var clearTimeout = globalThis.clearTimeout;
 var createElementNS = (ns, name) => document().createElementNS(ns, name);
-var createTextNode = (data2) => document().createTextNode(data2);
+var createTextNode = (data) => document().createTextNode(data);
 var createDocumentFragment = () => document().createDocumentFragment();
 var insertBefore = (parent, node, reference) => parent.insertBefore(node, reference);
 var moveBefore = SUPPORTS_MOVE_BEFORE ? (parent, node, reference) => parent.moveBefore(node, reference) : insertBefore;
@@ -4485,7 +4482,7 @@ var removeAttribute = (node, name) => node.removeAttribute(name);
 var addEventListener = (node, name, handler, options) => node.addEventListener(name, handler, options);
 var removeEventListener = (node, name, handler) => node.removeEventListener(name, handler);
 var setInnerHtml = (node, innerHtml) => node.innerHTML = innerHtml;
-var setData = (node, data2) => node.data = data2;
+var setData = (node, data) => node.data = data;
 var meta = Symbol("lustre");
 var MetadataNode = class {
   constructor(kind, parent, node, key) {
@@ -4810,7 +4807,7 @@ var Reconciler = class {
         ...new FormData(event4.target, event4.submitter).entries()
       ];
     }
-    const data2 = this.#useServerEvents ? createServerEvent(event4, include ?? []) : event4;
+    const data = this.#useServerEvents ? createServerEvent(event4, include ?? []) : event4;
     const throttle = throttles.get(type);
     if (throttle) {
       const now = Date.now();
@@ -4818,7 +4815,7 @@ var Reconciler = class {
       if (now > last + throttle.delay) {
         throttle.last = now;
         throttle.lastEvent = event4;
-        this.#dispatch(data2, path, type, immediate);
+        this.#dispatch(data, path, type, immediate);
       }
     }
     const debounce = debouncers.get(type);
@@ -4826,11 +4823,11 @@ var Reconciler = class {
       clearTimeout(debounce.timeout);
       debounce.timeout = setTimeout(() => {
         if (event4 === throttles.get(type)?.lastEvent) return;
-        this.#dispatch(data2, path, type, immediate);
+        this.#dispatch(data, path, type, immediate);
       }, debounce.delay);
     }
     if (!throttle && !debounce) {
-      this.#dispatch(data2, path, type, immediate);
+      this.#dispatch(data, path, type, immediate);
     }
   }
 };
@@ -4851,7 +4848,7 @@ var handleEvent = (event4) => {
   handler(event4);
 };
 var createServerEvent = (event4, include = []) => {
-  const data2 = {};
+  const data = {};
   if (event4.type === "input" || event4.type === "change") {
     include.push("target.value");
   }
@@ -4860,7 +4857,7 @@ var createServerEvent = (event4, include = []) => {
   }
   for (const property3 of include) {
     const path = property3.split(".");
-    for (let i = 0, input = event4, output = data2; i < path.length; i++) {
+    for (let i = 0, input = event4, output = data; i < path.length; i++) {
       if (i === path.length - 1) {
         output[path[i]] = input[path[i]];
         break;
@@ -4869,7 +4866,7 @@ var createServerEvent = (event4, include = []) => {
       input = input[path[i]];
     }
   }
-  return data2;
+  return data;
 };
 var syncedBooleanAttribute = /* @__NO_SIDE_EFFECTS__ */ (name) => {
   return {
@@ -5167,11 +5164,11 @@ var Runtime = class {
       this.#tick(effects);
     }
   }
-  emit(event4, data2) {
+  emit(event4, data) {
     const target2 = this.root.host ?? this.root;
     target2.dispatchEvent(
       new CustomEvent(event4, {
-        detail: data2,
+        detail: data,
         bubbles: true,
         composed: true
       })
@@ -5214,7 +5211,7 @@ var Runtime = class {
   #shouldFlush = false;
   #actions = {
     dispatch: (msg, immediate) => this.dispatch(msg, immediate),
-    emit: (event4, data2) => this.emit(event4, data2),
+    emit: (event4, data) => this.emit(event4, data),
     select: () => {
     },
     root: () => this.root,
@@ -5346,10 +5343,10 @@ var EffectDispatchedMessage = class extends CustomType {
   }
 };
 var EffectEmitEvent = class extends CustomType {
-  constructor(name, data2) {
+  constructor(name, data) {
     super();
     this.name = name;
-    this.data = data2;
+    this.data = data;
   }
 };
 var SystemRequestedShutdown = class extends CustomType {
@@ -5482,8 +5479,8 @@ var make_component = ({ init: init5, update: update6, view: view5, config }, nam
     dispatch(msg, immediate = false) {
       this.#runtime.dispatch(msg, immediate);
     }
-    emit(event4, data2) {
-      this.#runtime.emit(event4, data2);
+    emit(event4, data) {
+      this.#runtime.emit(event4, data);
     }
     provide(key, value) {
       this.#runtime.provide(key, value);
@@ -5610,8 +5607,8 @@ function component(init5, update6, view5, options) {
 }
 
 // build/dev/javascript/lustre/lustre/event.mjs
-function emit2(event4, data2) {
-  return event2(event4, data2);
+function emit2(event4, data) {
+  return event2(event4, data);
 }
 function is_immediate_event(name) {
   if (name === "input") {
@@ -5687,122 +5684,6 @@ var FlipStarted = class extends CustomType {
 };
 var FlipEnded = class extends CustomType {
 };
-function update2(model, msg) {
-  if (msg instanceof LetterAttrChanged) {
-    let dest = msg[0];
-    let $ = contains_string(model.chars, dest);
-    if ($) {
-      return [
-        new Model(model.chars, dest, model.state),
-        from(
-          (dispatch) => {
-            return dispatch(new DestinationChanged());
-          }
-        )
-      ];
-    } else {
-      return [model, none2()];
-    }
-  } else if (msg instanceof CharsAttrChanged) {
-    let chars = msg[0];
-    return [
-      new Model(chars, model.dest, model.state),
-      from((dispatch) => {
-        return dispatch(new DestinationChanged());
-      })
-    ];
-  } else if (msg instanceof DestinationChanged) {
-    let $ = model.state;
-    let $1 = first(model.chars);
-    if ($1 instanceof Ok && $ instanceof Idle) {
-      let x = $1[0];
-      if (x !== model.dest) {
-        return [
-          new Model(model.chars, model.dest, new Flipping()),
-          from(
-            (dispatch) => {
-              return set_timeout(
-                50,
-                () => {
-                  return dispatch(new FlipStarted());
-                }
-              );
-            }
-          )
-        ];
-      } else {
-        return [new Model(model.chars, model.dest, new Idle()), none2()];
-      }
-    } else {
-      return [new Model(model.chars, model.dest, new Idle()), none2()];
-    }
-  } else if (msg instanceof FlipStarted) {
-    let $ = pop_grapheme(model.chars);
-    let first3;
-    let rest;
-    if ($ instanceof Ok) {
-      first3 = $[0][0];
-      rest = $[0][1];
-    } else {
-      throw makeError(
-        "let_assert",
-        FILEPATH,
-        "split_flap_char",
-        129,
-        "update",
-        "Pattern match failed, no pattern matched the value.",
-        {
-          value: $,
-          start: 2880,
-          end: 2944,
-          pattern_start: 2891,
-          pattern_end: 2909
-        }
-      );
-    }
-    let next = rest + first3;
-    return [
-      new Model(next, model.dest, new Idle()),
-      from(
-        (dispatch) => {
-          return set_timeout(
-            15,
-            () => {
-              return dispatch(new FlipEnded());
-            }
-          );
-        }
-      )
-    ];
-  } else if (msg instanceof FlipEnded) {
-    let $ = model.state;
-    let $1 = first(model.chars);
-    if ($1 instanceof Ok && $ instanceof Idle) {
-      let x = $1[0];
-      if (x !== model.dest) {
-        return [
-          new Model(model.chars, model.dest, new Flipping()),
-          from(
-            (dispatch) => {
-              return set_timeout(
-                50,
-                () => {
-                  return dispatch(new FlipStarted());
-                }
-              );
-            }
-          )
-        ];
-      } else {
-        return [new Model(model.chars, model.dest, new Idle()), none2()];
-      }
-    } else {
-      return [new Model(model.chars, model.dest, new Idle()), none2()];
-    }
-  } else {
-    return [model, none2()];
-  }
-}
 function curr_and_next_chars(model) {
   let $ = (() => {
     let _pipe = graphemes(model.chars);
@@ -5825,6 +5706,10 @@ function curr_and_next_chars(model) {
       }
     }
   }
+}
+function css(ms) {
+  let _pipe = '\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  .split-flap {\n    /* TODO -webkit-font-smoothing */\n    position: relative;\n    width: 100%;\n    height: 100%;\n    aspect-ratio: 1/1.618; /* golden ratio ;) */\n    font-family: "Fragment Mono", monospace;\n    font-weight: bold;\n    font-size: 120cqw;\n    border-radius: 5cqw;\n    perspective: 600cqw;\n  }\n\n  .split-flap::selection {\n    background: white;\n    color: black;\n  }\n\n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 3.5cqw;\n    background: rgb(20, 20, 20);\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    z-index: 1;\n    background: rgb(40, 40, 40);\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n    z-index: 0;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw;\n    user-select: text;\n    height: 100%;\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n  }\n\n  @keyframes flip-top {\n    0% {\n      transform: rotateX(0deg);\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n    50%, 100% {\n      transform: rotateX(-90deg);\n      box-shadow: none;\n    }\n    \n  }\n\n  @keyframes flip-bottom {\n    0% {\n      transform: rotateX(90deg);\n      box-shadow: none;\n    }\n    100% {\n      transform: rotateX(0deg);\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n  }\n\n  .flap.flipping-top {\n    pointer-events: none;\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw 5cqw 0 0;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n    animation: <flip_duration>ms ease-in flip-top;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap.flipping-bottom {\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n    animation: <flip_duration>ms ease-in flip-bottom;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n  \n  .flap.top .flap-content {\n    top: 0;\n    height: 100%\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n  .flap.flipping-top .flap-content {\n    top: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
+  return replace(_pipe, "<flip_duration>", to_string(ms));
 }
 var default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?/\\|@#_()<>";
 function element4(char, chars, on_click2) {
@@ -5865,7 +5750,7 @@ function element4(char, chars, on_click2) {
 function init(_) {
   return [new Model(default_chars, " ", new Idle()), none2()];
 }
-var css = '\n  :host {\n    display: inline-block;\n    perspective: 10rem;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  .split-flap {\n    /* TODO -webkit-font-smoothing */\n    position: relative;\n    width: 100%;\n    height: 100%;\n    aspect-ratio: 1/1.618; /* golden ratio ;) */\n    font-family: "Fragment Mono", monospace;\n    font-weight: bold;\n    font-size: 120cqw;\n    background: rgb(40, 40, 40);\n    border-radius: 5cqw;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .split-flap::selection {\n    background: white;\n    color: black;\n  }\n\n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 3.5cqw;\n    background: rgb(20, 20, 20);\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    z-index: 1;\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n    z-index: 0;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 0.5cqw 0.5cqw 0 0;\n    user-select: text;\n    height: 100%\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 0.5cqw 0.5cqw;\n  }\n\n  .flap.flipping-top {\n    opacity: 0;\n    pointer-events: none;\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 0.5cqw 0.5cqw 0 0;\n    z-index: 10;\n    transform: rotateX(0deg);\n    background: rgb(40, 40, 40);\n  }\n\n  .flap.flipping-bottom {\n    /* Animated flap that rotates down during character change */\n    opacity: 0;\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 0.5cqw 0.5cqw;\n    z-index: 10;\n    transform: rotateX(90deg);\n    background: rgb(40, 40, 40);\n  }\n\n  .flap.flipping-top[data-state="flipping"] {\n    opacity: 1;\n    z-index: 10;\n    box-shadow: 0 0.5cqw 1cqw rgba(0, 0, 0, 0.3);\n    transform: rotateX(-90deg);\n    transition: transform 0.05s ease-in;\n  }\n  \n  .flap.flipping-bottom[data-state="flipping"] {\n    opacity: 1;\n    box-shadow: 0 0.5cqw 1cqw rgba(0, 0, 0, 0.3);\n    z-index: 10;\n    transform: rotateX(0deg);\n    transition: transform 0.015s linear;\n    transition-delay: 0.05s;\n  }\n  \n  .flap.top .flap-content {\n    top: 0;\n    height: 100%\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n  .flap.flipping-top .flap-content {\n    top: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
+var flip_duration_ms = 30;
 function view(model) {
   let $ = curr_and_next_chars(model);
   let curr;
@@ -5878,21 +5763,21 @@ function view(model) {
       "let_assert",
       FILEPATH,
       "split_flap_char",
-      149,
+      152,
       "view",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 3390,
-        end: 3447,
-        pattern_start: 3401,
-        pattern_end: 3418
+        start: 3456,
+        end: 3513,
+        pattern_start: 3467,
+        pattern_end: 3484
       }
     );
   }
   return fragment2(
     toList([
-      style2(toList([]), css),
+      style2(toList([]), css(flip_duration_ms)),
       div(
         toList([class$("split-flap")]),
         toList([
@@ -5938,29 +5823,7 @@ function view(model) {
               return none3();
             } else {
               return div(
-                toList([
-                  class$("flap flipping-top"),
-                  data("state", "flipping")
-                ]),
-                toList([
-                  span(
-                    toList([class$("flap-content")]),
-                    toList([text3(curr)])
-                  )
-                ])
-              );
-            }
-          })(),
-          (() => {
-            let $1 = model.state;
-            if ($1 instanceof Idle) {
-              return none3();
-            } else {
-              return div(
-                toList([
-                  class$("flap flipping-bottom"),
-                  data("state", "flipping")
-                ]),
+                toList([class$("flap flipping-bottom")]),
                 toList([
                   span(
                     toList([class$("flap-content")]),
@@ -5974,6 +5837,123 @@ function view(model) {
       )
     ])
   );
+}
+var idle_duration_ms = 20;
+function update2(model, msg) {
+  if (msg instanceof LetterAttrChanged) {
+    let dest = msg[0];
+    let $ = contains_string(model.chars, dest);
+    if ($) {
+      return [
+        new Model(model.chars, dest, model.state),
+        from(
+          (dispatch) => {
+            return dispatch(new DestinationChanged());
+          }
+        )
+      ];
+    } else {
+      return [model, none2()];
+    }
+  } else if (msg instanceof CharsAttrChanged) {
+    let chars = msg[0];
+    return [
+      new Model(chars, model.dest, model.state),
+      from((dispatch) => {
+        return dispatch(new DestinationChanged());
+      })
+    ];
+  } else if (msg instanceof DestinationChanged) {
+    let $ = model.state;
+    let $1 = first(model.chars);
+    if ($1 instanceof Ok && $ instanceof Idle) {
+      let x = $1[0];
+      if (x !== model.dest) {
+        return [
+          new Model(model.chars, model.dest, new Flipping()),
+          from(
+            (dispatch) => {
+              return set_timeout(
+                flip_duration_ms + 10,
+                () => {
+                  return dispatch(new FlipStarted());
+                }
+              );
+            }
+          )
+        ];
+      } else {
+        return [model, none2()];
+      }
+    } else {
+      return [model, none2()];
+    }
+  } else if (msg instanceof FlipStarted) {
+    let $ = pop_grapheme(model.chars);
+    let first3;
+    let rest;
+    if ($ instanceof Ok) {
+      first3 = $[0][0];
+      rest = $[0][1];
+    } else {
+      throw makeError(
+        "let_assert",
+        FILEPATH,
+        "split_flap_char",
+        132,
+        "update",
+        "Pattern match failed, no pattern matched the value.",
+        {
+          value: $,
+          start: 2932,
+          end: 2996,
+          pattern_start: 2943,
+          pattern_end: 2961
+        }
+      );
+    }
+    let next = rest + first3;
+    return [
+      new Model(next, model.dest, new Idle()),
+      from(
+        (dispatch) => {
+          return set_timeout(
+            idle_duration_ms,
+            () => {
+              return dispatch(new FlipEnded());
+            }
+          );
+        }
+      )
+    ];
+  } else if (msg instanceof FlipEnded) {
+    let $ = model.state;
+    let $1 = first(model.chars);
+    if ($1 instanceof Ok && $ instanceof Idle) {
+      let x = $1[0];
+      if (x !== model.dest) {
+        return [
+          new Model(model.chars, model.dest, new Flipping()),
+          from(
+            (dispatch) => {
+              return set_timeout(
+                flip_duration_ms + 10,
+                () => {
+                  return dispatch(new FlipStarted());
+                }
+              );
+            }
+          )
+        ];
+      } else {
+        return [model, none2()];
+      }
+    } else {
+      return [model, none2()];
+    }
+  } else {
+    return [model, none2()];
+  }
 }
 function register() {
   let component2 = component(
@@ -6294,7 +6274,7 @@ function init2(_) {
     none2()
   ];
 }
-var css2 = "\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;    \n  }\n\n  split-flap-char {\n    padding: 0.9cqw 0.3cqw;\n  }\n\n  .display {\n    display: flex;\n    flex-direction: column;\n    gap: 0; \n    width: 100%;\n    height: 100%;\n  }\n\n  .row {\n    display: flex;\n    flex-direction: row;\n    gap: 0rem;\n\n    cursor: default;\n  }\n\n  .row[href] {\n    cursor: pointer;\n  }\n";
+var css2 = "\n  :host {\n    display: block;\n  }\n\n  split-flap-char {\n    padding: 0.9cqw 0.3cqw;\n  }\n\n  .display {\n    display: flex;\n    flex-direction: column;\n    gap: 0; \n    width: 100%;\n    height: 100%;\n  }\n\n  .row {\n    display: flex;\n    flex-direction: row;\n    gap: 0rem;\n\n    cursor: default;\n  }\n\n  .row[href] {\n    cursor: pointer;\n  }\n";
 function view2(model) {
   let _block;
   let _pipe = model.lines;
@@ -7112,7 +7092,7 @@ function init4(_) {
     )
   ];
 }
-var css4 = "\n  :host {\n    width: 100%;\n    height: 100%;\n  }\n\n  .frame  {\n    box-sizing: border-box;\n    width: 100%;\n    min-height: stretch;\n    background: linear-gradient(250deg, rgb(40, 40, 40) 0%,rgb(50, 50, 50) 25%,rgb(40,40,40) 80%);\n    padding: 1cqw 10cqw;\n    box-shadow: inset 0cqw -0.3cqw 1cqw 0.3cqw rgba(0, 0, 0, 0.4);\n    border: 1.5cqw solid black;\n\n    display: flex;\n    flex-direction: column;\n    justify-content: space-between;\n    align-items: center;\n    gap: 2.5cqh;\n  }\n";
+var css4 = "\n  :host {\n    \n  }\n\n  .frame  {\n    width: 100%;\n    height: 100%;\n    min-height: fit-content;\n    overflow: scroll;\n    scrollbar-background: rgb(40, 40, 40);\n    \n    background: linear-gradient(250deg, rgb(40, 40, 40) 0%,rgb(50, 50, 50) 25%,rgb(40,40,40) 80%);\n    padding: 10cqh 15cqw;\n    padding-bottom: 5cqh;\n    /* This is in px on purpose*/\n    box-shadow: inset 0px 3px 10px 10px rgba(0, 0, 0, 0.25);\n\n    progress-bar {\n      margin-top: 5cqh;\n    }\n  }\n\n  \n";
 function view4(model) {
   let $ = current_scene_name(model);
   return fragment2(

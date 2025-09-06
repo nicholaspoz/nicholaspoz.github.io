@@ -1,6 +1,6 @@
+import gleam/int
 import gleam/list
 import gleam/option.{type Option, None, Some}
-import gleam/order
 import gleam/result
 import gleam/string
 import lustre
@@ -14,6 +14,10 @@ import lustre/event
 import utils
 
 pub const default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?/\\|@#_()<>"
+
+const flip_duration_ms = 30
+
+const idle_duration_ms = 20
 
 type Model {
   Model(chars: String, dest: String, state: State)
@@ -94,7 +98,6 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
     CharsAttrChanged(chars) -> {
       #(Model(..model, chars:), {
         use dispatch <- effect.from
-
         dispatch(DestinationChanged)
       })
     }
@@ -116,12 +119,12 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
         Idle, Ok(x) if x != model.dest -> {
           #(Model(..model, state: Flipping), {
             use dispatch <- effect.from
-            use <- utils.set_timeout(50)
+            use <- utils.set_timeout(flip_duration_ms + 10)
             dispatch(FlipStarted)
           })
         }
 
-        _, _ -> #(Model(..model, state: Idle), effect.none())
+        _, _ -> #(model, effect.none())
       }
     }
 
@@ -130,7 +133,7 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
       let next = rest <> first
       #(Model(..model, chars: next, state: Idle), {
         use dispatch <- effect.from
-        use <- utils.set_timeout(15)
+        use <- utils.set_timeout(idle_duration_ms)
         dispatch(FlipEnded)
       })
     }
@@ -149,7 +152,7 @@ fn view(model: Model) -> Element(Msg) {
   let assert Ok(#(curr, next)) = curr_and_next_chars(model)
 
   element.fragment([
-    html.style([], css),
+    html.style([], css(flip_duration_ms)),
 
     html.div([attribute.class("split-flap")], [
       // TOP FLAP (always visible)
@@ -172,29 +175,20 @@ fn view(model: Model) -> Element(Msg) {
       },
 
       // FLIPPING TOP
-      case model.state {
-        Idle -> element.none()
-        Flipping ->
-          html.div(
-            [
-              attribute.class("flap flipping-top"),
-              attribute.data("state", "flipping"),
-            ],
-            [html.span([attribute.class("flap-content")], [html.text(curr)])],
-          )
-      },
-
+      // case model.state {
+      //   Idle -> element.none()
+      //   Flipping ->
+      //     html.div([attribute.class("flap flipping-top")], [
+      //       html.span([attribute.class("flap-content")], [html.text(curr)]),
+      //     ])
+      // },
       // FLIPPING BOTTOM
       case model.state {
         Idle -> element.none()
         Flipping ->
-          html.div(
-            [
-              attribute.class("flap flipping-bottom"),
-              attribute.data("state", "flipping"),
-            ],
-            [html.span([attribute.class("flap-content")], [html.text(next)])],
-          )
+          html.div([attribute.class("flap flipping-bottom")], [
+            html.span([attribute.class("flap-content")], [html.text(next)]),
+          ])
       },
     ]),
   ])
@@ -207,10 +201,10 @@ fn curr_and_next_chars(from model: Model) -> Result(#(String, String), Nil) {
   }
 }
 
-const css = "
+fn css(flip_duration ms: Int) -> String {
+  "
   :host {
     display: inline-block;
-    perspective: 10rem;
     width: 100%;
     height: 100%;
     container-type: inline-size;
@@ -225,9 +219,8 @@ const css = "
     font-family: \"Fragment Mono\", monospace;
     font-weight: bold;
     font-size: 120cqw;
-    background: rgb(40, 40, 40);
     border-radius: 5cqw;
-    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);
+    perspective: 600cqw;
   }
 
   .split-flap::selection {
@@ -257,6 +250,8 @@ const css = "
     overflow: hidden;
     user-select: none;
     z-index: 1;
+    background: rgb(40, 40, 40);
+    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);
   }
 
   .flap-content {
@@ -273,55 +268,64 @@ const css = "
   .flap.top {
     top: 0;
     transform-origin: bottom;
-    border-radius: 0.5cqw 0.5cqw 0 0;
+    border-radius: 5cqw;
     user-select: text;
-    height: 100%
+    height: 100%;
   }
 
   .flap.bottom {
     bottom: 0;
     transform-origin: top;
-    border-radius: 0 0 0.5cqw 0.5cqw;
+    border-radius: 0 0 5cqw 5cqw;
+  }
+
+  @keyframes flip-top {
+    0% {
+      transform: rotateX(0deg);
+      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);
+    }
+    50%, 100% {
+      transform: rotateX(-90deg);
+      box-shadow: none;
+    }
+    
+  }
+
+  @keyframes flip-bottom {
+    0% {
+      transform: rotateX(90deg);
+      box-shadow: none;
+    }
+    100% {
+      transform: rotateX(0deg);
+      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);
+    }
   }
 
   .flap.flipping-top {
-    opacity: 0;
     pointer-events: none;
     top: 0;
     transform-origin: bottom;
-    border-radius: 0.5cqw 0.5cqw 0 0;
+    border-radius: 5cqw 5cqw 0 0;
     z-index: 10;
-    transform: rotateX(0deg);
     background: rgb(40, 40, 40);
+    animation: <flip_duration>ms ease-in flip-top;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);
   }
 
   .flap.flipping-bottom {
-    /* Animated flap that rotates down during character change */
-    opacity: 0;
     pointer-events: none;
     bottom: 0;
     transform-origin: top;
-    border-radius: 0 0 0.5cqw 0.5cqw;
+    border-radius: 0 0 5cqw 5cqw;
     z-index: 10;
-    transform: rotateX(90deg);
     background: rgb(40, 40, 40);
-  }
-
-  .flap.flipping-top[data-state=\"flipping\"] {
-    opacity: 1;
-    z-index: 10;
-    box-shadow: 0 0.5cqw 1cqw rgba(0, 0, 0, 0.3);
-    transform: rotateX(-90deg);
-    transition: transform 0.05s ease-in;
-  }
-  
-  .flap.flipping-bottom[data-state=\"flipping\"] {
-    opacity: 1;
-    box-shadow: 0 0.5cqw 1cqw rgba(0, 0, 0, 0.3);
-    z-index: 10;
-    transform: rotateX(0deg);
-    transition: transform 0.015s linear;
-    transition-delay: 0.05s;
+    animation: <flip_duration>ms ease-in flip-bottom;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);
   }
   
   .flap.top .flap-content {
@@ -342,3 +346,5 @@ const css = "
     bottom: 0;
   }
 "
+  |> string.replace("<flip_duration>", int.to_string(ms))
+}

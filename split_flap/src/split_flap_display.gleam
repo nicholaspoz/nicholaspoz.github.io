@@ -251,9 +251,7 @@ fn error_string(error: json.DecodeError) -> String {
 
 const css = "
   :host {
-    display: inline-block;
-    width: 100%;
-    height: 100%;    
+    display: block;
   }
 
   split-flap-char {
