@@ -3414,14 +3414,17 @@ function unsafe_raw_html(namespace, tag, attributes, inner_html) {
 function text3(content) {
   return text2(content);
 }
-function style2(attrs, css5) {
-  return unsafe_raw_html("", "style", attrs, css5);
+function style2(attrs, css6) {
+  return unsafe_raw_html("", "style", attrs, css6);
 }
 function div(attrs, children) {
   return element2("div", attrs, children);
 }
 function span(attrs, children) {
   return element2("span", attrs, children);
+}
+function slot(attrs, fallback) {
+  return element2("slot", attrs, fallback);
 }
 
 // build/dev/javascript/lustre/lustre/vdom/patch.mjs
@@ -5114,10 +5117,10 @@ var virtualiseAttribute = (attr) => {
 // build/dev/javascript/lustre/lustre/runtime/client/runtime.ffi.mjs
 var is_browser = () => !!document();
 var Runtime = class {
-  constructor(root3, [model, effects], view5, update6) {
+  constructor(root3, [model, effects], view6, update6) {
     this.root = root3;
     this.#model = model;
-    this.#view = view5;
+    this.#view = view6;
     this.#update = update6;
     this.root.addEventListener("context-request", (event4) => {
       if (!(event4.context && event4.callback)) return;
@@ -5353,7 +5356,7 @@ var SystemRequestedShutdown = class extends CustomType {
 };
 
 // build/dev/javascript/lustre/lustre/runtime/client/component.ffi.mjs
-var make_component = ({ init: init5, update: update6, view: view5, config }, name) => {
+var make_component = ({ init: init5, update: update6, view: view6, config }, name) => {
   if (!is_browser()) return new Error(new NotABrowser());
   if (!name.includes("-")) return new Error(new BadComponentName(name));
   if (customElements.get(name)) {
@@ -5394,7 +5397,7 @@ var make_component = ({ init: init5, update: update6, view: view5, config }, nam
       this.#runtime = new Runtime(
         this.#shadowRoot,
         [model, effects],
-        view5,
+        view6,
         update6
       );
     }
@@ -5577,14 +5580,17 @@ function on_attribute_change(name, decoder) {
     }
   );
 }
+function named_slot(name, attributes, fallback) {
+  return slot(prepend(attribute2("name", name), attributes), fallback);
+}
 
 // build/dev/javascript/lustre/lustre.mjs
 var App = class extends CustomType {
-  constructor(init5, update6, view5, config) {
+  constructor(init5, update6, view6, config) {
     super();
     this.init = init5;
     this.update = update6;
-    this.view = view5;
+    this.view = view6;
     this.config = config;
   }
 };
@@ -5602,8 +5608,20 @@ var ComponentAlreadyRegistered = class extends CustomType {
 };
 var NotABrowser = class extends CustomType {
 };
-function component(init5, update6, view5, options) {
-  return new App(init5, update6, view5, new$6(options));
+function component(init5, update6, view6, options) {
+  return new App(init5, update6, view6, new$6(options));
+}
+function application(init5, update6, view6) {
+  return new App(init5, update6, view6, new$6(empty_list));
+}
+function simple(init5, update6, view6) {
+  let init$1 = (start_args) => {
+    return [init5(start_args), none2()];
+  };
+  let update$1 = (model, msg) => {
+    return [update6(model, msg), none2()];
+  };
+  return application(init$1, update$1, view6);
 }
 
 // build/dev/javascript/lustre/lustre/event.mjs
@@ -5652,8 +5670,8 @@ function set_timeout(delay, cb) {
   window.setTimeout(cb, delay);
 }
 
-// build/dev/javascript/split_flap/split_flap_char.mjs
-var FILEPATH = "src/split_flap_char.gleam";
+// build/dev/javascript/split_flap/components/char.mjs
+var FILEPATH = "src/components/char.gleam";
 var Model = class extends CustomType {
   constructor(chars, dest, state) {
     super();
@@ -5762,16 +5780,16 @@ function view(model) {
     throw makeError(
       "let_assert",
       FILEPATH,
-      "split_flap_char",
-      152,
+      "components/char",
+      157,
       "view",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 3456,
-        end: 3513,
-        pattern_start: 3467,
-        pattern_end: 3484
+        start: 3576,
+        end: 3633,
+        pattern_start: 3587,
+        pattern_end: 3604
       }
     );
   }
@@ -5899,16 +5917,16 @@ function update2(model, msg) {
       throw makeError(
         "let_assert",
         FILEPATH,
-        "split_flap_char",
-        132,
+        "components/char",
+        137,
         "update",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 2932,
-          end: 2996,
-          pattern_start: 2943,
-          pattern_end: 2961
+          start: 3052,
+          end: 3116,
+          pattern_start: 3063,
+          pattern_end: 3081
         }
       );
     }
@@ -5995,7 +6013,7 @@ function register() {
   return make_component(component2, "split-flap-char");
 }
 
-// build/dev/javascript/split_flap/split_flap_display.mjs
+// build/dev/javascript/split_flap/components/display.mjs
 var Model2 = class extends CustomType {
   constructor(lines, cols, rows, chars) {
     super();
@@ -6319,7 +6337,7 @@ function register2() {
             echo(
               "error " + error_string(error),
               void 0,
-              "src/split_flap_display.gleam",
+              "src/components/display.gleam",
               82
             );
             return new Error(void 0);
@@ -6564,7 +6582,7 @@ var Echo$Inspector = class {
   }
 };
 
-// build/dev/javascript/split_flap/progress_bar.mjs
+// build/dev/javascript/split_flap/components/progress_bar.mjs
 var Model3 = class extends CustomType {
   constructor(progress, cols) {
     super();
@@ -6650,22 +6668,16 @@ function view3(model) {
       div(
         toList([class$("progress-bar")]),
         toList([
-          element4(
-            "<",
-            new Some("<"),
-            new Some(new BackClicked())
-          ),
+          element4("<", new Some("<"), new Some(new BackClicked())),
           element5(
-            toList([new Text2(progress_string(model.progress, model.cols))]),
+            toList([
+              new Text2(progress_string(model.progress, model.cols))
+            ]),
             model.cols - 2,
             1,
             new Some("ABCDEFGHIJK%")
           ),
-          element4(
-            ">",
-            new Some(">"),
-            new Some(new ForwardClicked())
-          )
+          element4(">", new Some(">"), new Some(new ForwardClicked()))
         ])
       )
     ])
@@ -6704,8 +6716,8 @@ function register3() {
   return make_component(component2, "progress-bar");
 }
 
-// build/dev/javascript/split_flap/bingo.mjs
-var FILEPATH2 = "src/bingo.gleam";
+// build/dev/javascript/split_flap/components/bingo.mjs
+var FILEPATH2 = "src/components/bingo.gleam";
 var Frame = class extends CustomType {
   constructor(lines, ms) {
     super();
@@ -6783,16 +6795,16 @@ function next_frame(scenes2, current) {
       throw makeError(
         "let_assert",
         FILEPATH2,
-        "bingo",
+        "components/bingo",
         97,
         "next_frame",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $1,
-          start: 2130,
-          end: 2174,
-          pattern_start: 2141,
-          pattern_end: 2149
+          start: 2141,
+          end: 2185,
+          pattern_start: 2152,
+          pattern_end: 2160
         }
       );
     }
@@ -6828,10 +6840,10 @@ function update5(model, msg) {
       return [model, none2()];
     }
   } else if (msg instanceof BackClicked2) {
-    echo2("BackClicked", void 0, "src/bingo.gleam", 81);
+    echo2("BackClicked", void 0, "src/components/bingo.gleam", 81);
     return [model, none2()];
   } else if (msg instanceof ForwardClicked2) {
-    echo2("ForwardClicked", void 0, "src/bingo.gleam", 85);
+    echo2("ForwardClicked", void 0, "src/components/bingo.gleam", 85);
     return [model, none2()];
   } else {
     return [model, none2()];
@@ -6885,16 +6897,16 @@ function current_scene_name(model) {
     throw makeError(
       "let_assert",
       FILEPATH2,
-      "bingo",
-      156,
+      "components/bingo",
+      152,
       "current_scene_name",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 3475,
-        end: 3636,
-        pattern_start: 3486,
-        pattern_end: 3495
+        start: 3435,
+        end: 3596,
+        pattern_start: 3446,
+        pattern_end: 3455
       }
     );
   }
@@ -7060,11 +7072,11 @@ function init4(_) {
     throw makeError(
       "let_assert",
       FILEPATH2,
-      "bingo",
+      "components/bingo",
       42,
       "init",
       "Pattern match failed, no pattern matched the value.",
-      { value: $, start: 851, end: 898, pattern_start: 862, pattern_end: 877 }
+      { value: $, start: 862, end: 909, pattern_start: 873, pattern_end: 888 }
     );
   }
   let $1 = first2(first_scene.frames);
@@ -7075,11 +7087,11 @@ function init4(_) {
     throw makeError(
       "let_assert",
       FILEPATH2,
-      "bingo",
+      "components/bingo",
       43,
       "init",
       "Pattern match failed, no pattern matched the value.",
-      { value: $1, start: 901, end: 960, pattern_start: 912, pattern_end: 927 }
+      { value: $1, start: 912, end: 971, pattern_start: 923, pattern_end: 938 }
     );
   }
   return [
@@ -7092,7 +7104,7 @@ function init4(_) {
     )
   ];
 }
-var css4 = "\n  :host {\n    \n  }\n\n  .frame  {\n    width: 100%;\n    height: 100%;\n    min-height: fit-content;\n    overflow: scroll;\n    scrollbar-background: rgb(40, 40, 40);\n    \n    background: linear-gradient(250deg, rgb(40, 40, 40) 0%,rgb(50, 50, 50) 25%,rgb(40,40,40) 80%);\n    padding: 10cqh 20cqw;\n    padding-bottom: 5cqh;\n    /* This is in px on purpose*/\n    box-shadow: inset 0px 3px 10px 10px rgba(0, 0, 0, 0.25);\n\n    @media (max-width: 1000px) {\n      padding: 10cqh 15cqw;\n    }\n\n    @media (max-width: 600px) {\n      padding: 10cqh 5cqw;\n    }\n\n    progress-bar {\n      margin-top: 5cqh;\n    }\n  }\n\n  \n";
+var css4 = "\n  :host {\n    position: relative;\n    container-type: inline-size;\n  }\n\n  .frame  {\n    width: 100%;\n    height: 100%;\n    min-height: fit-content;\n    overflow: scroll;\n    scrollbar-background: rgb(40, 40, 40);\n    \n    background: linear-gradient(250deg, rgb(40, 40, 40) 0%,rgb(50, 50, 50) 25%,rgb(40,40,40) 80%);\n    padding-bottom: 5cqh;\n    /* This is in px on purpose*/\n    box-shadow: inset 0px 3px 10px 10px rgba(0, 0, 0, 0.25);\n\n  }\n\n  @container (width >= 1000px) {\n    .frame {\n      padding: 10cqh 5cqw;\n    }\n  }\n\n  @container (width <= 1000px) {\n    .frame {\n      padding: 5cqh 10cqw;\n    }\n  }\n\n  @container (width <= 600px) {\n    .frame {\n      padding: 5cqh 20cqw;\n    }  \n  }\n\n  progress-bar {\n    margin-top: 15cqh;\n  }  \n";
 function view4(model) {
   let $ = current_scene_name(model);
   return fragment2(
@@ -7321,6 +7333,44 @@ var Echo$Inspector2 = class {
   }
 };
 
+// build/dev/javascript/split_flap/components/office.mjs
+var css5 = "\n  :host {\n    --position-x: 50%;\n    --position-y: 35%;\n    width: 100%;\n    height: 100%;\n    position: relative;\n    container-type: inline-size;\n  }\n  \n  .office-void {\n    width: 100%;\n    height: 100%;\n    position: relative;  \n    overflow: hidden;\n    container-type: size;\n  }\n  \n  .office-void-bg {\n    position: absolute;\n    width: max(100cqw, 100cqh);\n    height: max(100cqw, 100cqh);\n    left: var(--position-x);\n    top: var(--position-y);\n    transform: translate(calc(var(--position-x) * -1), calc(var(--position-y) * -1));\n    background-image: url(./img/bg-3840.webp);\n    background-size: cover;\n    background-position: var(--position-x) var(--position-y);\n  }\n  \n  .split-flap-void {\n    position: absolute;\n    /* background: lime; */\n    /* mix-blend-mode: difference; */\n    /* do not, and I repeat, do not touch this\u2014otherwise the flip-flap will be very very sad and I will cry */\n    top: 21.78%;\n    left: 35.77%;\n    width: 28.50%;\n    height: 14.4%;\n    container-type: size;\n\n    /*\n    top: 8%;\n    left: 27.77%;\n    width: 45%;\n    height: 19%;\n    container-type: size;\n    */\n  }\n";
+function view5(_) {
+  return fragment2(
+    toList([
+      style2(toList([]), css5),
+      div(
+        toList([class$("office-void")]),
+        toList([
+          div(
+            toList([class$("office-void-bg")]),
+            toList([
+              div(
+                toList([class$("split-flap-void")]),
+                toList([
+                  named_slot("split-flap", toList([]), toList([]))
+                ])
+              )
+            ])
+          )
+        ])
+      )
+    ])
+  );
+}
+function register5() {
+  let component2 = simple(
+    (_) => {
+      return void 0;
+    },
+    (_, _1) => {
+      return void 0;
+    },
+    view5
+  );
+  return make_component(component2, "bingo-office");
+}
+
 // build/dev/javascript/split_flap/split_flap.mjs
 var FILEPATH3 = "src/split_flap.gleam";
 function main() {
@@ -7330,10 +7380,10 @@ function main() {
       "let_assert",
       FILEPATH3,
       "split_flap",
-      7,
+      8,
       "main",
       "Pattern match failed, no pattern matched the value.",
-      { value: $, start: 101, end: 146, pattern_start: 112, pattern_end: 117 }
+      { value: $, start: 148, end: 182, pattern_start: 159, pattern_end: 164 }
     );
   }
   let $1 = register2();
@@ -7342,10 +7392,10 @@ function main() {
       "let_assert",
       FILEPATH3,
       "split_flap",
-      8,
+      9,
       "main",
       "Pattern match failed, no pattern matched the value.",
-      { value: $1, start: 149, end: 197, pattern_start: 160, pattern_end: 165 }
+      { value: $1, start: 185, end: 222, pattern_start: 196, pattern_end: 201 }
     );
   }
   let $2 = register3();
@@ -7354,22 +7404,34 @@ function main() {
       "let_assert",
       FILEPATH3,
       "split_flap",
-      9,
+      10,
       "main",
       "Pattern match failed, no pattern matched the value.",
-      { value: $2, start: 200, end: 242, pattern_start: 211, pattern_end: 216 }
+      { value: $2, start: 225, end: 267, pattern_start: 236, pattern_end: 241 }
     );
   }
-  let $3 = register4();
+  let $3 = register5();
   if (!($3 instanceof Ok)) {
     throw makeError(
       "let_assert",
       FILEPATH3,
       "split_flap",
-      10,
+      11,
       "main",
       "Pattern match failed, no pattern matched the value.",
-      { value: $3, start: 245, end: 280, pattern_start: 256, pattern_end: 261 }
+      { value: $3, start: 270, end: 306, pattern_start: 281, pattern_end: 286 }
+    );
+  }
+  let $4 = register4();
+  if (!($4 instanceof Ok)) {
+    throw makeError(
+      "let_assert",
+      FILEPATH3,
+      "split_flap",
+      12,
+      "main",
+      "Pattern match failed, no pattern matched the value.",
+      { value: $4, start: 309, end: 344, pattern_start: 320, pattern_end: 325 }
     );
   }
   return void 0;

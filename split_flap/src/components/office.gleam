@@ -62,5 +62,14 @@ const css = "
     left: 35.77%;
     width: 28.50%;
     height: 14.4%;
+    container-type: size;
+
+    /*
+    top: 8%;
+    left: 27.77%;
+    width: 45%;
+    height: 19%;
+    container-type: size;
+    */
   }
 "

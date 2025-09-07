@@ -12,8 +12,8 @@ import lustre/element.{type Element}
 import lustre/element/html
 import lustre/event
 
-import split_flap_char
-import split_flap_display.{Text}
+import components/char as sf_char
+import components/display as sf_display
 
 pub fn register() -> Result(Nil, lustre.Error) {
   let component =
@@ -91,14 +91,18 @@ fn view(model: Model) -> Element(Msg) {
   element.fragment([
     html.style([], css(model.cols)),
     html.div([attribute.class("progress-bar")], [
-      split_flap_char.element("<", Some("<"), on_click: Some(BackClicked)),
-      split_flap_display.element(
-        [Text(text: progress_string(model.progress, model.cols))],
+      sf_char.element("<", Some("<"), on_click: Some(BackClicked)),
+
+      sf_display.element(
+        [
+          sf_display.Text(text: progress_string(model.progress, model.cols)),
+        ],
         cols: model.cols - 2,
         rows: 1,
         chars: Some("ABCDEFGHIJK%"),
       ),
-      split_flap_char.element(">", Some(">"), on_click: Some(ForwardClicked)),
+
+      sf_char.element(">", Some(">"), on_click: Some(ForwardClicked)),
     ]),
   ])
 }

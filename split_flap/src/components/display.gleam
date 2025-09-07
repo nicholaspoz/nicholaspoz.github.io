@@ -12,7 +12,7 @@ import lustre/element.{type Element}
 import lustre/element/html
 import lustre/element/keyed
 
-import split_flap_char
+import components/char as sf_char
 
 const default_rows = 6
 
@@ -186,7 +186,7 @@ fn row(
     |> string.to_graphemes
     |> list.index_map(fn(char, idx) {
       let key = int.to_string(row_num) <> "-" <> int.to_string(idx)
-      #(key, split_flap_char.element(char:, char_stack:, on_click: None))
+      #(key, sf_char.element(char:, char_stack:, on_click: None))
     })
 
   let link_attrs = case line {

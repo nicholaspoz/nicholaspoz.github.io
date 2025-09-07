@@ -1,9 +1,4 @@
-import gleam/list
 import gleeunit
-import gleeunit/should
-
-import bingo.{Frame, Scene}
-import split_flap_display.{type Content, Link, Text}
 
 pub fn main() -> Nil {
   gleeunit.main()

@@ -1,12 +1,14 @@
-import bingo
-import progress_bar
-import split_flap_char
-import split_flap_display
+import components/bingo
+import components/char
+import components/display
+import components/office
+import components/progress_bar
 
 pub fn main() {
-  let assert Ok(_) = split_flap_char.register()
-  let assert Ok(_) = split_flap_display.register()
+  let assert Ok(_) = char.register()
+  let assert Ok(_) = display.register()
   let assert Ok(_) = progress_bar.register()
+  let assert Ok(_) = office.register()
   let assert Ok(_) = bingo.register()
   Nil
 }

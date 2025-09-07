@@ -8,8 +8,8 @@ import lustre/effect.{type Effect}
 import lustre/element.{type Element}
 import lustre/element/html
 
-import progress_bar
-import split_flap_display.{type Content, Link, Text}
+import components/display.{type Content, Link, Text}
+import components/progress_bar
 import utils
 
 pub type Frame {
@@ -121,12 +121,8 @@ fn view(model: Model) -> Element(Msg) {
   element.fragment([
     html.style([], css),
     html.div([attribute.class("frame")], [
-      split_flap_display.element(
-        model.current.lines,
-        cols: 22,
-        rows: 6,
-        chars: None,
-      ),
+      display.element(model.current.lines, cols: 22, rows: 6, chars: None),
+
       progress_bar.element(
         progress: calculate_progress(model),
         cols: 22,
@@ -276,7 +272,8 @@ fn email() {
 
 const css = "
   :host {
-    
+    position: relative;
+    container-type: inline-size;
   }
 
   .frame  {
@@ -287,23 +284,31 @@ const css = "
     scrollbar-background: rgb(40, 40, 40);
     
     background: linear-gradient(250deg, rgb(40, 40, 40) 0%,rgb(50, 50, 50) 25%,rgb(40,40,40) 80%);
-    padding: 10cqh 20cqw;
     padding-bottom: 5cqh;
     /* This is in px on purpose*/
     box-shadow: inset 0px 3px 10px 10px rgba(0, 0, 0, 0.25);
 
-    @media (max-width: 1000px) {
-      padding: 10cqh 15cqw;
-    }
+  }
 
-    @media (max-width: 600px) {
+  @container (width >= 1000px) {
+    .frame {
       padding: 10cqh 5cqw;
-    }
-
-    progress-bar {
-      margin-top: 5cqh;
     }
   }
 
-  
+  @container (width <= 1000px) {
+    .frame {
+      padding: 5cqh 10cqw;
+    }
+  }
+
+  @container (width <= 600px) {
+    .frame {
+      padding: 5cqh 20cqw;
+    }  
+  }
+
+  progress-bar {
+    margin-top: 15cqh;
+  }  
 "
