@@ -287,10 +287,18 @@ const css = "
     scrollbar-background: rgb(40, 40, 40);
     
     background: linear-gradient(250deg, rgb(40, 40, 40) 0%,rgb(50, 50, 50) 25%,rgb(40,40,40) 80%);
-    padding: 10cqh 15cqw;
+    padding: 10cqh 20cqw;
     padding-bottom: 5cqh;
     /* This is in px on purpose*/
     box-shadow: inset 0px 3px 10px 10px rgba(0, 0, 0, 0.25);
+
+    @media (max-width: 1000px) {
+      padding: 10cqh 15cqw;
+    }
+
+    @media (max-width: 600px) {
+      padding: 10cqh 5cqw;
+    }
 
     progress-bar {
       margin-top: 5cqh;

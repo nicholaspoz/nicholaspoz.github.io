@@ -7092,7 +7092,7 @@ function init4(_) {
     )
   ];
 }
-var css4 = "\n  :host {\n    \n  }\n\n  .frame  {\n    width: 100%;\n    height: 100%;\n    min-height: fit-content;\n    overflow: scroll;\n    scrollbar-background: rgb(40, 40, 40);\n    \n    background: linear-gradient(250deg, rgb(40, 40, 40) 0%,rgb(50, 50, 50) 25%,rgb(40,40,40) 80%);\n    padding: 10cqh 15cqw;\n    padding-bottom: 5cqh;\n    /* This is in px on purpose*/\n    box-shadow: inset 0px 3px 10px 10px rgba(0, 0, 0, 0.25);\n\n    progress-bar {\n      margin-top: 5cqh;\n    }\n  }\n\n  \n";
+var css4 = "\n  :host {\n    \n  }\n\n  .frame  {\n    width: 100%;\n    height: 100%;\n    min-height: fit-content;\n    overflow: scroll;\n    scrollbar-background: rgb(40, 40, 40);\n    \n    background: linear-gradient(250deg, rgb(40, 40, 40) 0%,rgb(50, 50, 50) 25%,rgb(40,40,40) 80%);\n    padding: 10cqh 20cqw;\n    padding-bottom: 5cqh;\n    /* This is in px on purpose*/\n    box-shadow: inset 0px 3px 10px 10px rgba(0, 0, 0, 0.25);\n\n    @media (max-width: 1000px) {\n      padding: 10cqh 15cqw;\n    }\n\n    @media (max-width: 600px) {\n      padding: 10cqh 5cqw;\n    }\n\n    progress-bar {\n      margin-top: 5cqh;\n    }\n  }\n\n  \n";
 function view4(model) {
   let $ = current_scene_name(model);
   return fragment2(
