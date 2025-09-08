@@ -194,7 +194,11 @@ fn row(
     _ -> []
   }
 
-  keyed.element("a", [attribute.class("row"), ..link_attrs], children)
+  keyed.element(
+    "a",
+    [attribute.class("row"), component.part("row"), ..link_attrs],
+    children,
+  )
 }
 
 /// probs a better way to do this

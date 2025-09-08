@@ -13,7 +13,7 @@ import lustre/event
 
 import utils
 
-pub const default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?/\\|@#_()<>"
+pub const default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<>()/\\|%#_!?"
 
 const flip_duration_ms = 30
 

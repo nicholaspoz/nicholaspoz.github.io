@@ -46,7 +46,36 @@
   </head>
 
   <body>
-    <nick-dot-bingo></nick-dot-bingo>
+    <style>
+      @media (orientation: landscape) {
+        .bingo-landscape {
+          display: block;
+          width: 100%;
+          height: 100%;
+        }
+        .bingo-portrait {
+          display: none;
+        }
+      }
+
+      @media (orientation: portrait) {
+        .bingo-portrait {
+          display: block;
+          width: 100%;
+          height: 100%;
+        }
+        .bingo-landscape {
+          display: none;
+        }
+
+        nick-dot-bingo::part(matrix) {
+          justify-content: space-around;
+          height: 100%;
+        }
+      }
+    </style>
+    <nick-dot-bingo class="bingo-landscape" columns="28"></nick-dot-bingo>
+    <nick-dot-bingo class="bingo-portrait" columns="14"></nick-dot-bingo>
     <script type="module" src="/js/split_flap.mjs"></script>
   </body>
 </html>

@@ -390,6 +390,24 @@ function makeError(variant, file, module, line, fn, message, extra) {
   return error;
 }
 
+// build/dev/javascript/gleam_stdlib/gleam/order.mjs
+var Lt = class extends CustomType {
+};
+var Eq = class extends CustomType {
+};
+var Gt = class extends CustomType {
+};
+
+// build/dev/javascript/gleam_stdlib/gleam/option.mjs
+var Some = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var None = class extends CustomType {
+};
+
 // build/dev/javascript/gleam_stdlib/dict.mjs
 var referenceMap = /* @__PURE__ */ new WeakMap();
 var tempDataView = /* @__PURE__ */ new DataView(
@@ -1094,24 +1112,6 @@ var Dict = class _Dict {
 };
 var unequalDictSymbol = /* @__PURE__ */ Symbol();
 
-// build/dev/javascript/gleam_stdlib/gleam/order.mjs
-var Lt = class extends CustomType {
-};
-var Eq = class extends CustomType {
-};
-var Gt = class extends CustomType {
-};
-
-// build/dev/javascript/gleam_stdlib/gleam/option.mjs
-var Some = class extends CustomType {
-  constructor($0) {
-    super();
-    this[0] = $0;
-  }
-};
-var None = class extends CustomType {
-};
-
 // build/dev/javascript/gleam_stdlib/gleam/dict.mjs
 function do_has_key(key, dict3) {
   return !isEqual(map_get(dict3, key), new Error(void 0));
@@ -1295,6 +1295,24 @@ function index_map_loop(loop$list, loop$fun, loop$index, loop$acc) {
 function index_map(list4, fun) {
   return index_map_loop(list4, fun, 0, toList([]));
 }
+function drop(loop$list, loop$n) {
+  while (true) {
+    let list4 = loop$list;
+    let n = loop$n;
+    let $ = n <= 0;
+    if ($) {
+      return list4;
+    } else {
+      if (list4 instanceof Empty) {
+        return list4;
+      } else {
+        let rest$1 = list4.tail;
+        loop$list = rest$1;
+        loop$n = n - 1;
+      }
+    }
+  }
+}
 function take_loop(loop$list, loop$n, loop$acc) {
   while (true) {
     let list4 = loop$list;
@@ -1413,6 +1431,48 @@ function find2(loop$list, loop$is_desired) {
       }
     }
   }
+}
+function find_map(loop$list, loop$fun) {
+  while (true) {
+    let list4 = loop$list;
+    let fun = loop$fun;
+    if (list4 instanceof Empty) {
+      return new Error(void 0);
+    } else {
+      let first$1 = list4.head;
+      let rest$1 = list4.tail;
+      let $ = fun(first$1);
+      if ($ instanceof Ok) {
+        return $;
+      } else {
+        loop$list = rest$1;
+        loop$fun = fun;
+      }
+    }
+  }
+}
+function zip_loop(loop$one, loop$other, loop$acc) {
+  while (true) {
+    let one = loop$one;
+    let other = loop$other;
+    let acc = loop$acc;
+    if (other instanceof Empty) {
+      return reverse(acc);
+    } else if (one instanceof Empty) {
+      return reverse(acc);
+    } else {
+      let first_other = other.head;
+      let rest_other = other.tail;
+      let first_one = one.head;
+      let rest_one = one.tail;
+      loop$one = rest_one;
+      loop$other = rest_other;
+      loop$acc = prepend([first_one, first_other], acc);
+    }
+  }
+}
+function zip(list4, other) {
+  return zip_loop(list4, other, toList([]));
 }
 function unique_loop(loop$list, loop$seen, loop$acc) {
   while (true) {
@@ -1795,6 +1855,9 @@ function range_loop(loop$start, loop$stop, loop$acc) {
 function range(start3, stop) {
   return range_loop(start3, stop, toList([]));
 }
+function window_by_2(list4) {
+  return zip(list4, drop(list4, 1));
+}
 
 // build/dev/javascript/gleam_stdlib/gleam/string.mjs
 function replace(string5, pattern, substitute) {
@@ -1890,16 +1953,6 @@ function padding(size2, pad_string) {
   let num_pads = divideInt(size2, pad_string_length);
   let extra = remainderInt(size2, pad_string_length);
   return repeat(pad_string, num_pads) + slice(pad_string, 0, extra);
-}
-function pad_start(string5, desired_length, pad_string) {
-  let current_length = string_length(string5);
-  let to_pad_length = desired_length - current_length;
-  let $ = to_pad_length <= 0;
-  if ($) {
-    return string5;
-  } else {
-    return padding(to_pad_length, pad_string) + string5;
-  }
 }
 function pad_end(string5, desired_length, pad_string) {
   let current_length = string_length(string5);
@@ -2399,6 +2452,14 @@ function is_ok(result) {
     return false;
   }
 }
+function map3(result, fun) {
+  if (result instanceof Ok) {
+    let x = result[0];
+    return new Ok(fun(x));
+  } else {
+    return result;
+  }
+}
 function map_error(result, fun) {
   if (result instanceof Ok) {
     return result;
@@ -2413,6 +2474,14 @@ function try$(result, fun) {
     return fun(x);
   } else {
     return result;
+  }
+}
+function unwrap(result, default$) {
+  if (result instanceof Ok) {
+    let v = result[0];
+    return v;
+  } else {
+    return default$;
   }
 }
 
@@ -3456,6 +3525,9 @@ function div(attrs, children) {
 }
 function span(attrs, children) {
   return element2("span", attrs, children);
+}
+function button(attrs, children) {
+  return element2("button", attrs, children);
 }
 function slot(attrs, fallback) {
   return element2("slot", attrs, fallback);
@@ -5617,6 +5689,9 @@ function on_attribute_change(name, decoder) {
 function named_slot(name, attributes, fallback) {
   return slot(prepend(attribute2("name", name), attributes), fallback);
 }
+function part(name) {
+  return attribute2("part", name);
+}
 
 // build/dev/javascript/lustre/lustre.mjs
 var App = class extends CustomType {
@@ -5763,7 +5838,7 @@ function css(ms) {
   let _pipe = '\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  .split-flap {\n    /* TODO -webkit-font-smoothing */\n    position: relative;\n    width: 100%;\n    height: 100%;\n    aspect-ratio: 1/1.618; /* golden ratio ;) */\n    font-family: "Fragment Mono", monospace;\n    font-weight: bold;\n    font-size: 120cqw;\n    border-radius: 5cqw;\n    perspective: 600cqw;\n  }\n\n  .split-flap::selection {\n    background: white;\n    color: black;\n  }\n\n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 3.5cqw;\n    background: rgb(20, 20, 20);\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    z-index: 1;\n    background: rgb(40, 40, 40);\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n    z-index: 0;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw;\n    user-select: text;\n    height: 100%;\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n  }\n\n  @keyframes flip-top {\n    0% {\n      transform: rotateX(0deg);\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n    50%, 100% {\n      transform: rotateX(-90deg);\n      box-shadow: none;\n    }\n    \n  }\n\n  @keyframes flip-bottom {\n    0% {\n      transform: rotateX(90deg);\n      box-shadow: none;\n    }\n    100% {\n      transform: rotateX(0deg);\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n  }\n\n  .flap.flipping-top {\n    pointer-events: none;\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw 5cqw 0 0;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n    animation: <flip_duration>ms ease-in flip-top;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap.flipping-bottom {\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n    animation: <flip_duration>ms ease-in flip-bottom;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n  \n  .flap.top .flap-content {\n    top: 0;\n    height: 100%\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n  .flap.flipping-top .flap-content {\n    top: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
   return replace(_pipe, "<flip_duration>", to_string(ms));
 }
-var default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!?/\\|@#_()<>";
+var default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<>()/\\|%#_!?";
 function element4(char, chars, on_click2) {
   return element2(
     "split-flap-char",
@@ -6231,7 +6306,10 @@ function row(line, row_num, num_cols, char_stack) {
   let link_attrs = _block$2;
   return element3(
     "a",
-    prepend(class$("row"), link_attrs),
+    prepend(
+      class$("row"),
+      prepend(part("row"), link_attrs)
+    ),
     children
   );
 }
@@ -6616,12 +6694,39 @@ var Echo$Inspector = class {
   }
 };
 
+// build/dev/javascript/split_flap/components/display_fns.mjs
+function center(text4, background) {
+  let len = string_length(background);
+  let text$1 = slice(text4, 0, len);
+  let middle_idx = string_length(text$1);
+  let start_idx = max(0, globalThis.Math.trunc((len - middle_idx) / 2));
+  let end_idx = max(0, len - start_idx - middle_idx);
+  return slice(background, 0, start_idx) + text$1 + slice(
+    background,
+    start_idx + middle_idx,
+    end_idx
+  );
+}
+function left(text4, background) {
+  let bg_len = string_length(background);
+  let text$1 = slice(text4, 0, bg_len);
+  let text_len = string_length(text$1);
+  return text$1 + slice(background, text_len, bg_len);
+}
+function right(text4, background) {
+  let bg_len = string_length(background);
+  let text$1 = slice(text4, 0, bg_len);
+  let text_len = string_length(text$1);
+  return slice(background, 0, bg_len - text_len) + text$1;
+}
+
 // build/dev/javascript/split_flap/components/progress_bar.mjs
 var Model3 = class extends CustomType {
-  constructor(progress, cols) {
+  constructor(progress, cols, auto_play) {
     super();
     this.progress = progress;
     this.cols = cols;
+    this.auto_play = auto_play;
   }
 };
 var ProgressAttrChanged = class extends CustomType {
@@ -6636,9 +6741,17 @@ var ColsAttrChanged2 = class extends CustomType {
     this[0] = $0;
   }
 };
+var AutoPlayAttrChanged = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
 var BackClicked = class extends CustomType {
 };
 var ForwardClicked = class extends CustomType {
+};
+var AutoPlayClicked = class extends CustomType {
 };
 function on_back(msg) {
   return on("go_back", success(msg));
@@ -6646,12 +6759,26 @@ function on_back(msg) {
 function on_forward(msg) {
   return on("go_forward", success(msg));
 }
-function element6(progress, cols, back_msg, forward_msg) {
+function on_auto_play(msg) {
+  return on("auto_play", success(msg));
+}
+function element6(progress, cols, back_msg, forward_msg, auto_play, auto_play_msg) {
   return element2(
     "progress-bar",
     toList([
+      part("progress-bar"),
       attribute2("progress", to_string(progress)),
       attribute2("cols", to_string(cols)),
+      attribute2(
+        "auto_play",
+        (() => {
+          if (auto_play) {
+            return "true";
+          } else {
+            return "false";
+          }
+        })()
+      ),
       (() => {
         if (back_msg instanceof Some) {
           let m = back_msg[0];
@@ -6667,50 +6794,119 @@ function element6(progress, cols, back_msg, forward_msg) {
         } else {
           return none();
         }
+      })(),
+      (() => {
+        if (auto_play_msg instanceof Some) {
+          let m = auto_play_msg[0];
+          return on_auto_play(m);
+        } else {
+          return none();
+        }
       })()
     ]),
     toList([])
   );
 }
 function init3(_) {
-  return [new Model3(0, 2), none2()];
+  return [new Model3(0, 2, true), none2()];
 }
 function update4(model, msg) {
   if (msg instanceof ProgressAttrChanged) {
     let progress = msg[0];
-    return [new Model3(progress, model.cols), none2()];
+    return [new Model3(progress, model.cols, model.auto_play), none2()];
   } else if (msg instanceof ColsAttrChanged2) {
     let cols = msg[0];
-    return [new Model3(model.progress, cols), none2()];
+    return [new Model3(model.progress, cols, model.auto_play), none2()];
+  } else if (msg instanceof AutoPlayAttrChanged) {
+    let auto_play = msg[0];
+    return [new Model3(model.progress, model.cols, auto_play), none2()];
   } else if (msg instanceof BackClicked) {
     return [model, emit2("go_back", null$())];
-  } else {
+  } else if (msg instanceof ForwardClicked) {
     return [model, emit2("go_forward", null$())];
+  } else {
+    return [model, emit2("auto_play", null$())];
   }
 }
-function progress_string(progress, cols) {
-  return repeat("%", globalThis.Math.trunc(progress * cols / 100));
+function progress_button(model) {
+  let len = model.cols - 2;
+  let progress = model.progress;
+  let auto_play = model.auto_play;
+  return button(
+    toList([
+      class$("progress-bar-button"),
+      on_click(new AutoPlayClicked()),
+      (() => {
+        let $ = model.auto_play;
+        if ($) {
+          return none();
+        } else {
+          return class$("paused");
+        }
+      })()
+    ]),
+    toList([
+      element5(
+        toList([
+          new Text2(
+            (() => {
+              let _block;
+              let _pipe = repeat(
+                "%",
+                globalThis.Math.trunc(progress * len / 100)
+              );
+              _block = pad_end(_pipe, len, " ");
+              let pct = _block;
+              if (auto_play) {
+                return pct;
+              } else {
+                let infix = "(PAUSED)";
+                let middle = string_length(infix);
+                let start3 = max(
+                  0,
+                  globalThis.Math.trunc((len - middle) / 2)
+                );
+                let end = max(0, len - start3 - middle);
+                return slice(pct, 0, start3) + infix + slice(
+                  pct,
+                  start3 + middle,
+                  end
+                );
+              }
+            })()
+          )
+        ]),
+        model.cols - 2,
+        1,
+        new None()
+      )
+    ])
+  );
 }
-function css3(cols) {
-  let _pipe = "\n  :host {\n    display: inline-block;\n    width: 100%;\n  }\n\n  split-flap-char {\n    padding: 0.9cqw 0.3cqw;\n  }\n\n  .progress-bar {\n    width: 100%;\n    display: grid;\n    grid-template-columns: 1fr <cols>fr 1fr;\n    gap: 0;\n  }\n  ";
-  return replace(_pipe, "<cols>", to_string(cols - 2));
+function css3(cols, auto_play) {
+  let _pipe = "\n  :host {\n    display: inline-block;\n    width: 100%;\n  }\n\n  split-flap-char {\n    padding: 0.9cqw 0.3cqw;\n  }\n\n  .progress-bar {\n    width: 100%;\n    display: grid;\n    grid-template-columns: 1fr <cols>fr 1fr;\n    gap: 0;\n  }\n\n  .progress-bar-button {\n    width: 100%;\n    height: 100%;\n    background: none;\n    padding: 0;\n    margin: 0;\n    border: none;\n    cursor: pointer;\n  }\n  \n  split-flap-display::part(row) {\n    cursor: <cursor>;\n  }\n  ";
+  let _pipe$1 = replace(_pipe, "<cols>", to_string(cols - 2));
+  return replace(
+    _pipe$1,
+    "<cursor>",
+    (() => {
+      if (auto_play) {
+        return "default";
+      } else {
+        return "pointer";
+      }
+    })()
+  );
 }
 function view3(model) {
   return fragment2(
     toList([
-      style2(toList([]), css3(model.cols)),
+      style2(toList([]), css3(model.cols, model.auto_play)),
       div(
         toList([class$("progress-bar")]),
         toList([
           element4("<", new Some("<"), new Some(new BackClicked())),
-          element5(
-            toList([
-              new Text2(progress_string(model.progress, model.cols))
-            ]),
-            model.cols - 2,
-            1,
-            new Some("ABCDEFGHIJK%")
-          ),
+          progress_button(model),
           element4(">", new Some(">"), new Some(new ForwardClicked()))
         ])
       )
@@ -6744,6 +6940,18 @@ function register3() {
             }
           );
         }
+      ),
+      on_attribute_change(
+        "auto_play",
+        (val) => {
+          if (val === "true") {
+            return new Ok(new AutoPlayAttrChanged(true));
+          } else if (val === "1") {
+            return new Ok(new AutoPlayAttrChanged(true));
+          } else {
+            return new Ok(new AutoPlayAttrChanged(false));
+          }
+        }
       )
     ])
   );
@@ -6766,12 +6974,19 @@ var Scene = class extends CustomType {
     this.frames = frames;
   }
 };
-var Model4 = class extends CustomType {
-  constructor(scenes2, current, auto_play) {
+var Bingo = class extends CustomType {
+  constructor(scenes2, current, auto_play, columns) {
     super();
     this.scenes = scenes2;
     this.current = current;
     this.auto_play = auto_play;
+    this.columns = columns;
+  }
+};
+var ColumnsAttrChanged = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
   }
 };
 var FrameStarted = class extends CustomType {
@@ -6782,7 +6997,7 @@ var BackClicked2 = class extends CustomType {
 };
 var ForwardClicked2 = class extends CustomType {
 };
-var Progressed = class extends CustomType {
+var AutoPlayClicked2 = class extends CustomType {
 };
 function next_frame_recursive(loop$frames, loop$current) {
   while (true) {
@@ -6809,14 +7024,14 @@ function next_frame_recursive(loop$frames, loop$current) {
     }
   }
 }
-function next_frame(scenes2, current) {
+function next_frame(model) {
   let _block;
-  let _pipe = scenes2;
+  let _pipe = model.scenes;
   _block = flat_map(_pipe, (scene) => {
     return scene.frames;
   });
   let all_frames = _block;
-  let $ = next_frame_recursive(all_frames, current);
+  let $ = next_frame_recursive(all_frames, model.current);
   if ($ instanceof Ok) {
     let next = $[0];
     return next;
@@ -6830,23 +7045,328 @@ function next_frame(scenes2, current) {
         "let_assert",
         FILEPATH2,
         "components/bingo",
-        98,
+        133,
         "next_frame",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $1,
-          start: 2158,
-          end: 2202,
-          pattern_start: 2169,
-          pattern_end: 2177
+          start: 3340,
+          end: 3384,
+          pattern_start: 3351,
+          pattern_end: 3359
         }
       );
     }
     return next;
   }
 }
+function previous_scene(scenes2, current) {
+  let _pipe = scenes2;
+  let _pipe$1 = window_by_2(_pipe);
+  let _pipe$2 = find_map(
+    _pipe$1,
+    (pair) => {
+      let a;
+      let b;
+      a = pair[0];
+      b = pair[1];
+      let $ = contains(b.frames, current);
+      if ($) {
+        return new Ok(a);
+      } else {
+        return new Error(void 0);
+      }
+    }
+  );
+  return unwrap(
+    _pipe$2,
+    (() => {
+      let _block;
+      let _pipe$3 = scenes2;
+      let _pipe$4 = reverse(_pipe$3);
+      _block = first(_pipe$4);
+      let $ = _block;
+      let last;
+      if ($ instanceof Ok) {
+        last = $[0];
+      } else {
+        throw makeError(
+          "let_assert",
+          FILEPATH2,
+          "components/bingo",
+          165,
+          "previous_scene",
+          "Pattern match failed, no pattern matched the value.",
+          {
+            value: $,
+            start: 3977,
+            end: 4035,
+            pattern_start: 3988,
+            pattern_end: 3996
+          }
+        );
+      }
+      return last;
+    })()
+  );
+}
+function next_scene(scenes2, current) {
+  let _pipe = scenes2;
+  let _pipe$1 = reverse(_pipe);
+  return previous_scene(_pipe$1, current);
+}
+function calculate_progress_scenes(model) {
+  let _block;
+  let _pipe = length(model.scenes);
+  _block = max(_pipe, 1);
+  let total_scenes = _block;
+  let current_scene_index = fold_until(
+    model.scenes,
+    1,
+    (acc, scene) => {
+      let $ = contains(scene.frames, model.current);
+      if ($) {
+        return new Stop(acc);
+      } else {
+        return new Continue(acc + 1);
+      }
+    }
+  );
+  return divideInt(current_scene_index * 100, total_scenes);
+}
+function get_scene_name(model) {
+  let _pipe = find2(
+    model.scenes,
+    (scene) => {
+      let _pipe2 = find2(
+        scene.frames,
+        (frame) => {
+          return isEqual(frame, model.current);
+        }
+      );
+      return is_ok(_pipe2);
+    }
+  );
+  return map3(_pipe, (scene) => {
+    return scene.name;
+  });
+}
+function scenes(columns) {
+  let blank_line = repeat(" ", columns);
+  let nick = left("NICK", blank_line);
+  let poz = left("((POZOULAKIS))", blank_line);
+  let dot = center("(DOT)", blank_line);
+  let bingo = right("BINGO", blank_line);
+  let freelance = left("FREELANCE", blank_line);
+  let tech = left("TECHNOLOGIST", blank_line);
+  let cellist = left("CELLIST", blank_line);
+  let linked_in = new Link(
+    right("LINKEDIN >", blank_line),
+    "https://www.linkedin.com/in/nicholaspozoulakis/"
+  );
+  let github = new Link(
+    right("GITHUB >", blank_line),
+    "https://github.com/nicholaspoz"
+  );
+  let email = new Link(
+    right("EMAIL >", blank_line),
+    "mailto:nicholaspoz@gmail.com"
+  );
+  let what = center("         WHAT", blank_line);
+  let a = center("        A     ", blank_line);
+  let time = center("   TIME       ", blank_line);
+  let to = center("TO            ", blank_line);
+  let be = center("   BE         ", blank_line);
+  let alive = center("      ALIVE   ", blank_line);
+  let question = center("             ? ", blank_line);
+  return toList([
+    new Scene(
+      "HOME",
+      toList([
+        new Frame(
+          toList([
+            new Text2(nick),
+            new Text2(""),
+            new Text2(""),
+            new Text2(""),
+            new Text2(""),
+            new Text2("")
+          ]),
+          1e3
+        ),
+        new Frame(
+          toList([
+            new Text2(nick),
+            new Text2(""),
+            new Text2(""),
+            new Text2(dot),
+            new Text2(""),
+            new Text2(""),
+            new Text2("")
+          ]),
+          1e3
+        ),
+        new Frame(
+          toList([
+            new Text2(nick),
+            new Text2(""),
+            new Text2(""),
+            new Text2(dot),
+            new Text2(""),
+            new Text2(""),
+            new Text2(bingo)
+          ]),
+          1200
+        ),
+        new Frame(
+          toList([
+            new Text2(nick),
+            new Text2(poz),
+            new Text2(""),
+            new Text2(dot),
+            new Text2(""),
+            new Text2(""),
+            new Text2(bingo)
+          ]),
+          7e3
+        )
+      ])
+    ),
+    new Scene(
+      "TECH",
+      toList([
+        new Frame(
+          toList([
+            new Text2(freelance),
+            new Text2(tech),
+            new Text2(""),
+            new Text2(""),
+            linked_in,
+            github,
+            email
+          ]),
+          8e3
+        )
+      ])
+    ),
+    new Scene(
+      "MUSIC",
+      toList([
+        new Frame(
+          toList([
+            new Text2(freelance),
+            new Text2(cellist),
+            new Text2(""),
+            new Text2(""),
+            new Text2(""),
+            new Text2(""),
+            email
+          ]),
+          1e3
+        ),
+        new Frame(
+          toList([
+            new Text2(freelance),
+            new Text2(cellist),
+            new Text2(""),
+            new Text2(""),
+            new Text2(""),
+            new Text2(""),
+            email
+          ]),
+          7e3
+        )
+      ])
+    ),
+    new Scene(
+      "!",
+      toList([
+        new Frame(
+          toList([
+            new Text2(what),
+            new Text2(a),
+            new Text2(time),
+            new Text2(to),
+            new Text2(be),
+            new Text2(alive)
+          ]),
+          3e3
+        ),
+        new Frame(
+          toList([
+            new Text2(what),
+            new Text2(a),
+            new Text2(time),
+            new Text2(to),
+            new Text2(be),
+            new Text2(alive),
+            new Text2(question)
+          ]),
+          4e3
+        )
+      ])
+    )
+  ]);
+}
+function init4(_) {
+  let scenes$1 = scenes(28);
+  let $ = first(scenes$1);
+  let first_scene;
+  if ($ instanceof Ok) {
+    first_scene = $[0];
+  } else {
+    throw makeError(
+      "let_assert",
+      FILEPATH2,
+      "components/bingo",
+      52,
+      "init",
+      "Pattern match failed, no pattern matched the value.",
+      {
+        value: $,
+        start: 1147,
+        end: 1194,
+        pattern_start: 1158,
+        pattern_end: 1173
+      }
+    );
+  }
+  let $1 = first(first_scene.frames);
+  let first_frame;
+  if ($1 instanceof Ok) {
+    first_frame = $1[0];
+  } else {
+    throw makeError(
+      "let_assert",
+      FILEPATH2,
+      "components/bingo",
+      53,
+      "init",
+      "Pattern match failed, no pattern matched the value.",
+      {
+        value: $1,
+        start: 1197,
+        end: 1256,
+        pattern_start: 1208,
+        pattern_end: 1223
+      }
+    );
+  }
+  return [
+    new Bingo(scenes$1, first_frame, true, 28),
+    from((dispatch) => {
+      return dispatch(new FrameStarted());
+    })
+  ];
+}
 function update5(model, msg) {
-  if (msg instanceof FrameStarted) {
+  if (msg instanceof ColumnsAttrChanged) {
+    let columns = msg[0];
+    return [
+      new Bingo(scenes(columns), model.current, model.auto_play, columns),
+      none2()
+    ];
+  } else if (msg instanceof FrameStarted) {
     return [
       model,
       from(
@@ -6861,11 +7381,67 @@ function update5(model, msg) {
       )
     ];
   } else if (msg instanceof FrameFinished) {
-    let $ = model.auto_play;
-    if ($) {
-      let next = next_frame(model.scenes, model.current);
+    let _block;
+    let $ = get_scene_name(model);
+    if ($ instanceof Ok) {
+      let name = $[0];
+      _block = name;
+    } else {
+      let $12 = first(model.scenes);
+      let first_scene;
+      if ($12 instanceof Ok) {
+        first_scene = $12[0];
+      } else {
+        throw makeError(
+          "let_assert",
+          FILEPATH2,
+          "components/bingo",
+          81,
+          "update",
+          "Pattern match failed, no pattern matched the value.",
+          {
+            value: $12,
+            start: 1910,
+            end: 1963,
+            pattern_start: 1921,
+            pattern_end: 1936
+          }
+        );
+      }
+      _block = first_scene.name;
+    }
+    let curr_scene_name = _block;
+    let next_model = new Bingo(
+      model.scenes,
+      next_frame(model),
+      model.auto_play,
+      model.columns
+    );
+    let $1 = get_scene_name(next_model);
+    let next_scene_name;
+    if ($1 instanceof Ok) {
+      next_scene_name = $1[0];
+    } else {
+      throw makeError(
+        "let_assert",
+        FILEPATH2,
+        "components/bingo",
+        87,
+        "update",
+        "Pattern match failed, no pattern matched the value.",
+        {
+          value: $1,
+          start: 2082,
+          end: 2141,
+          pattern_start: 2093,
+          pattern_end: 2112
+        }
+      );
+    }
+    let $2 = curr_scene_name === next_scene_name || model.auto_play;
+    if ($2) {
       return [
-        new Model4(model.scenes, next, model.auto_play),
+        next_model,
         from((dispatch) => {
           return dispatch(new FrameStarted());
         })
@@ -6874,264 +7450,74 @@ function update5(model, msg) {
       return [model, none2()];
     }
   } else if (msg instanceof BackClicked2) {
-    echo2("BackClicked", void 0, "src/components/bingo.gleam", 82);
-    return [model, none2()];
-  } else if (msg instanceof ForwardClicked2) {
-    echo2("ForwardClicked", void 0, "src/components/bingo.gleam", 86);
-    return [model, none2()];
-  } else {
-    return [model, none2()];
-  }
-}
-function calculate_progress_scenes(model) {
-  let _block;
-  let _pipe = length(model.scenes);
-  _block = max(_pipe, 1);
-  let total_scenes = _block;
-  let current_scene_index = fold_until(
-    model.scenes,
-    0,
-    (acc, scene) => {
-      let $ = contains(scene.frames, model.current);
-      if ($) {
-        return new Stop(acc);
-      } else {
-        return new Continue(acc + 1);
-      }
-    }
-  );
-  return divideInt(current_scene_index * 100, total_scenes);
-}
-function current_scene_name(model) {
-  let $ = find2(
-    model.scenes,
-    (scene2) => {
-      let _pipe = find2(
-        scene2.frames,
-        (frame) => {
-          return isEqual(frame, model.current);
+    let next = previous_scene(model.scenes, model.current);
+    let $ = first(next.frames);
+    let frame;
+    if ($ instanceof Ok) {
+      frame = $[0];
+    } else {
+      throw makeError(
+        "let_assert",
+        FILEPATH2,
+        "components/bingo",
+        102,
+        "update",
+        "Pattern match failed, no pattern matched the value.",
+        {
+          value: $,
+          start: 2496,
+          end: 2542,
+          pattern_start: 2507,
+          pattern_end: 2516
         }
       );
-      return is_ok(_pipe);
     }
-  );
-  let scene;
-  if ($ instanceof Ok) {
-    scene = $[0];
+    return [
+      new Bingo(model.scenes, frame, false, model.columns),
+      from((dispatch) => {
+        return dispatch(new FrameStarted());
+      })
+    ];
+  } else if (msg instanceof ForwardClicked2) {
+    let next = next_scene(model.scenes, model.current);
+    let $ = first(next.frames);
+    let frame;
+    if ($ instanceof Ok) {
+      frame = $[0];
+    } else {
+      throw makeError(
+        "let_assert",
+        FILEPATH2,
+        "components/bingo",
+        111,
+        "update",
+        "Pattern match failed, no pattern matched the value.",
+        {
+          value: $,
+          start: 2773,
+          end: 2819,
+          pattern_start: 2784,
+          pattern_end: 2793
+        }
+      );
+    }
+    return [
+      new Bingo(model.scenes, frame, false, model.columns),
+      from((dispatch) => {
+        return dispatch(new FrameStarted());
+      })
+    ];
   } else {
-    throw makeError(
-      "let_assert",
-      FILEPATH2,
-      "components/bingo",
-      154,
-      "current_scene_name",
-      "Pattern match failed, no pattern matched the value.",
-      {
-        value: $,
-        start: 3476,
-        end: 3637,
-        pattern_start: 3487,
-        pattern_end: 3496
-      }
-    );
+    return [
+      new Bingo(model.scenes, model.current, !model.auto_play, model.columns),
+      from((dispatch) => {
+        return dispatch(new FrameFinished());
+      })
+    ];
   }
-  return scene.name;
-}
-function linked_in() {
-  return new Link(
-    (() => {
-      let _pipe = "LINKEDIN >";
-      return pad_start(_pipe, 22, " ");
-    })(),
-    "https://www.linkedin.com/in/nicholaspozoulakis/"
-  );
-}
-function github() {
-  return new Link(
-    (() => {
-      let _pipe = "GITHUB >";
-      return pad_start(_pipe, 22, " ");
-    })(),
-    "https://github.com/nicholaspoz"
-  );
-}
-function email() {
-  return new Link(
-    (() => {
-      let _pipe = "EMAIL >";
-      return pad_start(_pipe, 22, " ");
-    })(),
-    "mailto:nicholaspoz@gmail.com"
-  );
-}
-function scenes() {
-  return toList([
-    new Scene(
-      "HOME",
-      toList([
-        new Frame(
-          toList([
-            new Text2("NICK"),
-            new Text2(""),
-            new Text2(""),
-            new Text2(""),
-            new Text2(""),
-            new Text2("")
-          ]),
-          1e3
-        ),
-        new Frame(
-          toList([
-            new Text2("NICK"),
-            new Text2(""),
-            new Text2("DOT"),
-            new Text2(""),
-            new Text2(""),
-            new Text2("")
-          ]),
-          1e3
-        ),
-        new Frame(
-          toList([
-            new Text2("NICK"),
-            new Text2(""),
-            new Text2("DOT"),
-            new Text2(""),
-            new Text2("BINGO"),
-            new Text2("")
-          ]),
-          1200
-        ),
-        new Frame(
-          toList([
-            new Text2("NICK (POZOULAKIS)"),
-            new Text2(""),
-            new Text2("DOT"),
-            new Text2(""),
-            new Text2("BINGO"),
-            new Text2("")
-          ]),
-          7e3
-        )
-      ])
-    ),
-    new Scene(
-      "TECH",
-      toList([
-        new Frame(
-          toList([
-            new Text2("FREELANCE"),
-            new Text2("TECHNOLOGIST"),
-            new Text2(""),
-            linked_in(),
-            github(),
-            email()
-          ]),
-          8e3
-        )
-      ])
-    ),
-    new Scene(
-      "MUSIC",
-      toList([
-        new Frame(
-          toList([
-            new Text2("FREELANCE"),
-            new Text2("CELLIST"),
-            new Text2(""),
-            new Text2(""),
-            new Text2(""),
-            email()
-          ]),
-          1e3
-        ),
-        new Frame(
-          toList([
-            new Text2("FREELANCE"),
-            new Text2("CELLIST  ___   |0     "),
-            new Text2("        |   |  |      "),
-            new Text2("        | #0|  |/     "),
-            new Text2("       0|             "),
-            email()
-          ]),
-          7e3
-        )
-      ])
-    ),
-    new Scene(
-      "!",
-      toList([
-        new Frame(
-          toList([
-            new Text2("              WHAT"),
-            new Text2("            A"),
-            new Text2("       TIME"),
-            new Text2("    TO"),
-            new Text2("       BE"),
-            new Text2("          ALIVE")
-          ]),
-          3e3
-        ),
-        new Frame(
-          toList([
-            new Text2("              WHAT"),
-            new Text2("            A"),
-            new Text2("       TIME"),
-            new Text2("    TO"),
-            new Text2("       BE"),
-            new Text2("          ALIVE?")
-          ]),
-          4e3
-        )
-      ])
-    )
-  ]);
-}
-function init4(_) {
-  let scenes$1 = scenes();
-  let $ = first(scenes$1);
-  let first_scene;
-  if ($ instanceof Ok) {
-    first_scene = $[0];
-  } else {
-    throw makeError(
-      "let_assert",
-      FILEPATH2,
-      "components/bingo",
-      43,
-      "init",
-      "Pattern match failed, no pattern matched the value.",
-      { value: $, start: 879, end: 926, pattern_start: 890, pattern_end: 905 }
-    );
-  }
-  let $1 = first(first_scene.frames);
-  let first_frame;
-  if ($1 instanceof Ok) {
-    first_frame = $1[0];
-  } else {
-    throw makeError(
-      "let_assert",
-      FILEPATH2,
-      "components/bingo",
-      44,
-      "init",
-      "Pattern match failed, no pattern matched the value.",
-      { value: $1, start: 929, end: 988, pattern_start: 940, pattern_end: 955 }
-    );
-  }
-  return [
-    new Model4(scenes$1, first_frame, true),
-    from(
-      (dispatch) => {
-        dispatch(new FrameStarted());
-        return dispatch(new Progressed());
-      }
-    )
-  ];
 }
 var css4 = "\n  :host {\n    position: relative;\n    container-type: inline-size;\n  }\n\n  .panel {\n    position: relative;\n    width: 100%;\n    height: 100%;\n    background: linear-gradient(\n      250deg,\n      rgb(40, 40, 40) 0%,\n      rgb(50, 50, 50) 25%,\n      rgb(40, 40, 40) 80%\n    );\n    padding: 2cqh 10cqw;\n    /* This is in px on purpose */\n    box-shadow: inset 0px 3px 10px 10px rgba(0, 0, 0, 0.25);\n\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-content: center;\n    overflow: scroll;\n  }\n\n  .matrix {\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-content: center;\n  }\n  \n  @container (aspect-ratio < 1) {\n    .panel {\n      padding: 5cqh 5cqw;\n    }\n  }\n  ";
 function view4(model) {
-  let $ = current_scene_name(model);
   return fragment2(
     toList([
       style2(toList([]), css4),
@@ -7139,14 +7525,21 @@ function view4(model) {
         toList([class$("panel")]),
         toList([
           div(
-            toList([class$("matrix")]),
+            toList([class$("matrix"), part("matrix")]),
             toList([
-              element5(model.current.lines, 28, 7, new None()),
+              element5(
+                model.current.lines,
+                model.columns,
+                7,
+                new None()
+              ),
               element6(
                 calculate_progress_scenes(model),
-                28,
+                model.columns,
                 new Some(new BackClicked2()),
-                new Some(new ForwardClicked2())
+                new Some(new ForwardClicked2()),
+                model.auto_play,
+                new Some(new AutoPlayClicked2())
               )
             ])
           )
@@ -7156,212 +7549,26 @@ function view4(model) {
   );
 }
 function register4() {
-  let component2 = component(init4, update5, view4, toList([]));
+  let component2 = component(
+    init4,
+    update5,
+    view4,
+    toList([
+      on_attribute_change(
+        "columns",
+        (val) => {
+          return try$(
+            parse_int(val),
+            (cols) => {
+              return new Ok(new ColumnsAttrChanged(cols));
+            }
+          );
+        }
+      )
+    ])
+  );
   return make_component(component2, "nick-dot-bingo");
 }
-function echo2(value, message, file, line) {
-  const grey = "\x1B[90m";
-  const reset_color = "\x1B[39m";
-  const file_line = `${file}:${line}`;
-  const inspector = new Echo$Inspector2();
-  const string_value = inspector.inspect(value);
-  const string_message = message === void 0 ? "" : " " + message;
-  if (globalThis.process?.stderr?.write) {
-    const string5 = `${grey}${file_line}${reset_color}${string_message}
-${string_value}
-`;
-    globalThis.process.stderr.write(string5);
-  } else if (globalThis.Deno) {
-    const string5 = `${grey}${file_line}${reset_color}${string_message}
-${string_value}
-`;
-    globalThis.Deno.stderr.writeSync(new TextEncoder().encode(string5));
-  } else {
-    const string5 = `${file_line}
-${string_value}`;
-    globalThis.console.log(string5);
-  }
-  return value;
-}
-var Echo$Inspector2 = class {
-  #references = /* @__PURE__ */ new Set();
-  #isDict(value) {
-    try {
-      return value instanceof Dict;
-    } catch {
-      return false;
-    }
-  }
-  #float(float2) {
-    const string5 = float2.toString().replace("+", "");
-    if (string5.indexOf(".") >= 0) {
-      return string5;
-    } else {
-      const index4 = string5.indexOf("e");
-      if (index4 >= 0) {
-        return string5.slice(0, index4) + ".0" + string5.slice(index4);
-      } else {
-        return string5 + ".0";
-      }
-    }
-  }
-  inspect(v) {
-    const t = typeof v;
-    if (v === true) return "True";
-    if (v === false) return "False";
-    if (v === null) return "//js(null)";
-    if (v === void 0) return "Nil";
-    if (t === "string") return this.#string(v);
-    if (t === "bigint" || Number.isInteger(v)) return v.toString();
-    if (t === "number") return this.#float(v);
-    if (v instanceof UtfCodepoint) return this.#utfCodepoint(v);
-    if (v instanceof BitArray) return this.#bit_array(v);
-    if (v instanceof RegExp) return `//js(${v})`;
-    if (v instanceof Date) return `//js(Date("${v.toISOString()}"))`;
-    if (v instanceof globalThis.Error) return `//js(${v.toString()})`;
-    if (v instanceof Function) {
-      const args = [];
-      for (const i of Array(v.length).keys())
-        args.push(String.fromCharCode(i + 97));
-      return `//fn(${args.join(", ")}) { ... }`;
-    }
-    if (this.#references.size === this.#references.add(v).size) {
-      return "//js(circular reference)";
-    }
-    let printed;
-    if (Array.isArray(v)) {
-      printed = `#(${v.map((v2) => this.inspect(v2)).join(", ")})`;
-    } else if (v instanceof List) {
-      printed = this.#list(v);
-    } else if (v instanceof CustomType) {
-      printed = this.#customType(v);
-    } else if (this.#isDict(v)) {
-      printed = this.#dict(v);
-    } else if (v instanceof Set) {
-      return `//js(Set(${[...v].map((v2) => this.inspect(v2)).join(", ")}))`;
-    } else {
-      printed = this.#object(v);
-    }
-    this.#references.delete(v);
-    return printed;
-  }
-  #object(v) {
-    const name = Object.getPrototypeOf(v)?.constructor?.name || "Object";
-    const props = [];
-    for (const k of Object.keys(v)) {
-      props.push(`${this.inspect(k)}: ${this.inspect(v[k])}`);
-    }
-    const body = props.length ? " " + props.join(", ") + " " : "";
-    const head = name === "Object" ? "" : name + " ";
-    return `//js(${head}{${body}})`;
-  }
-  #dict(map4) {
-    let body = "dict.from_list([";
-    let first3 = true;
-    let key_value_pairs = [];
-    map4.forEach((value, key) => {
-      key_value_pairs.push([key, value]);
-    });
-    key_value_pairs.sort();
-    key_value_pairs.forEach(([key, value]) => {
-      if (!first3) body = body + ", ";
-      body = body + "#(" + this.inspect(key) + ", " + this.inspect(value) + ")";
-      first3 = false;
-    });
-    return body + "])";
-  }
-  #customType(record) {
-    const props = Object.keys(record).map((label) => {
-      const value = this.inspect(record[label]);
-      return isNaN(parseInt(label)) ? `${label}: ${value}` : value;
-    }).join(", ");
-    return props ? `${record.constructor.name}(${props})` : record.constructor.name;
-  }
-  #list(list4) {
-    if (list4 instanceof Empty) {
-      return "[]";
-    }
-    let char_out = 'charlist.from_string("';
-    let list_out = "[";
-    let current = list4;
-    while (current instanceof NonEmpty) {
-      let element7 = current.head;
-      current = current.tail;
-      if (list_out !== "[") {
-        list_out += ", ";
-      }
-      list_out += this.inspect(element7);
-      if (char_out) {
-        if (Number.isInteger(element7) && element7 >= 32 && element7 <= 126) {
-          char_out += String.fromCharCode(element7);
-        } else {
-          char_out = null;
-        }
-      }
-    }
-    if (char_out) {
-      return char_out + '")';
-    } else {
-      return list_out + "]";
-    }
-  }
-  #string(str) {
-    let new_str = '"';
-    for (let i = 0; i < str.length; i++) {
-      const char = str[i];
-      switch (char) {
-        case "\n":
-          new_str += "\\n";
-          break;
-        case "\r":
-          new_str += "\\r";
-          break;
-        case "	":
-          new_str += "\\t";
-          break;
-        case "\f":
-          new_str += "\\f";
-          break;
-        case "\\":
-          new_str += "\\\\";
-          break;
-        case '"':
-          new_str += '\\"';
-          break;
-        default:
-          if (char < " " || char > "~" && char < "\xA0") {
-            new_str += "\\u{" + char.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0") + "}";
-          } else {
-            new_str += char;
-          }
-      }
-    }
-    new_str += '"';
-    return new_str;
-  }
-  #utfCodepoint(codepoint2) {
-    return `//utfcodepoint(${String.fromCodePoint(codepoint2.value)})`;
-  }
-  #bit_array(bits) {
-    if (bits.bitSize === 0) {
-      return "<<>>";
-    }
-    let acc = "<<";
-    for (let i = 0; i < bits.byteSize - 1; i++) {
-      acc += bits.byteAt(i).toString();
-      acc += ", ";
-    }
-    if (bits.byteSize * 8 === bits.bitSize) {
-      acc += bits.byteAt(bits.byteSize - 1).toString();
-    } else {
-      const trailingBitsCount = bits.bitSize % 8;
-      acc += bits.byteAt(bits.byteSize - 1) >> 8 - trailingBitsCount;
-      acc += `:size(${trailingBitsCount})`;
-    }
-    acc += ">>";
-    return acc;
-  }
-};
 
 // build/dev/javascript/split_flap/components/office.mjs
 var css5 = "\n  :host {\n    --position-x: 50%;\n    --position-y: 35%;\n    width: 100%;\n    height: 100%;\n    position: relative;\n    container-type: inline-size;\n  }\n  \n  .office-void {\n    width: 100%;\n    height: 100%;\n    position: relative;  \n    overflow: hidden;\n    container-type: size;\n  }\n  \n  .office-void-bg {\n    position: absolute;\n    width: max(100cqw, 100cqh);\n    height: max(100cqw, 100cqh);\n    left: var(--position-x);\n    top: var(--position-y);\n    transform: translate(calc(var(--position-x) * -1), calc(var(--position-y) * -1));\n    background-image: url(./img/bg-3840.webp);\n    background-size: cover;\n    background-position: var(--position-x) var(--position-y);\n  }\n  \n  .split-flap-void {\n    position: absolute;\n    /* background: lime; */\n    /* mix-blend-mode: difference; */\n    /* do not, and I repeat, do not touch this\u2014otherwise the flip-flap will be very very sad and I will cry */\n    top: 21.78%;\n    left: 35.77%;\n    width: 28.50%;\n    height: 14.4%;\n    container-type: size;\n\n    /*\n    top: 8%;\n    left: 27.77%;\n    width: 45%;\n    height: 19%;\n    container-type: size;\n    */\n  }\n";
