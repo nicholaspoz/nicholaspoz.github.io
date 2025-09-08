@@ -6898,15 +6898,15 @@ function current_scene_name(model) {
       "let_assert",
       FILEPATH2,
       "components/bingo",
-      152,
+      155,
       "current_scene_name",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 3435,
-        end: 3596,
-        pattern_start: 3446,
-        pattern_end: 3455
+        start: 3506,
+        end: 3667,
+        pattern_start: 3517,
+        pattern_end: 3526
       }
     );
   }
@@ -7104,21 +7104,26 @@ function init4(_) {
     )
   ];
 }
-var css4 = "\n  :host {\n    position: relative;\n    container-type: inline-size;\n  }\n\n  .frame  {\n    width: 100%;\n    height: 100%;\n    min-height: fit-content;\n    overflow: scroll;\n    scrollbar-background: rgb(40, 40, 40);\n    \n    background: linear-gradient(250deg, rgb(40, 40, 40) 0%,rgb(50, 50, 50) 25%,rgb(40,40,40) 80%);\n    padding-bottom: 5cqh;\n    /* This is in px on purpose*/\n    box-shadow: inset 0px 3px 10px 10px rgba(0, 0, 0, 0.25);\n\n  }\n\n  @container (width >= 1000px) {\n    .frame {\n      padding: 10cqh 5cqw;\n    }\n  }\n\n  @container (width <= 1000px) {\n    .frame {\n      padding: 5cqh 10cqw;\n    }\n  }\n\n  @container (width <= 600px) {\n    .frame {\n      padding: 5cqh 20cqw;\n    }  \n  }\n\n  progress-bar {\n    margin-top: 15cqh;\n  }  \n";
+var css4 = "\n  :host {\n    position: relative;\n    container-type: inline-size;\n  }\n\n  .panel {\n    position: relative;\n    width: 100%;\n    height: 100%;\n    background: linear-gradient(\n      250deg,\n      rgb(40, 40, 40) 0%,\n      rgb(50, 50, 50) 25%,\n      rgb(40, 40, 40) 80%\n    );\n    box-shadow: inset 0px 3px 10px 10px rgba(0, 0, 0, 0.25);\n\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-content: center;\n    overflow: scroll;\n  }\n\n  .matrix {\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-content: center;\n    padding: 5cqh 20cqw;\n    padding-bottom: 5cqh;\n    /* This is in px on purpose*/\n  }\n\n  /*\n  progress-bar {\n    margin-top: 10cqh;\n  }\n  */\n  \n  @container (aspect-ratio < 1) {\n    .matrix {\n      padding: 5cqh 5cqw;\n    }\n\n    /*\n    progress-bar {\n      margin-top: 5cqh;\n    }\n    */\n  }\n  ";
 function view4(model) {
   let $ = current_scene_name(model);
   return fragment2(
     toList([
       style2(toList([]), css4),
       div(
-        toList([class$("frame")]),
+        toList([class$("panel")]),
         toList([
-          element5(model.current.lines, 22, 6, new None()),
-          element6(
-            calculate_progress(model),
-            22,
-            new Some(new BackClicked2()),
-            new Some(new ForwardClicked2())
+          div(
+            toList([class$("matrix")]),
+            toList([
+              element5(model.current.lines, 22, 6, new None()),
+              element6(
+                calculate_progress(model),
+                22,
+                new Some(new BackClicked2()),
+                new Some(new ForwardClicked2())
+              )
+            ])
           )
         ])
       )
