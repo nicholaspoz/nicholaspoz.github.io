@@ -1,3 +1,4 @@
+import gleam/int
 import gleam/list.{Continue, Stop}
 import gleam/option.{None, Some}
 import gleam/result
@@ -123,11 +124,11 @@ fn view(model: Model) -> Element(Msg) {
 
     html.div([attribute.class("panel")], [
       html.div([attribute.class("matrix")], [
-        display.element(model.current.lines, cols: 22, rows: 6, chars: None),
+        display.element(model.current.lines, cols: 28, rows: 7, chars: None),
 
         progress_bar.element(
-          progress: calculate_progress(model),
-          cols: 22,
+          progress: calculate_progress_scenes(model),
+          cols: 28,
           on_back: Some(BackClicked),
           on_forward: Some(ForwardClicked),
         ),
@@ -136,19 +137,17 @@ fn view(model: Model) -> Element(Msg) {
   ])
 }
 
-fn calculate_progress(model: Model) -> Int {
-  let all_frames = model.scenes |> list.flat_map(fn(scene) { scene.frames })
-
-  let total_frames = list.fold(all_frames, 0, fn(acc, frame) { acc + frame.ms })
-  let progress =
-    list.fold_until(all_frames, 0, fn(acc, frame) {
-      case frame == model.current {
+fn calculate_progress_scenes(model: Model) -> Int {
+  let total_scenes = list.length(model.scenes) |> int.max(1)
+  let current_scene_index =
+    list.fold_until(model.scenes, 0, fn(acc, scene) {
+      case list.contains(scene.frames, model.current) {
         True -> Stop(acc)
-        False -> Continue(acc + frame.ms)
+        False -> Continue(acc + 1)
       }
     })
 
-  progress * 100 / total_frames
+  current_scene_index * 100 / total_scenes
 }
 
 fn current_scene_name(model: Model) -> String {
@@ -289,6 +288,8 @@ const css = "
       rgb(50, 50, 50) 25%,
       rgb(40, 40, 40) 80%
     );
+    padding: 2cqh 10cqw;
+    /* This is in px on purpose */
     box-shadow: inset 0px 3px 10px 10px rgba(0, 0, 0, 0.25);
 
     display: flex;
@@ -303,26 +304,11 @@ const css = "
     flex-direction: column;
     justify-content: center;
     align-content: center;
-    padding: 5cqh 20cqw;
-    padding-bottom: 5cqh;
-    /* This is in px on purpose*/
   }
-
-  /*
-  progress-bar {
-    margin-top: 10cqh;
-  }
-  */
   
   @container (aspect-ratio < 1) {
-    .matrix {
+    .panel {
       padding: 5cqh 5cqw;
     }
-
-    /*
-    progress-bar {
-      margin-top: 5cqh;
-    }
-    */
   }
   "

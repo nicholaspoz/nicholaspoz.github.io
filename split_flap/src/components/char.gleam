@@ -179,15 +179,6 @@ fn view(model: Model) -> Element(Msg) {
           ])
       },
 
-      // FLIPPING TOP
-      // case model.state {
-      //   Idle -> element.none()
-      //   Flipping ->
-      //     html.div([attribute.class("flap flipping-top")], [
-      //       html.span([attribute.class("flap-content")], [html.text(curr)]),
-      //     ])
-      // },
-      //
       // FLIPPING BOTTOM
       case model.state {
         Idle -> element.none()
