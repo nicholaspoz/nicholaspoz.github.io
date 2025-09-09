@@ -7140,34 +7140,67 @@ function get_scene_name(model) {
     return scene.name;
   });
 }
+var linkedin_url = "https://www.linkedin.com/in/nicholaspozoulakis/";
+var github_url = "https://github.com/nicholaspoz";
+var mailto = "mailto:nicholaspoz@gmail.com";
 function scenes(columns) {
   let blank_line = repeat(" ", columns);
-  let nick = left("NICK", blank_line);
-  let poz = left("((POZOULAKIS))", blank_line);
-  let dot = center("(DOT)", blank_line);
-  let bingo = right("BINGO", blank_line);
-  let freelance = left("FREELANCE", blank_line);
-  let tech = left("TECHNOLOGIST", blank_line);
-  let cellist = left("CELLIST", blank_line);
-  let linked_in = new Link(
-    right("LINKEDIN >", blank_line),
-    "https://www.linkedin.com/in/nicholaspozoulakis/"
-  );
-  let github = new Link(
-    right("GITHUB >", blank_line),
-    "https://github.com/nicholaspoz"
-  );
-  let email = new Link(
-    right("EMAIL >", blank_line),
-    "mailto:nicholaspoz@gmail.com"
-  );
-  let what = center("         WHAT", blank_line);
-  let a = center("        A     ", blank_line);
-  let time = center("   TIME       ", blank_line);
-  let to = center("TO            ", blank_line);
-  let be = center("   BE         ", blank_line);
-  let alive = center("      ALIVE   ", blank_line);
-  let question = center("            ? ", blank_line);
+  let left2 = (_capture) => {
+    return left(_capture, blank_line);
+  };
+  let center2 = (_capture) => {
+    return center(_capture, blank_line);
+  };
+  let right2 = (_capture) => {
+    return right(_capture, blank_line);
+  };
+  let $ = [
+    left2("NICK"),
+    left2("((POZOULAKIS))"),
+    center2("(DOT)"),
+    right2("BINGO")
+  ];
+  let nick;
+  let poz;
+  let dot;
+  let bingo;
+  nick = $[0];
+  poz = $[1];
+  dot = $[2];
+  bingo = $[3];
+  let $1 = [left2("FREELANCE"), left2("TECHNOLOGIST"), left2("CELLIST")];
+  let freelance;
+  let tech;
+  let cellist;
+  freelance = $1[0];
+  tech = $1[1];
+  cellist = $1[2];
+  let linked_in = new Link(right2("LINKEDIN >"), linkedin_url);
+  let github = new Link(right2("GITHUB >"), github_url);
+  let email = new Link(right2("EMAIL >"), mailto);
+  let $2 = [
+    center2("          WHAT"),
+    center2("        A     "),
+    center2("   TIME       "),
+    center2("TO            "),
+    center2("   BE         "),
+    center2("      ALIVE   "),
+    center2("            ? ")
+  ];
+  let what;
+  let a;
+  let time;
+  let to;
+  let be;
+  let alive;
+  let question;
+  what = $2[0];
+  a = $2[1];
+  time = $2[2];
+  to = $2[3];
+  be = $2[4];
+  alive = $2[5];
+  question = $2[6];
   return toList([
     new Scene(
       "HOME",
@@ -7277,7 +7310,8 @@ function scenes(columns) {
             new Text2(time),
             new Text2(to),
             new Text2(be),
-            new Text2(alive)
+            new Text2(alive),
+            new Text2("")
           ]),
           2e3
         ),

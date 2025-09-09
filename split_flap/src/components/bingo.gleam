@@ -223,85 +223,91 @@ fn get_scene_name(model: Bingo) -> Result(String, Nil) {
 
 // Data for nick.bingo
 
+const linkedin_url = "https://www.linkedin.com/in/nicholaspozoulakis/"
+
+const github_url = "https://github.com/nicholaspoz"
+
+const mailto = "mailto:nicholaspoz@gmail.com"
+
 fn scenes(columns: Int) -> List(Scene) {
   let blank_line = string.repeat(" ", columns)
+  let left = row.left(_, against: blank_line)
+  let center = row.center(_, against: blank_line)
+  let right = row.right(_, against: blank_line)
 
-  let nick = row.left("NICK", against: blank_line)
-  let poz = row.left("((POZOULAKIS))", against: blank_line)
-  let dot = row.center("(DOT)", against: blank_line)
-  let bingo = row.right("BINGO", against: blank_line)
-  let freelance = row.left("FREELANCE", against: blank_line)
-  let tech = row.left("TECHNOLOGIST", against: blank_line)
-  let cellist = row.left("CELLIST", against: blank_line)
-  let linked_in =
-    Link(
-      text: row.right("LINKEDIN >", against: blank_line),
-      url: "https://www.linkedin.com/in/nicholaspozoulakis/",
-    )
-  let github =
-    Link(
-      text: row.right("GITHUB >", against: blank_line),
-      url: "https://github.com/nicholaspoz",
-    )
-  let email =
-    Link(
-      text: row.right("EMAIL >", against: blank_line),
-      url: "mailto:nicholaspoz@gmail.com",
-    )
-  let what = row.center("         WHAT", against: blank_line)
-  let a = row.center("        A     ", against: blank_line)
-  let time = row.center("   TIME       ", against: blank_line)
-  let to = row.center("TO            ", against: blank_line)
-  let be = row.center("   BE         ", against: blank_line)
-  let alive = row.center("      ALIVE   ", against: blank_line)
-  let question = row.center("            ? ", against: blank_line)
+  let #(nick, poz, dot, bingo) = #(
+    left("NICK"),
+    left("((POZOULAKIS))"),
+    center("(DOT)"),
+    right("BINGO"),
+  )
+
+  let #(freelance, tech, cellist) = #(
+    left("FREELANCE"),
+    left("TECHNOLOGIST"),
+    left("CELLIST"),
+  )
+
+  let linked_in = Link(text: right("LINKEDIN >"), url: linkedin_url)
+  let github = Link(text: right("GITHUB >"), url: github_url)
+  let email = Link(text: right("EMAIL >"), url: mailto)
+
+  let #(what, a, time, to, be, alive, question) = #(
+    center("          WHAT"),
+    center("        A     "),
+    center("   TIME       "),
+    center("TO            "),
+    center("   BE         "),
+    center("      ALIVE   "),
+    center("            ? "),
+  )
 
   [
     Scene("HOME", [
       Frame(ms: 1000, lines: [
-        Text(text: nick),
-        Text(text: ""),
-        Text(text: ""),
-        Text(text: ""),
-        Text(text: ""),
-        Text(text: ""),
+        Text(nick),
+        Text(""),
+        Text(""),
+        Text(""),
+        Text(""),
+        Text(""),
       ]),
       Frame(ms: 1000, lines: [
-        Text(text: nick),
-        Text(text: ""),
-        Text(text: ""),
-        Text(text: dot),
-        Text(text: ""),
-        Text(text: ""),
-        Text(text: ""),
+        Text(nick),
+        Text(""),
+        Text(""),
+        Text(dot),
+        Text(""),
+        Text(""),
+        Text(""),
       ]),
 
       Frame(ms: 1200, lines: [
-        Text(text: nick),
-        Text(text: ""),
-        Text(text: ""),
-        Text(text: dot),
-        Text(text: ""),
-        Text(text: ""),
-        Text(text: bingo),
+        Text(nick),
+        Text(""),
+        Text(""),
+        Text(dot),
+        Text(""),
+        Text(""),
+        Text(bingo),
       ]),
       Frame(ms: 7000, lines: [
-        Text(text: nick),
-        Text(text: poz),
-        Text(text: ""),
-        Text(text: dot),
-        Text(text: ""),
-        Text(text: ""),
-        Text(text: bingo),
+        Text(nick),
+        Text(poz),
+        Text(""),
+        Text(dot),
+        Text(""),
+        Text(""),
+        Text(bingo),
       ]),
     ]),
 
     Scene("TECH", [
       Frame(ms: 8000, lines: [
-        Text(text: freelance),
-        Text(text: tech),
-        Text(text: ""),
-        Text(text: ""),
+        Text(freelance),
+        Text(tech),
+        Text(""),
+        Text(""),
         linked_in,
         github,
         email,
@@ -310,33 +316,34 @@ fn scenes(columns: Int) -> List(Scene) {
 
     Scene("MUSIC", [
       Frame(ms: 1000, lines: [
-        Text(text: freelance),
-        Text(text: cellist),
-        Text(text: ""),
-        Text(text: ""),
-        Text(text: ""),
-        Text(text: ""),
+        Text(freelance),
+        Text(cellist),
+        Text(""),
+        Text(""),
+        Text(""),
+        Text(""),
         email,
       ]),
       Frame(ms: 7000, lines: [
-        Text(text: freelance),
-        Text(text: cellist),
-        Text(text: ""),
-        Text(text: ""),
-        Text(text: ""),
-        Text(text: ""),
+        Text(freelance),
+        Text(cellist),
+        Text(""),
+        Text(""),
+        Text(""),
+        Text(""),
         email,
       ]),
     ]),
 
     Scene("!", [
       Frame(ms: 2000, lines: [
-        Text(text: what),
-        Text(text: a),
-        Text(text: time),
-        Text(text: to),
-        Text(text: be),
-        Text(text: alive),
+        Text(what),
+        Text(a),
+        Text(time),
+        Text(to),
+        Text(be),
+        Text(alive),
+        Text(""),
       ]),
       Frame(ms: 4000, lines: [
         Text(what),
