@@ -44,8 +44,8 @@ var List = class {
     return length3 - 1;
   }
 };
-function prepend(element7, tail) {
-  return new NonEmpty(element7, tail);
+function prepend(element8, tail) {
+  return new NonEmpty(element8, tail);
 }
 function toList(elements, tail) {
   return List.fromArray(elements, tail);
@@ -2400,8 +2400,8 @@ function list(data, decode2, pushPath, index4, emptyList) {
     return [emptyList, List.fromArray([error])];
   }
   const decoded = [];
-  for (const element7 of data) {
-    const layer = decode2(element7);
+  for (const element8 of data) {
+    const layer = decode2(element8);
     const [out, errors] = layer;
     if (errors instanceof NonEmpty) {
       const [_, errors2] = pushPath(layer, index4.toString());
@@ -3528,9 +3528,6 @@ function span(attrs, children) {
 }
 function button(attrs, children) {
   return element2("button", attrs, children);
-}
-function slot(attrs, fallback) {
-  return element2("slot", attrs, fallback);
 }
 
 // build/dev/javascript/lustre/lustre/vdom/patch.mjs
@@ -5626,10 +5623,10 @@ var make_component = ({ init: init5, update: update6, view: view6, config }, nam
 
 // build/dev/javascript/lustre/lustre/component.mjs
 var Config2 = class extends CustomType {
-  constructor(open_shadow_root, adopt_styles, delegates_focus, attributes, properties, contexts, is_form_associated, on_form_autofill, on_form_reset, on_form_restore) {
+  constructor(open_shadow_root, adopt_styles2, delegates_focus, attributes, properties, contexts, is_form_associated, on_form_autofill, on_form_reset, on_form_restore) {
     super();
     this.open_shadow_root = open_shadow_root;
-    this.adopt_styles = adopt_styles;
+    this.adopt_styles = adopt_styles2;
     this.delegates_focus = delegates_focus;
     this.attributes = attributes;
     this.properties = properties;
@@ -5686,8 +5683,23 @@ function on_attribute_change(name, decoder) {
     }
   );
 }
-function named_slot(name, attributes, fallback) {
-  return slot(prepend(attribute2("name", name), attributes), fallback);
+function adopt_styles(adopt) {
+  return new Option(
+    (config) => {
+      return new Config2(
+        config.open_shadow_root,
+        adopt,
+        config.delegates_focus,
+        config.attributes,
+        config.properties,
+        config.contexts,
+        config.is_form_associated,
+        config.on_form_autofill,
+        config.on_form_reset,
+        config.on_form_restore
+      );
+    }
+  );
 }
 function part(name) {
   return attribute2("part", name);
@@ -5890,15 +5902,15 @@ function view(model) {
       "let_assert",
       FILEPATH,
       "components/char",
-      157,
+      152,
       "view",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 3576,
-        end: 3633,
-        pattern_start: 3587,
-        pattern_end: 3604
+        start: 3456,
+        end: 3513,
+        pattern_start: 3467,
+        pattern_end: 3484
       }
     );
   }
@@ -6027,15 +6039,15 @@ function update2(model, msg) {
         "let_assert",
         FILEPATH,
         "components/char",
-        137,
+        132,
         "update",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 3052,
-          end: 3116,
-          pattern_start: 3063,
-          pattern_end: 3081
+          start: 2932,
+          end: 2996,
+          pattern_start: 2943,
+          pattern_end: 2961
         }
       );
     }
@@ -6396,8 +6408,8 @@ function error_string(error) {
     })() + ")";
   }
 }
-var default_rows = 6;
-var default_cols = 22;
+var default_rows = 7;
+var default_cols = 28;
 function init2(_) {
   return [
     new Model2(toList([]), default_cols, default_rows, new None()),
@@ -6616,15 +6628,15 @@ var Echo$Inspector = class {
     let list_out = "[";
     let current = list4;
     while (current instanceof NonEmpty) {
-      let element7 = current.head;
+      let element8 = current.head;
       current = current.tail;
       if (list_out !== "[") {
         list_out += ", ";
       }
-      list_out += this.inspect(element7);
+      list_out += this.inspect(element8);
       if (char_out) {
-        if (Number.isInteger(element7) && element7 >= 32 && element7 <= 126) {
-          char_out += String.fromCharCode(element7);
+        if (Number.isInteger(element8) && element8 >= 32 && element8 <= 126) {
+          char_out += String.fromCharCode(element8);
         } else {
           char_out = null;
         }
@@ -6988,6 +7000,13 @@ var ForwardClicked2 = class extends CustomType {
 };
 var AutoPlayClicked2 = class extends CustomType {
 };
+function element7(cols) {
+  return element2(
+    "nick-dot-bingo",
+    toList([attribute2("columns", to_string(cols))]),
+    toList([])
+  );
+}
 function next_frame_recursive(loop$frames, loop$current) {
   while (true) {
     let frames = loop$frames;
@@ -7034,15 +7053,15 @@ function next_frame(model) {
         "let_assert",
         FILEPATH2,
         "components/bingo",
-        133,
+        142,
         "next_frame",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $1,
-          start: 3340,
-          end: 3384,
-          pattern_start: 3351,
-          pattern_end: 3359
+          start: 3540,
+          end: 3584,
+          pattern_start: 3551,
+          pattern_end: 3559
         }
       );
     }
@@ -7083,15 +7102,15 @@ function previous_scene(scenes2, current) {
           "let_assert",
           FILEPATH2,
           "components/bingo",
-          165,
+          174,
           "previous_scene",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 3977,
-            end: 4035,
-            pattern_start: 3988,
-            pattern_end: 3996
+            start: 4177,
+            end: 4235,
+            pattern_start: 4188,
+            pattern_end: 4196
           }
         );
       }
@@ -7342,15 +7361,15 @@ function init4(_) {
       "let_assert",
       FILEPATH2,
       "components/bingo",
-      52,
+      61,
       "init",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 1147,
-        end: 1194,
-        pattern_start: 1158,
-        pattern_end: 1173
+        start: 1347,
+        end: 1394,
+        pattern_start: 1358,
+        pattern_end: 1373
       }
     );
   }
@@ -7363,15 +7382,15 @@ function init4(_) {
       "let_assert",
       FILEPATH2,
       "components/bingo",
-      53,
+      62,
       "init",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $1,
-        start: 1197,
-        end: 1256,
-        pattern_start: 1208,
-        pattern_end: 1223
+        start: 1397,
+        end: 1456,
+        pattern_start: 1408,
+        pattern_end: 1423
       }
     );
   }
@@ -7419,15 +7438,15 @@ function update5(model, msg) {
           "let_assert",
           FILEPATH2,
           "components/bingo",
-          81,
+          90,
           "update",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $12,
-            start: 1910,
-            end: 1963,
-            pattern_start: 1921,
-            pattern_end: 1936
+            start: 2110,
+            end: 2163,
+            pattern_start: 2121,
+            pattern_end: 2136
           }
         );
       }
@@ -7449,15 +7468,15 @@ function update5(model, msg) {
         "let_assert",
         FILEPATH2,
         "components/bingo",
-        87,
+        96,
         "update",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $1,
-          start: 2082,
-          end: 2141,
-          pattern_start: 2093,
-          pattern_end: 2112
+          start: 2282,
+          end: 2341,
+          pattern_start: 2293,
+          pattern_end: 2312
         }
       );
     }
@@ -7483,15 +7502,15 @@ function update5(model, msg) {
         "let_assert",
         FILEPATH2,
         "components/bingo",
-        102,
+        111,
         "update",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 2496,
-          end: 2542,
-          pattern_start: 2507,
-          pattern_end: 2516
+          start: 2696,
+          end: 2742,
+          pattern_start: 2707,
+          pattern_end: 2716
         }
       );
     }
@@ -7512,15 +7531,15 @@ function update5(model, msg) {
         "let_assert",
         FILEPATH2,
         "components/bingo",
-        111,
+        120,
         "update",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 2773,
-          end: 2819,
-          pattern_start: 2784,
-          pattern_end: 2793
+          start: 2973,
+          end: 3019,
+          pattern_start: 2984,
+          pattern_end: 2993
         }
       );
     }
@@ -7545,7 +7564,7 @@ function view4(model) {
     toList([
       style2(toList([]), css4),
       div(
-        toList([class$("panel")]),
+        toList([class$("panel"), part("panel")]),
         toList([
           div(
             toList([class$("matrix"), part("matrix")]),
@@ -7577,6 +7596,7 @@ function register4() {
     update5,
     view4,
     toList([
+      adopt_styles(true),
       on_attribute_change(
         "columns",
         (val) => {
@@ -7594,7 +7614,7 @@ function register4() {
 }
 
 // build/dev/javascript/split_flap/components/office.mjs
-var css5 = "\n  :host {\n    --position-x: 50%;\n    --position-y: 35%;\n    width: 100%;\n    height: 100%;\n    position: relative;\n    container-type: inline-size;\n  }\n  \n  .office-void {\n    width: 100%;\n    height: 100%;\n    position: relative;  \n    overflow: hidden;\n    container-type: size;\n  }\n  \n  .office-void-bg {\n    position: absolute;\n    width: max(100cqw, 100cqh);\n    height: max(100cqw, 100cqh);\n    left: var(--position-x);\n    top: var(--position-y);\n    transform: translate(calc(var(--position-x) * -1), calc(var(--position-y) * -1));\n    background-image: url(./img/bg-3840.webp);\n    background-size: cover;\n    background-position: var(--position-x) var(--position-y);\n  }\n  \n  .split-flap-void {\n    position: absolute;\n    /* background: lime; */\n    /* mix-blend-mode: difference; */\n    /* do not, and I repeat, do not touch this\u2014otherwise the flip-flap will be very very sad and I will cry */\n    top: 21.78%;\n    left: 35.77%;\n    width: 28.50%;\n    height: 14.4%;\n    container-type: size;\n\n    /*\n    top: 8%;\n    left: 27.77%;\n    width: 45%;\n    height: 19%;\n    container-type: size;\n    */\n  }\n";
+var css5 = "\n  :host {\n    --position-x: 50%;\n    --position-y: 60%;\n    --min-height: 55cqw;\n    width: 100%;\n    height: 100%;\n    min-height: var(--min-height);\n    overflow-x: hidden;\n    overflow-y: scroll;\n    position: relative;\n    container-type: inline-size;\n  }\n  \n  .office-void {\n    width: 100%;\n    height: 100%;\n    min-height: var(--min-height);\n    overflow: hidden;\n    position: relative;\n    container-type: size;\n  }\n  \n  .office-void-bg {\n    position: absolute;\n    width: max(100cqw, 100cqh);\n    height: max(100cqw, 100cqh);\n    left: var(--position-x);\n    top: var(--position-y);\n    transform: translate(calc(var(--position-x) * -1), calc(var(--position-y) * -1));\n    background-image: url(./img/bg-3840.webp);\n    background-size: cover;\n    background-position: var(--position-x) var(--position-y);\n  }\n  \n  .split-flap-void {\n    position: absolute;\n    /* background: lime; */\n    /* mix-blend-mode: difference; */\n    /* do not, and I repeat, do not touch this\u2014otherwise the flip-flap will be very very sad and I will cry */\n    top: 28.75%;\n    left: 26.66%;\n    width: 46.66%;\n    height: 23.4%;\n    container-type: size; \n  }\n\n  nick-dot-bingo::part(panel) {\n    background: rgba(50, 50, 50, 0.3);    \n    box-shadow: none;\n  }\n";
 function view5(_) {
   return fragment2(
     toList([
@@ -7607,9 +7627,7 @@ function view5(_) {
             toList([
               div(
                 toList([class$("split-flap-void")]),
-                toList([
-                  named_slot("split-flap", toList([]), toList([]))
-                ])
+                toList([element7(28)])
               )
             ])
           )
@@ -7670,7 +7688,7 @@ function main() {
       { value: $2, start: 225, end: 267, pattern_start: 236, pattern_end: 241 }
     );
   }
-  let $3 = register4();
+  let $3 = register5();
   if (!($3 instanceof Ok)) {
     throw makeError(
       "let_assert",
@@ -7679,10 +7697,10 @@ function main() {
       11,
       "main",
       "Pattern match failed, no pattern matched the value.",
-      { value: $3, start: 270, end: 305, pattern_start: 281, pattern_end: 286 }
+      { value: $3, start: 270, end: 306, pattern_start: 281, pattern_end: 286 }
     );
   }
-  let $4 = register5();
+  let $4 = register4();
   if (!($4 instanceof Ok)) {
     throw makeError(
       "let_assert",
@@ -7691,7 +7709,7 @@ function main() {
       12,
       "main",
       "Pattern match failed, no pattern matched the value.",
-      { value: $4, start: 308, end: 344, pattern_start: 319, pattern_end: 324 }
+      { value: $4, start: 309, end: 344, pattern_start: 320, pattern_end: 325 }
     );
   }
   return void 0;

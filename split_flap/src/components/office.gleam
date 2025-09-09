@@ -1,3 +1,4 @@
+import components/bingo
 import lustre
 import lustre/attribute
 import lustre/component
@@ -16,7 +17,8 @@ fn view(_) -> Element(Nil) {
     html.div([attribute.class("office-void")], [
       html.div([attribute.class("office-void-bg")], [
         html.div([attribute.class("split-flap-void")], [
-          component.named_slot("split-flap", [], []),
+          bingo.element(cols: 28),
+          // component.named_slot("split-flap", [], []),
         ]),
       ]),
     ]),
@@ -26,9 +28,13 @@ fn view(_) -> Element(Nil) {
 const css = "
   :host {
     --position-x: 50%;
-    --position-y: 35%;
+    --position-y: 60%;
+    --min-height: 55cqw;
     width: 100%;
     height: 100%;
+    min-height: var(--min-height);
+    overflow-x: hidden;
+    overflow-y: scroll;
     position: relative;
     container-type: inline-size;
   }
@@ -36,8 +42,9 @@ const css = "
   .office-void {
     width: 100%;
     height: 100%;
-    position: relative;  
+    min-height: var(--min-height);
     overflow: hidden;
+    position: relative;
     container-type: size;
   }
   
@@ -58,18 +65,15 @@ const css = "
     /* background: lime; */
     /* mix-blend-mode: difference; */
     /* do not, and I repeat, do not touch this—otherwise the flip-flap will be very very sad and I will cry */
-    top: 21.78%;
-    left: 35.77%;
-    width: 28.50%;
-    height: 14.4%;
-    container-type: size;
+    top: 28.75%;
+    left: 26.66%;
+    width: 46.66%;
+    height: 23.4%;
+    container-type: size; 
+  }
 
-    /*
-    top: 8%;
-    left: 27.77%;
-    width: 45%;
-    height: 19%;
-    container-type: size;
-    */
+  nick-dot-bingo::part(panel) {
+    background: rgba(50, 50, 50, 0.3);    
+    box-shadow: none;
   }
 "

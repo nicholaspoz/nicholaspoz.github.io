@@ -26,12 +26,21 @@ pub type Scene {
 pub fn register() -> Result(Nil, lustre.Error) {
   let component =
     lustre.component(init, update, view, [
+      component.adopt_styles(True),
       component.on_attribute_change("columns", fn(val) {
         use cols <- result.try(int.parse(val))
         Ok(ColumnsAttrChanged(cols))
       }),
     ])
   lustre.register(component, "nick-dot-bingo")
+}
+
+pub fn element(cols cols: Int) -> Element(msg) {
+  element.element(
+    "nick-dot-bingo",
+    [attribute.attribute("columns", int.to_string(cols))],
+    [],
+  )
 }
 
 type Bingo {
@@ -177,7 +186,7 @@ fn view(model: Bingo) -> Element(Msg) {
   element.fragment([
     html.style([], css),
 
-    html.div([attribute.class("panel")], [
+    html.div([attribute.class("panel"), component.part("panel")], [
       html.div([attribute.class("matrix"), component.part("matrix")], [
         display.element(
           model.current.lines,

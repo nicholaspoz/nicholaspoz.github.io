@@ -60,11 +60,6 @@ pub fn register() -> Result(Nil, lustre.Error) {
   lustre.register(component, "split-flap-char")
 }
 
-// TODO
-// pub type Config(msg) {
-//   Config(tokens: List(String), chars: Option(String), on_click: Option(msg))
-// }
-
 pub fn element(
   char char: String,
   char_stack chars: Option(String),

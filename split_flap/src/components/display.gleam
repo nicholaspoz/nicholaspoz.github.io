@@ -14,9 +14,9 @@ import lustre/element/keyed
 
 import components/char as sf_char
 
-const default_rows = 6
+const default_rows = 7
 
-const default_cols = 22
+const default_cols = 28
 
 type Model {
   Model(lines: List(Content), cols: Int, rows: Int, chars: Option(String))
