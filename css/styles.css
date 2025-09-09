@@ -2,16 +2,8 @@ html {
   box-sizing: border-box;
   font-size: 16px;
   font-family: "Fragment Mono", monospace;
-
-  /* height: 100dvh;
-  width: 100vw;
-  margin: 0;
-  padding: 0;
-  min-width: var(--viewport-min-width);
-  min-height: var(--viewport-min-height);
-  overflow: scroll;
-  scrollbar-color: rgb(70, 70, 70) rgb(212, 212, 212);
-  scrollbar-width: thin; */
+  /* -webkit-font-smoothing: auto;
+  -moz-osx-font-smoothing: grayscale; */
 }
 
 *,
@@ -21,11 +13,8 @@ html {
 }
 
 body {
-  width: 100%;
+  width: 100vw;
   height: 100vh;
-  min-height: 800px;
-  overflow: hidden;
-  overflow-y: scroll;
 }
 
 body,
