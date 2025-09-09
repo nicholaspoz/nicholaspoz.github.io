@@ -6884,19 +6884,8 @@ function progress_button(model) {
   );
 }
 function css3(cols, auto_play) {
-  let _pipe = "\n  :host {\n    display: inline-block;\n    width: 100%;\n  }\n\n  split-flap-char {\n    padding: 0.9cqw 0.3cqw;\n  }\n\n  .progress-bar {\n    width: 100%;\n    display: grid;\n    grid-template-columns: 1fr <cols>fr 1fr;\n    gap: 0;\n  }\n\n  .progress-bar-button {\n    width: 100%;\n    height: 100%;\n    background: none;\n    padding: 0;\n    margin: 0;\n    border: none;\n    cursor: pointer;\n  }\n  \n  split-flap-display::part(row) {\n    cursor: <cursor>;\n  }\n  ";
-  let _pipe$1 = replace(_pipe, "<cols>", to_string(cols - 2));
-  return replace(
-    _pipe$1,
-    "<cursor>",
-    (() => {
-      if (auto_play) {
-        return "default";
-      } else {
-        return "pointer";
-      }
-    })()
-  );
+  let _pipe = "\n  :host {\n    display: inline-block;\n    width: 100%;\n  }\n\n  split-flap-char {\n    padding: 0.9cqw 0.3cqw;\n  }\n\n  .progress-bar {\n    width: 100%;\n    display: grid;\n    grid-template-columns: 1fr <cols>fr 1fr;\n    gap: 0;\n  }\n\n  .progress-bar-button {\n    width: 100%;\n    height: 100%;\n    background: none;\n    padding: 0;\n    margin: 0;\n    border: none;\n  }\n  \n  split-flap-display::part(row) {\n    cursor: pointer;\n  }\n  ";
+  return replace(_pipe, "<cols>", to_string(cols - 2));
 }
 function view3(model) {
   return fragment2(
@@ -7178,7 +7167,7 @@ function scenes(columns) {
   let to = center("TO            ", blank_line);
   let be = center("   BE         ", blank_line);
   let alive = center("      ALIVE   ", blank_line);
-  let question = center("             ? ", blank_line);
+  let question = center("            ? ", blank_line);
   return toList([
     new Scene(
       "HOME",
@@ -7290,7 +7279,7 @@ function scenes(columns) {
             new Text2(be),
             new Text2(alive)
           ]),
-          3e3
+          2e3
         ),
         new Frame(
           toList([
@@ -7516,7 +7505,7 @@ function update5(model, msg) {
     ];
   }
 }
-var css4 = "\n  :host {\n    position: relative;\n    container-type: inline-size;\n  }\n\n  .panel {\n    position: relative;\n    width: 100%;\n    height: 100%;\n    background: linear-gradient(\n      250deg,\n      rgb(40, 40, 40) 0%,\n      rgb(50, 50, 50) 25%,\n      rgb(40, 40, 40) 80%\n    );\n    padding: 2cqh 10cqw;\n    /* This is in px on purpose */\n    box-shadow: inset 0px 3px 10px 10px rgba(0, 0, 0, 0.25);\n\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-content: center;\n    overflow: scroll;\n  }\n\n  .matrix {\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-content: center;\n  }\n  \n  @container (aspect-ratio < 1) {\n    .panel {\n      padding: 5cqh 5cqw;\n    }\n  }\n  ";
+var css4 = "\n  :host {\n    display: block;\n    container-type: inline-size;\n    height: 100%;\n    width: 100%;\n  }\n\n  .panel {\n    position: relative;\n    width: 100%;\n    height: 100%;\n    min-height: fit-content;\n    background: linear-gradient(\n      250deg,\n      rgb(40, 40, 40) 0%,\n      rgb(50, 50, 50) 25%,\n      rgb(40, 40, 40) 80%\n    );\n    padding: 2cqh 10cqw;\n    /* This is in px on purpose */\n    box-shadow: inset 0px 3px 10px 10px rgba(0, 0, 0, 0.25);\n\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-content: center;\n    overflow: scroll;\n  }\n\n  .matrix {\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-content: center;\n  }\n  \n  @container (aspect-ratio < 1) {\n    .panel {\n      padding: 5cqh 5cqw;\n    }\n  }\n  ";
 function view4(model) {
   return fragment2(
     toList([
@@ -7647,7 +7636,7 @@ function main() {
       { value: $2, start: 225, end: 267, pattern_start: 236, pattern_end: 241 }
     );
   }
-  let $3 = register5();
+  let $3 = register4();
   if (!($3 instanceof Ok)) {
     throw makeError(
       "let_assert",
@@ -7656,10 +7645,10 @@ function main() {
       11,
       "main",
       "Pattern match failed, no pattern matched the value.",
-      { value: $3, start: 270, end: 306, pattern_start: 281, pattern_end: 286 }
+      { value: $3, start: 270, end: 305, pattern_start: 281, pattern_end: 286 }
     );
   }
-  let $4 = register4();
+  let $4 = register5();
   if (!($4 instanceof Ok)) {
     throw makeError(
       "let_assert",
@@ -7668,7 +7657,7 @@ function main() {
       12,
       "main",
       "Pattern match failed, no pattern matched the value.",
-      { value: $4, start: 309, end: 344, pattern_start: 320, pattern_end: 325 }
+      { value: $4, start: 308, end: 344, pattern_start: 319, pattern_end: 324 }
     );
   }
   return void 0;

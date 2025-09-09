@@ -254,7 +254,7 @@ fn scenes(columns: Int) -> List(Scene) {
   let to = row.center("TO            ", against: blank_line)
   let be = row.center("   BE         ", against: blank_line)
   let alive = row.center("      ALIVE   ", against: blank_line)
-  let question = row.center("             ? ", against: blank_line)
+  let question = row.center("            ? ", against: blank_line)
 
   [
     Scene("HOME", [
@@ -330,7 +330,7 @@ fn scenes(columns: Int) -> List(Scene) {
     ]),
 
     Scene("!", [
-      Frame(ms: 3000, lines: [
+      Frame(ms: 2000, lines: [
         Text(text: what),
         Text(text: a),
         Text(text: time),
@@ -353,14 +353,17 @@ fn scenes(columns: Int) -> List(Scene) {
 
 const css = "
   :host {
-    position: relative;
+    display: block;
     container-type: inline-size;
+    height: 100%;
+    width: 100%;
   }
 
   .panel {
     position: relative;
     width: 100%;
     height: 100%;
+    min-height: fit-content;
     background: linear-gradient(
       250deg,
       rgb(40, 40, 40) 0%,

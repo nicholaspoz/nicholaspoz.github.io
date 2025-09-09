@@ -34,7 +34,7 @@
     <!-- <meta property="og:image" content="http://nicholaspoz.com/img/computerlove.png"> -->
     <!-- <meta property="twitter:image" content="http://nicholaspoz.com/img/computerlove.png"> -->
     <link rel="shortcut icon" href="/img/n.png" type="image/png" />
-    <title>NICK DOT BINGO</title>
+    <title>NICK DOT BINGO (OFFICE)</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -46,36 +46,9 @@
   </head>
 
   <body>
-    <style>
-      @media (orientation: landscape) {
-        .bingo-landscape {
-          display: block;
-          width: 100%;
-          height: 100%;
-        }
-        .bingo-portrait {
-          display: none;
-        }
-      }
-
-      @media (orientation: portrait) {
-        .bingo-portrait {
-          display: block;
-          width: 100%;
-          height: 100%;
-        }
-        .bingo-landscape {
-          display: none;
-        }
-
-        nick-dot-bingo::part(matrix) {
-          justify-content: space-around;
-          height: 100%;
-        }
-      }
-    </style>
-    <nick-dot-bingo class="bingo-landscape" columns="28"></nick-dot-bingo>
-    <nick-dot-bingo class="bingo-portrait" columns="14"></nick-dot-bingo>
+    <bingo-office>
+      <nick-dot-bingo slot="split-flap"></nick-dot-bingo>
+    </bingo-office>
     <script type="module" src="/js/split_flap.mjs"></script>
   </body>
 </html>

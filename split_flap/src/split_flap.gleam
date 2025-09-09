@@ -8,7 +8,7 @@ pub fn main() {
   let assert Ok(_) = char.register()
   let assert Ok(_) = display.register()
   let assert Ok(_) = progress_bar.register()
-  let assert Ok(_) = office.register()
   let assert Ok(_) = bingo.register()
+  let assert Ok(_) = office.register()
   Nil
 }

@@ -195,16 +195,11 @@ fn css(cols: Int, auto_play: Bool) -> String {
     padding: 0;
     margin: 0;
     border: none;
-    cursor: pointer;
   }
   
   split-flap-display::part(row) {
-    cursor: <cursor>;
+    cursor: pointer;
   }
   "
   |> string.replace("<cols>", int.to_string(cols - 2))
-  |> string.replace("<cursor>", case auto_play {
-    True -> "default"
-    False -> "pointer"
-  })
 }
