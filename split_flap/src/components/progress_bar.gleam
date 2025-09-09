@@ -110,6 +110,7 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
       Model(..model, auto_play:),
       effect.none(),
     )
+
     BackClicked -> #(model, event.emit("go_back", json.null()))
     ForwardClicked -> #(model, event.emit("go_forward", json.null()))
     AutoPlayClicked -> #(model, event.emit("auto_play", json.null()))
@@ -118,10 +119,12 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
 
 fn view(model: Model) -> Element(Msg) {
   element.fragment([
-    html.style([], css(model.cols, model.auto_play)),
+    html.style([], css(model.cols)),
     html.div([attribute.class("progress-bar")], [
       sf_char.element("<", Some("<"), on_click: Some(BackClicked)),
+
       progress_button(model),
+
       sf_char.element(">", Some(">"), on_click: Some(ForwardClicked)),
     ]),
   ])
@@ -170,7 +173,7 @@ fn progress_button(model: Model) -> Element(Msg) {
   )
 }
 
-fn css(cols: Int, auto_play: Bool) -> String {
+fn css(cols: Int) -> String {
   "
   :host {
     display: inline-block;

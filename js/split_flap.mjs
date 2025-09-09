@@ -6883,14 +6883,14 @@ function progress_button(model) {
     ])
   );
 }
-function css3(cols, auto_play) {
+function css3(cols) {
   let _pipe = "\n  :host {\n    display: inline-block;\n    width: 100%;\n  }\n\n  split-flap-char {\n    padding: 0.9cqw 0.3cqw;\n  }\n\n  .progress-bar {\n    width: 100%;\n    display: grid;\n    grid-template-columns: 1fr <cols>fr 1fr;\n    gap: 0;\n  }\n\n  .progress-bar-button {\n    width: 100%;\n    height: 100%;\n    background: none;\n    padding: 0;\n    margin: 0;\n    border: none;\n  }\n  \n  split-flap-display::part(row) {\n    cursor: pointer;\n  }\n  ";
   return replace(_pipe, "<cols>", to_string(cols - 2));
 }
 function view3(model) {
   return fragment2(
     toList([
-      style2(toList([]), css3(model.cols, model.auto_play)),
+      style2(toList([]), css3(model.cols)),
       div(
         toList([class$("progress-bar")]),
         toList([
