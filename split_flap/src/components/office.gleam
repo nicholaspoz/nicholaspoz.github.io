@@ -1,13 +1,11 @@
 import components/bingo
 import lustre
 import lustre/attribute
-import lustre/component
 import lustre/element.{type Element}
 import lustre/element/html
 
 pub fn register() {
   let component = lustre.simple(fn(_) { Nil }, fn(_, _) { Nil }, view)
-
   lustre.register(component, "bingo-office")
 }
 
@@ -18,7 +16,6 @@ fn view(_) -> Element(Nil) {
       html.div([attribute.class("office-void-bg")], [
         html.div([attribute.class("split-flap-void")], [
           bingo.element(cols: 28),
-          // component.named_slot("split-flap", [], []),
         ]),
       ]),
     ]),
