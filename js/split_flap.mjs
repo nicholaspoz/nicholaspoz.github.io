@@ -6847,15 +6847,7 @@ function progress_button(model) {
   return button(
     toList([
       class$("progress-bar-button"),
-      on_click(new AutoPlayClicked()),
-      (() => {
-        let $ = model.auto_play;
-        if ($) {
-          return none();
-        } else {
-          return class$("paused");
-        }
-      })()
+      on_click(new AutoPlayClicked())
     ]),
     toList([
       element5(
@@ -6872,18 +6864,7 @@ function progress_button(model) {
               if (auto_play) {
                 return pct;
               } else {
-                let infix = "(PAUSED)";
-                let middle = string_length(infix);
-                let start3 = max(
-                  0,
-                  globalThis.Math.trunc((len - middle) / 2)
-                );
-                let end = max(0, len - start3 - middle);
-                return slice(pct, 0, start3) + infix + slice(
-                  pct,
-                  start3 + middle,
-                  end
-                );
+                return center("(PAUSED)", pct);
               }
             })()
           )
@@ -7053,15 +7034,15 @@ function next_frame(model) {
         "let_assert",
         FILEPATH2,
         "components/bingo",
-        142,
+        146,
         "next_frame",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $1,
-          start: 3540,
-          end: 3584,
-          pattern_start: 3551,
-          pattern_end: 3559
+          start: 3681,
+          end: 3725,
+          pattern_start: 3692,
+          pattern_end: 3700
         }
       );
     }
@@ -7102,15 +7083,15 @@ function previous_scene(scenes2, current) {
           "let_assert",
           FILEPATH2,
           "components/bingo",
-          174,
+          178,
           "previous_scene",
           "Pattern match failed, no pattern matched the value.",
           {
             value: $,
-            start: 4177,
-            end: 4235,
-            pattern_start: 4188,
-            pattern_end: 4196
+            start: 4318,
+            end: 4376,
+            pattern_start: 4329,
+            pattern_end: 4337
           }
         );
       }
@@ -7194,10 +7175,24 @@ function scenes(columns) {
   freelance = $1[0];
   tech = $1[1];
   cellist = $1[2];
+  let $2 = [
+    center2("  ___  |0    "),
+    center2(" |   | |   |0"),
+    center2(" | #0| |___| "),
+    center2("0|           ")
+  ];
+  let notes_1;
+  let notes_2;
+  let notes_3;
+  let notes_4;
+  notes_1 = $2[0];
+  notes_2 = $2[1];
+  notes_3 = $2[2];
+  notes_4 = $2[3];
   let linked_in = new Link(right2("LINKEDIN >"), linkedin_url);
   let github = new Link(right2("GITHUB >"), github_url);
   let email = new Link(right2("EMAIL >"), mailto);
-  let $2 = [
+  let $3 = [
     center2("          WHAT"),
     center2("        A     "),
     center2("   TIME       "),
@@ -7213,13 +7208,13 @@ function scenes(columns) {
   let be;
   let alive;
   let question;
-  what = $2[0];
-  a = $2[1];
-  time = $2[2];
-  to = $2[3];
-  be = $2[4];
-  alive = $2[5];
-  question = $2[6];
+  what = $3[0];
+  a = $3[1];
+  time = $3[2];
+  to = $3[3];
+  be = $3[4];
+  alive = $3[5];
+  question = $3[6];
   return toList([
     new Scene(
       "HOME",
@@ -7309,10 +7304,10 @@ function scenes(columns) {
           toList([
             new Text2(freelance),
             new Text2(cellist),
-            new Text2(""),
-            new Text2(""),
-            new Text2(""),
-            new Text2(""),
+            new Text2(notes_1),
+            new Text2(notes_2),
+            new Text2(notes_3),
+            new Text2(notes_4),
             email
           ]),
           7e3
@@ -7443,16 +7438,16 @@ function update5(model, msg) {
           "Pattern match failed, no pattern matched the value.",
           {
             value: $12,
-            start: 2110,
-            end: 2163,
-            pattern_start: 2121,
-            pattern_end: 2136
+            start: 2105,
+            end: 2158,
+            pattern_start: 2116,
+            pattern_end: 2131
           }
         );
       }
       _block = first_scene.name;
     }
-    let curr_scene_name = _block;
+    let curr_scene = _block;
     let next_model = new Bingo(
       model.scenes,
       next_frame(model),
@@ -7460,9 +7455,9 @@ function update5(model, msg) {
       model.columns
     );
     let $1 = get_scene_name(next_model);
-    let next_scene_name;
+    let next_scene$1;
     if ($1 instanceof Ok) {
-      next_scene_name = $1[0];
+      next_scene$1 = $1[0];
     } else {
       throw makeError(
         "let_assert",
@@ -7473,15 +7468,15 @@ function update5(model, msg) {
         "Pattern match failed, no pattern matched the value.",
         {
           value: $1,
-          start: 2282,
-          end: 2341,
-          pattern_start: 2293,
-          pattern_end: 2312
+          start: 2277,
+          end: 2331,
+          pattern_start: 2288,
+          pattern_end: 2302
         }
       );
     }
-    let $2 = curr_scene_name === next_scene_name || model.auto_play;
-    if ($2) {
+    let should_continue = model.auto_play || curr_scene === next_scene$1;
+    if (should_continue) {
       return [
         next_model,
         from((dispatch) => {
@@ -7502,15 +7497,15 @@ function update5(model, msg) {
         "let_assert",
         FILEPATH2,
         "components/bingo",
-        111,
+        115,
         "update",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 2696,
-          end: 2742,
-          pattern_start: 2707,
-          pattern_end: 2716
+          start: 2837,
+          end: 2883,
+          pattern_start: 2848,
+          pattern_end: 2857
         }
       );
     }
@@ -7531,15 +7526,15 @@ function update5(model, msg) {
         "let_assert",
         FILEPATH2,
         "components/bingo",
-        120,
+        124,
         "update",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 2973,
-          end: 3019,
-          pattern_start: 2984,
-          pattern_end: 2993
+          start: 3114,
+          end: 3160,
+          pattern_start: 3125,
+          pattern_end: 3134
         }
       );
     }

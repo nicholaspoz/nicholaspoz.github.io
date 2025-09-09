@@ -84,7 +84,7 @@ fn update(model: Bingo, msg: Msg) -> #(Bingo, Effect(Msg)) {
     })
 
     FrameFinished -> {
-      let curr_scene_name = case get_scene_name(model) {
+      let curr_scene = case get_scene_name(model) {
         Ok(name) -> name
         Error(_) -> {
           let assert Ok(first_scene) = list.first(model.scenes)
@@ -93,8 +93,12 @@ fn update(model: Bingo, msg: Msg) -> #(Bingo, Effect(Msg)) {
       }
 
       let next_model = Bingo(..model, current: next_frame(model))
-      let assert Ok(next_scene_name) = get_scene_name(next_model)
-      case curr_scene_name == next_scene_name || model.auto_play {
+      let assert Ok(next_scene) = get_scene_name(next_model)
+      let should_continue = model.auto_play || { curr_scene == next_scene }
+
+      // Always continue to the end of the scene. Only skip to the next scene if
+      // auto-play is enabled.
+      case should_continue {
         True -> {
           #(next_model, {
             use dispatch <- effect.from
@@ -257,6 +261,13 @@ fn scenes(columns: Int) -> List(Scene) {
     left("CELLIST"),
   )
 
+  let #(notes_1, notes_2, notes_3, notes_4) = #(
+    center("  ___  |0    "),
+    center(" |   | |   |0"),
+    center(" | #0| |___| "),
+    center("0|           "),
+  )
+
   let linked_in = Link(text: right("LINKEDIN >"), url: linkedin_url)
   let github = Link(text: right("GITHUB >"), url: github_url)
   let email = Link(text: right("EMAIL >"), url: mailto)
@@ -336,10 +347,10 @@ fn scenes(columns: Int) -> List(Scene) {
       Frame(ms: 7000, lines: [
         Text(freelance),
         Text(cellist),
-        Text(""),
-        Text(""),
-        Text(""),
-        Text(""),
+        Text(notes_1),
+        Text(notes_2),
+        Text(notes_3),
+        Text(notes_4),
         email,
       ]),
     ]),

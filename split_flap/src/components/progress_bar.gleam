@@ -1,3 +1,4 @@
+import components/display_fns
 import gleam/dynamic/decode
 import gleam/int
 import gleam/json
@@ -139,10 +140,6 @@ fn progress_button(model: Model) -> Element(Msg) {
     [
       attribute.class("progress-bar-button"),
       event.on_click(AutoPlayClicked),
-      case model.auto_play {
-        False -> attribute.class("paused")
-        True -> attribute.none()
-      },
     ],
     [
       sf_display.element(
@@ -151,17 +148,10 @@ fn progress_button(model: Model) -> Element(Msg) {
             let pct =
               string.repeat("%", progress * len / 100)
               |> string.pad_end(len, " ")
+
             case auto_play {
               True -> pct
-              False -> {
-                let infix = "(PAUSED)"
-                let middle = string.length(infix)
-                let start = int.max(0, { len - middle } / 2)
-                let end = int.max(0, len - start - middle)
-                string.slice(pct, 0, start)
-                <> infix
-                <> string.slice(pct, start + middle, end)
-              }
+              False -> display_fns.center("(PAUSED)", against: pct)
             }
           }),
         ],
