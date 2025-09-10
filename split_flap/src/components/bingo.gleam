@@ -1,3 +1,4 @@
+import gleam/bool
 import gleam/int
 import gleam/list.{Continue, Stop}
 import gleam/option.{type Option, None, Some}
@@ -35,6 +36,11 @@ pub fn element(cols cols: Int) -> Element(msg) {
     [],
   )
 }
+
+// type BingoState {
+//   On(scene: Scene, frame: Frame)
+//   BingoError
+// }
 
 type Model {
   Model(
@@ -86,29 +92,44 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
 
     TimeoutStarted(id) -> #(Model(..model, timeout: Some(id)), effect.none())
 
-    TimeoutEnded ->
-      handler(
-        model: model,
-        next: {
-          use state <- result.try(model.current)
-          find_next_state(model.scenes, state)
-        },
-        predicate: Some(fn(state) {
+    TimeoutEnded -> {
+      let next_state =
+        result.try_recover(
+          {
+            use state <- result.try(model.current)
+            find_next_state(model.scenes, state)
+          },
+          fn(_) { initial_state(model.scenes) },
+        )
+
+      // Apply the predicate to the next state
+      let next_state = case next_state {
+        Ok(next_state) -> {
           let is_same_scene =
             model.current
             |> result.map(pair.first)
-            |> result.map(fn(scene) { scene == pair.first(state) })
+            |> result.map(fn(scene) { scene == pair.first(next_state) })
             |> result.unwrap(False)
+          echo "HELLO " <> bool.to_string(is_same_scene)
+          case model.auto_play || is_same_scene {
+            True -> Ok(next_state)
+            False -> Error(Nil)
+          }
+        }
+        _ -> next_state
+      }
 
-          model.auto_play || is_same_scene
-        }),
-        translate: fn(state) {
+      case next_state {
+        Ok(state) -> {
           #(
-            Model(..model, current: Ok(state)),
+            Model(..model, current: Ok(state), timeout: None),
             start_timeout(pair.second(state), current: None),
           )
-        },
-      )
+        }
+        // Handle the error case (by doing nothing for now)
+        Error(_) -> #(Model(..model, timeout: None), effect.none())
+      }
+    }
 
     BackClicked ->
       handler(
@@ -116,12 +137,18 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
         predicate: None,
         next: {
           use #(scene, _) <- result.try(model.current)
-          use prev_scene <- result.try(find_next(
-            list.reverse(model.scenes),
-            scene,
-          ))
-          use frame <- result.try(list.first(prev_scene.frames))
-          Ok(#(prev_scene, frame))
+          let reversed = list.reverse(model.scenes)
+          let prev_scene =
+            result.try_recover(find_next(reversed, scene), fn(_) {
+              list.first(reversed)
+            })
+          case prev_scene {
+            Ok(prev_scene) -> {
+              use frame <- result.try(list.first(prev_scene.frames))
+              Ok(#(prev_scene, frame))
+            }
+            Error(_) -> Error(Nil)
+          }
         },
         translate: fn(next_state) {
           #(

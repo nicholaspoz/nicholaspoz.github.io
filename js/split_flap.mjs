@@ -390,24 +390,6 @@ function makeError(variant, file, module, line, fn, message, extra) {
   return error;
 }
 
-// build/dev/javascript/gleam_stdlib/gleam/order.mjs
-var Lt = class extends CustomType {
-};
-var Eq = class extends CustomType {
-};
-var Gt = class extends CustomType {
-};
-
-// build/dev/javascript/gleam_stdlib/gleam/option.mjs
-var Some = class extends CustomType {
-  constructor($0) {
-    super();
-    this[0] = $0;
-  }
-};
-var None = class extends CustomType {
-};
-
 // build/dev/javascript/gleam_stdlib/dict.mjs
 var referenceMap = /* @__PURE__ */ new WeakMap();
 var tempDataView = /* @__PURE__ */ new DataView(
@@ -1111,6 +1093,33 @@ var Dict = class _Dict {
   }
 };
 var unequalDictSymbol = /* @__PURE__ */ Symbol();
+
+// build/dev/javascript/gleam_stdlib/gleam/bool.mjs
+function to_string(bool4) {
+  if (bool4) {
+    return "True";
+  } else {
+    return "False";
+  }
+}
+
+// build/dev/javascript/gleam_stdlib/gleam/order.mjs
+var Lt = class extends CustomType {
+};
+var Eq = class extends CustomType {
+};
+var Gt = class extends CustomType {
+};
+
+// build/dev/javascript/gleam_stdlib/gleam/option.mjs
+var Some = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var None = class extends CustomType {
+};
 
 // build/dev/javascript/gleam_stdlib/gleam/dict.mjs
 function do_has_key(key, dict3) {
@@ -1991,7 +2000,7 @@ function push_path(layer, path) {
     toList([
       (() => {
         let _pipe = int2;
-        return map2(_pipe, to_string);
+        return map2(_pipe, to_string2);
       })()
     ])
   );
@@ -2109,7 +2118,7 @@ function parse_int(value) {
     return new Error(Nil);
   }
 }
-function to_string(term) {
+function to_string2(term) {
   return term.toString();
 }
 function string_replace(string5, target2, substitute) {
@@ -2516,7 +2525,7 @@ function do_parse(json2, decoder) {
 function parse(json2, decoder) {
   return do_parse(json2, decoder);
 }
-function to_string2(json2) {
+function to_string3(json2) {
   return json_to_string(json2);
 }
 function string3(input) {
@@ -2904,19 +2913,19 @@ function do_to_string(loop$path, loop$acc) {
       loop$path = parent;
       loop$acc = prepend(
         separator_element,
-        prepend(to_string(index4), acc)
+        prepend(to_string2(index4), acc)
       );
     }
   }
 }
-function to_string3(path) {
+function to_string4(path) {
   return do_to_string(path, toList([]));
 }
 function matches(path, candidates) {
   if (candidates instanceof Empty) {
     return false;
   } else {
-    return do_matches(to_string3(path), candidates);
+    return do_matches(to_string4(path), candidates);
   }
 }
 var separator_event = "\n";
@@ -5771,7 +5780,7 @@ function curr_and_next_chars(model) {
 }
 function css(ms) {
   let _pipe = '\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  .split-flap {\n    /* TODO -webkit-font-smoothing */\n    position: relative;\n    width: 100%;\n    height: 100%;\n    aspect-ratio: 1/1.618; /* golden ratio ;) */\n    font-family: Fragment Mono, math, monospace;\n    font-weight: bold;\n    font-size: 120cqw;\n    border-radius: 5cqw;\n    perspective: 600cqw;\n  }\n\n  .split-flap::selection {\n    background: white;\n    color: black;\n  }\n\n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 3.5cqw;\n    background: rgb(20, 20, 20);\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    z-index: 1;\n    background: rgb(40, 40, 40);\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n    z-index: 0;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw;\n    user-select: text;\n    height: 100%;\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n  }\n\n  @keyframes flip-top {\n    0% {\n      transform: rotateX(0deg);\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n    50%, 100% {\n      transform: rotateX(-90deg);\n      box-shadow: none;\n    }\n    \n  }\n\n  @keyframes flip-bottom {\n    0% {\n      transform: rotateX(90deg);\n      box-shadow: none;\n    }\n    100% {\n      transform: rotateX(0deg);\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n  }\n\n  .flap.flipping-top {\n    pointer-events: none;\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw 5cqw 0 0;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n    animation: <flip_duration>ms ease-in flip-top;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap.flipping-bottom {\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n    animation: <flip_duration>ms ease-in flip-bottom;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n  \n  .flap.top .flap-content {\n    top: 0;\n    height: 100%\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n  .flap.flipping-top .flap-content {\n    top: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
-  return replace(_pipe, "<flip_duration>", to_string(ms));
+  return replace(_pipe, "<flip_duration>", to_string2(ms));
 }
 var default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\u25B8()\u{1D122}\u{1D15F}\u{1D13D}|#_!?";
 function element4(char, chars, on_click2) {
@@ -6165,9 +6174,9 @@ function element5(contents, cols, rows, chars) {
   return element2(
     "split-flap-display",
     toList([
-      attribute2("lines", to_string2(contents_to_json(contents))),
-      attribute2("cols", to_string(cols)),
-      attribute2("rows", to_string(rows)),
+      attribute2("lines", to_string3(contents_to_json(contents))),
+      attribute2("cols", to_string2(cols)),
+      attribute2("rows", to_string2(rows)),
       (() => {
         if (chars instanceof Some) {
           let stack = chars[0];
@@ -6224,7 +6233,7 @@ function row(line, row_num, num_cols, char_stack) {
   _block$1 = index_map(
     _pipe$1,
     (char, idx) => {
-      let key = to_string(row_num) + "-" + to_string(idx);
+      let key = to_string2(row_num) + "-" + to_string2(idx);
       return [key, element4(char, char_stack, new None())];
     }
   );
@@ -6360,7 +6369,7 @@ function view2(model) {
           sanitized_lines,
           (line, line_num) => {
             return [
-              to_string(line_num),
+              to_string2(line_num),
               row(line, line_num, model.cols, model.chars)
             ];
           }
@@ -6928,8 +6937,8 @@ function element6(progress, cols, back_msg, forward_msg, auto_play, auto_play_ms
     "progress-bar",
     toList([
       part("progress-bar"),
-      attribute2("progress", to_string(progress)),
-      attribute2("cols", to_string(cols)),
+      attribute2("progress", to_string2(progress)),
+      attribute2("cols", to_string2(cols)),
       attribute2(
         "auto_play",
         (() => {
@@ -7034,7 +7043,7 @@ function progress_button(model) {
 }
 function css3(cols) {
   let _pipe = "\n  :host {\n    display: inline-block;\n    width: 100%;\n  }\n\n  split-flap-char {\n    padding: 0.9cqw 0.3cqw;\n  }\n\n  .progress-bar {\n    width: 100%;\n    display: grid;\n    grid-template-columns: 1fr <cols>fr 1fr;\n    gap: 0;\n  }\n\n  .progress-bar-button {\n    width: 100%;\n    height: 100%;\n    background: none;\n    padding: 0;\n    margin: 0;\n    border: none;\n  }\n  \n  split-flap-display::part(row) {\n    cursor: pointer;\n  }\n  ";
-  return replace(_pipe, "<cols>", to_string(cols - 2));
+  return replace(_pipe, "<cols>", to_string2(cols - 2));
 }
 function view3(model) {
   return fragment2(
@@ -7130,7 +7139,7 @@ var TimeoutEnded = class extends CustomType {
 function element7(cols) {
   return element2(
     "nick-dot-bingo",
-    toList([attribute2("columns", to_string(cols))]),
+    toList([attribute2("columns", to_string2(cols))]),
     toList([])
   );
 }
@@ -7249,17 +7258,24 @@ function update5(model, msg) {
         (_use0) => {
           let scene;
           scene = _use0[0];
-          return try$(
-            find_next(reverse(model.scenes), scene),
-            (prev_scene) => {
-              return try$(
-                first(prev_scene.frames),
-                (frame) => {
-                  return new Ok([prev_scene, frame]);
-                }
-              );
+          let reversed = reverse(model.scenes);
+          let prev_scene = try_recover(
+            find_next(reversed, scene),
+            (_) => {
+              return first(reversed);
             }
           );
+          if (prev_scene instanceof Ok) {
+            let prev_scene$1 = prev_scene[0];
+            return try$(
+              first(prev_scene$1.frames),
+              (frame) => {
+                return new Ok([prev_scene$1, frame]);
+              }
+            );
+          } else {
+            return new Error(void 0);
+          }
         }
       ),
       new None(),
@@ -7348,43 +7364,71 @@ function update5(model, msg) {
       none2()
     ];
   } else {
-    return handler(
-      model,
+    let next_state = try_recover(
       try$(
         model.current,
         (state) => {
           return find_next_state(model.scenes, state);
         }
       ),
-      new Some(
-        (state) => {
-          let _block;
-          let _pipe = model.current;
-          let _pipe$1 = map3(_pipe, first3);
-          let _pipe$2 = map3(
-            _pipe$1,
-            (scene) => {
-              return isEqual(scene, first3(state));
-            }
-          );
-          _block = unwrap(_pipe$2, false);
-          let is_same_scene = _block;
-          return model.auto_play || is_same_scene;
-        }
-      ),
-      (state) => {
-        return [
-          new Model4(
-            model.scenes,
-            model.columns,
-            new Ok(state),
-            model.auto_play,
-            model.timeout
-          ),
-          start_timeout(second(state), new None())
-        ];
+      (_) => {
+        return initial_state(model.scenes);
       }
     );
+    let _block;
+    if (next_state instanceof Ok) {
+      let next_state$12 = next_state[0];
+      let _block$1;
+      let _pipe = model.current;
+      let _pipe$1 = map3(_pipe, first3);
+      let _pipe$2 = map3(
+        _pipe$1,
+        (scene) => {
+          return isEqual(scene, first3(next_state$12));
+        }
+      );
+      _block$1 = unwrap(_pipe$2, false);
+      let is_same_scene = _block$1;
+      echo2(
+        "HELLO " + to_string(is_same_scene),
+        void 0,
+        "src/components/bingo.gleam",
+        113
+      );
+      let $ = model.auto_play || is_same_scene;
+      if ($) {
+        _block = new Ok(next_state$12);
+      } else {
+        _block = new Error(void 0);
+      }
+    } else {
+      _block = next_state;
+    }
+    let next_state$1 = _block;
+    if (next_state$1 instanceof Ok) {
+      let state = next_state$1[0];
+      return [
+        new Model4(
+          model.scenes,
+          model.columns,
+          new Ok(state),
+          model.auto_play,
+          new None()
+        ),
+        start_timeout(second(state), new None())
+      ];
+    } else {
+      return [
+        new Model4(
+          model.scenes,
+          model.columns,
+          model.current,
+          model.auto_play,
+          new None()
+        ),
+        none2()
+      ];
+    }
   }
 }
 function calculate_progress_scenes(model) {
@@ -7470,6 +7514,209 @@ function register4() {
   );
   return make_component(component2, "nick-dot-bingo");
 }
+function echo2(value, message, file, line) {
+  const grey = "\x1B[90m";
+  const reset_color = "\x1B[39m";
+  const file_line = `${file}:${line}`;
+  const inspector = new Echo$Inspector2();
+  const string_value = inspector.inspect(value);
+  const string_message = message === void 0 ? "" : " " + message;
+  if (globalThis.process?.stderr?.write) {
+    const string5 = `${grey}${file_line}${reset_color}${string_message}
+${string_value}
+`;
+    globalThis.process.stderr.write(string5);
+  } else if (globalThis.Deno) {
+    const string5 = `${grey}${file_line}${reset_color}${string_message}
+${string_value}
+`;
+    globalThis.Deno.stderr.writeSync(new TextEncoder().encode(string5));
+  } else {
+    const string5 = `${file_line}
+${string_value}`;
+    globalThis.console.log(string5);
+  }
+  return value;
+}
+var Echo$Inspector2 = class {
+  #references = /* @__PURE__ */ new Set();
+  #isDict(value) {
+    try {
+      return value instanceof Dict;
+    } catch {
+      return false;
+    }
+  }
+  #float(float2) {
+    const string5 = float2.toString().replace("+", "");
+    if (string5.indexOf(".") >= 0) {
+      return string5;
+    } else {
+      const index4 = string5.indexOf("e");
+      if (index4 >= 0) {
+        return string5.slice(0, index4) + ".0" + string5.slice(index4);
+      } else {
+        return string5 + ".0";
+      }
+    }
+  }
+  inspect(v) {
+    const t = typeof v;
+    if (v === true) return "True";
+    if (v === false) return "False";
+    if (v === null) return "//js(null)";
+    if (v === void 0) return "Nil";
+    if (t === "string") return this.#string(v);
+    if (t === "bigint" || Number.isInteger(v)) return v.toString();
+    if (t === "number") return this.#float(v);
+    if (v instanceof UtfCodepoint) return this.#utfCodepoint(v);
+    if (v instanceof BitArray) return this.#bit_array(v);
+    if (v instanceof RegExp) return `//js(${v})`;
+    if (v instanceof Date) return `//js(Date("${v.toISOString()}"))`;
+    if (v instanceof globalThis.Error) return `//js(${v.toString()})`;
+    if (v instanceof Function) {
+      const args = [];
+      for (const i of Array(v.length).keys())
+        args.push(String.fromCharCode(i + 97));
+      return `//fn(${args.join(", ")}) { ... }`;
+    }
+    if (this.#references.size === this.#references.add(v).size) {
+      return "//js(circular reference)";
+    }
+    let printed;
+    if (Array.isArray(v)) {
+      printed = `#(${v.map((v2) => this.inspect(v2)).join(", ")})`;
+    } else if (v instanceof List) {
+      printed = this.#list(v);
+    } else if (v instanceof CustomType) {
+      printed = this.#customType(v);
+    } else if (this.#isDict(v)) {
+      printed = this.#dict(v);
+    } else if (v instanceof Set) {
+      return `//js(Set(${[...v].map((v2) => this.inspect(v2)).join(", ")}))`;
+    } else {
+      printed = this.#object(v);
+    }
+    this.#references.delete(v);
+    return printed;
+  }
+  #object(v) {
+    const name = Object.getPrototypeOf(v)?.constructor?.name || "Object";
+    const props = [];
+    for (const k of Object.keys(v)) {
+      props.push(`${this.inspect(k)}: ${this.inspect(v[k])}`);
+    }
+    const body = props.length ? " " + props.join(", ") + " " : "";
+    const head = name === "Object" ? "" : name + " ";
+    return `//js(${head}{${body}})`;
+  }
+  #dict(map4) {
+    let body = "dict.from_list([";
+    let first4 = true;
+    let key_value_pairs = [];
+    map4.forEach((value, key) => {
+      key_value_pairs.push([key, value]);
+    });
+    key_value_pairs.sort();
+    key_value_pairs.forEach(([key, value]) => {
+      if (!first4) body = body + ", ";
+      body = body + "#(" + this.inspect(key) + ", " + this.inspect(value) + ")";
+      first4 = false;
+    });
+    return body + "])";
+  }
+  #customType(record) {
+    const props = Object.keys(record).map((label) => {
+      const value = this.inspect(record[label]);
+      return isNaN(parseInt(label)) ? `${label}: ${value}` : value;
+    }).join(", ");
+    return props ? `${record.constructor.name}(${props})` : record.constructor.name;
+  }
+  #list(list4) {
+    if (list4 instanceof Empty) {
+      return "[]";
+    }
+    let char_out = 'charlist.from_string("';
+    let list_out = "[";
+    let current = list4;
+    while (current instanceof NonEmpty) {
+      let element8 = current.head;
+      current = current.tail;
+      if (list_out !== "[") {
+        list_out += ", ";
+      }
+      list_out += this.inspect(element8);
+      if (char_out) {
+        if (Number.isInteger(element8) && element8 >= 32 && element8 <= 126) {
+          char_out += String.fromCharCode(element8);
+        } else {
+          char_out = null;
+        }
+      }
+    }
+    if (char_out) {
+      return char_out + '")';
+    } else {
+      return list_out + "]";
+    }
+  }
+  #string(str) {
+    let new_str = '"';
+    for (let i = 0; i < str.length; i++) {
+      const char = str[i];
+      switch (char) {
+        case "\n":
+          new_str += "\\n";
+          break;
+        case "\r":
+          new_str += "\\r";
+          break;
+        case "	":
+          new_str += "\\t";
+          break;
+        case "\f":
+          new_str += "\\f";
+          break;
+        case "\\":
+          new_str += "\\\\";
+          break;
+        case '"':
+          new_str += '\\"';
+          break;
+        default:
+          if (char < " " || char > "~" && char < "\xA0") {
+            new_str += "\\u{" + char.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0") + "}";
+          } else {
+            new_str += char;
+          }
+      }
+    }
+    new_str += '"';
+    return new_str;
+  }
+  #utfCodepoint(codepoint2) {
+    return `//utfcodepoint(${String.fromCodePoint(codepoint2.value)})`;
+  }
+  #bit_array(bits) {
+    if (bits.bitSize === 0) {
+      return "<<>>";
+    }
+    let acc = "<<";
+    for (let i = 0; i < bits.byteSize - 1; i++) {
+      acc += bits.byteAt(i).toString();
+      acc += ", ";
+    }
+    if (bits.byteSize * 8 === bits.bitSize) {
+      acc += bits.byteAt(bits.byteSize - 1).toString();
+    } else {
+      const trailingBitsCount = bits.bitSize % 8;
+      acc += bits.byteAt(bits.byteSize - 1) >> 8 - trailingBitsCount;
+      acc += `:size(${trailingBitsCount})`;
+    }
+    acc += ">>";
+    return acc;
+  }
+};
 
 // build/dev/javascript/split_flap/components/office.mjs
 var css5 = "\n  :host {\n    --position-x: 50%;\n    --position-y: 60%;\n    --min-height: 55cqw;\n    width: 100%;\n    height: 100%;\n    min-height: var(--min-height);\n    overflow-x: hidden;\n    overflow-y: scroll;\n    position: relative;\n    container-type: inline-size;\n  }\n  \n  .office-void {\n    width: 100%;\n    height: 100%;\n    min-height: var(--min-height);\n    overflow: hidden;\n    position: relative;\n    container-type: size;\n  }\n  \n  .office-void-bg {\n    position: absolute;\n    width: max(100cqw, 100cqh);\n    height: max(100cqw, 100cqh);\n    left: var(--position-x);\n    top: var(--position-y);\n    transform: translate(calc(var(--position-x) * -1), calc(var(--position-y) * -1));\n    background-image: url(./img/bg-3840.webp);\n    background-size: cover;\n    background-position: var(--position-x) var(--position-y);\n  }\n  \n  .split-flap-void {\n    position: absolute;\n    /* background: lime; */\n    /* mix-blend-mode: difference; */\n    /* do not, and I repeat, do not touch this\u2014otherwise the flip-flap will be very very sad and I will cry */\n    top: 28.75%;\n    left: 26.66%;\n    width: 46.66%;\n    height: 23.4%;\n    container-type: size; \n  }\n\n  nick-dot-bingo::part(panel) {\n    background: rgba(50, 50, 50, 0.3);    \n    box-shadow: none;\n  }\n";
