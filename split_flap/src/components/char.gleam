@@ -13,7 +13,8 @@ import lustre/event
 
 import utils
 
-pub const default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<>()/\\|%#_!?"
+// NOTE: you need to have a music font installed to see this unicode
+pub const default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▸()𝄢𝅘𝅥𝄽|#_!?"
 
 const flip_duration_ms = 30
 
@@ -119,8 +120,10 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
         Idle, Ok(x) if x != model.dest -> {
           #(Model(..model, state: Flipping), {
             use dispatch <- effect.from
-            use <- utils.set_timeout(flip_duration_ms + 10)
-            dispatch(FlipStarted)
+            utils.set_timeout(flip_duration_ms + 10, fn() {
+              dispatch(FlipStarted)
+            })
+            Nil
           })
         }
 
@@ -133,8 +136,8 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
       let next = rest <> first
       #(Model(..model, chars: next, state: Idle), {
         use dispatch <- effect.from
-        use <- utils.set_timeout(idle_duration_ms)
-        dispatch(FlipEnded)
+        utils.set_timeout(idle_duration_ms, fn() { dispatch(FlipEnded) })
+        Nil
       })
     }
 
@@ -208,7 +211,7 @@ fn css(flip_duration ms: Int) -> String {
     width: 100%;
     height: 100%;
     aspect-ratio: 1/1.618; /* golden ratio ;) */
-    font-family: \"Fragment Mono\", monospace;
+    font-family: Fragment Mono, math, monospace, Noto Music;
     font-weight: bold;
     font-size: 120cqw;
     border-radius: 5cqw;

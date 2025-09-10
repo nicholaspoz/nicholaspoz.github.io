@@ -1,3 +1,7 @@
 export function set_timeout(delay, cb) {
-  window.setTimeout(cb, delay);
+  return window.setTimeout(cb, delay);
+}
+
+export function clear_timeout(id) {
+  window.clearTimeout(id);
 }
