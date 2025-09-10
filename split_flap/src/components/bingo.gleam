@@ -1,6 +1,7 @@
 import gleam/int
 import gleam/list.{Continue, Stop}
-import gleam/option.{None, Some}
+import gleam/option.{type Option, None, Some}
+import gleam/pair
 import gleam/result
 import gleam/string
 import lustre
@@ -13,7 +14,7 @@ import lustre/element/html
 import components/display.{type Content, Link, Text}
 import components/display_fns as row
 import components/progress_bar
-import utils
+import utils.{find_next}
 
 pub type Frame {
   Frame(lines: List(Content), ms: Int)
@@ -43,161 +44,206 @@ pub fn element(cols cols: Int) -> Element(msg) {
   )
 }
 
-type Bingo {
-  Bingo(scenes: List(Scene), current: Frame, auto_play: Bool, columns: Int)
+type Model {
+  Model(
+    scenes: List(Scene),
+    columns: Int,
+    current: Result(#(Scene, Frame), Nil),
+    auto_play: Bool,
+    timeout: Option(Int),
+  )
 }
 
 type Msg {
   ColumnsAttrChanged(Int)
-  FrameStarted
-  FrameFinished
   BackClicked
   ForwardClicked
   AutoPlayClicked
+  TimeoutStarted(Int)
+  TimeoutEnded
 }
 
-fn init(_) -> #(Bingo, effect.Effect(Msg)) {
+fn init(_) -> #(Model, effect.Effect(Msg)) {
   let scenes = scenes(28)
-  let assert Ok(first_scene) = list.first(scenes)
-  let assert Ok(first_frame) = list.first(first_scene.frames)
+  let state = initial_state(scenes)
 
-  #(Bingo(scenes, first_frame, True, 28), {
-    use dispatch <- effect.from
-    dispatch(FrameStarted)
-  })
+  #(
+    Model(scenes:, columns: 28, current: state, auto_play: True, timeout: None),
+    case state {
+      Ok(#(_, frame)) -> start_timeout(frame, current: None)
+      Error(_) -> effect.none()
+    },
+  )
 }
 
-fn update(model: Bingo, msg: Msg) -> #(Bingo, Effect(Msg)) {
+fn initial_state(scenes: List(Scene)) -> Result(#(Scene, Frame), Nil) {
+  use first_scene <- result.try(list.first(scenes))
+  use first_frame <- result.try(list.first(first_scene.frames))
+  Ok(#(first_scene, first_frame))
+}
+
+fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
   case msg {
+    TimeoutStarted(id) -> #(Model(..model, timeout: Some(id)), effect.none())
+
+    TimeoutEnded -> {
+      let next_state =
+        try_recover_initial_state(model.scenes, {
+          use state <- result.try(model.current)
+          find_next_state(model.scenes, state)
+        })
+
+      let next_state = {
+        use state <- result.try(next_state)
+        let is_same_scene =
+          model.current
+          |> result.map(pair.first)
+          |> result.map(fn(scene) { scene == pair.first(state) })
+          |> result.unwrap(False)
+
+        case model.auto_play || is_same_scene {
+          True -> Ok(state)
+          False -> Error(Nil)
+        }
+      }
+
+      use next_state <- try_handle_error(model, next_state)
+      #(
+        Model(..model, current: Ok(next_state), timeout: None),
+        start_timeout(pair.second(next_state), current: None),
+      )
+    }
+
     ColumnsAttrChanged(columns) -> {
       #(
-        Bingo(..model, scenes: scenes(columns), columns:),
+        Model(..model, scenes: scenes(columns), columns:),
         // Any cleanup to do here?
         effect.none(),
       )
     }
 
-    FrameStarted -> #(model, {
-      use dispatch <- effect.from
-      use <- utils.set_timeout(model.current.ms)
-      dispatch(FrameFinished)
-    })
-
-    FrameFinished -> {
-      let curr_scene = case get_scene_name(model) {
-        Ok(name) -> name
-        Error(_) -> {
-          let assert Ok(first_scene) = list.first(model.scenes)
-          first_scene.name
-        }
-      }
-
-      let next_model = Bingo(..model, current: next_frame(model))
-      let assert Ok(next_scene) = get_scene_name(next_model)
-      let should_continue = model.auto_play || { curr_scene == next_scene }
-
-      // Always continue to the end of the scene. Only skip to the next scene if
-      // auto-play is enabled.
-      case should_continue {
-        True -> {
-          #(next_model, {
-            use dispatch <- effect.from
-            dispatch(FrameStarted)
-          })
-        }
-
-        False -> #(model, effect.none())
-      }
-    }
-
     BackClicked -> {
-      let next = previous_scene(model.scenes, model.current)
-      let assert Ok(frame) = list.first(next.frames)
-      #(Bingo(..model, current: frame, auto_play: False), {
-        use dispatch <- effect.from
-        dispatch(FrameStarted)
-      })
+      let next_state =
+        try_recover_initial_state(model.scenes, {
+          use #(scene, _) <- result.try(model.current)
+          use prev_scene <- result.try(find_next(
+            list.reverse(model.scenes),
+            scene,
+          ))
+          use frame <- result.try(list.first(prev_scene.frames))
+          Ok(#(prev_scene, frame))
+        })
+
+      use next_state <- try_handle_error(model, next_state)
+      #(
+        Model(..model, auto_play: False, current: Ok(next_state)),
+        start_timeout(pair.second(next_state), current: model.timeout),
+      )
     }
 
     ForwardClicked -> {
-      let next = next_scene(model.scenes, model.current)
-      let assert Ok(frame) = list.first(next.frames)
-      #(Bingo(..model, current: frame, auto_play: False), {
+      use next_state <- try_handle_error(
+        model,
+        try_recover_initial_state(model.scenes, {
+          use #(scene, _) <- result.try(model.current)
+          use next_scene <- result.try(find_next(model.scenes, scene))
+          use frame <- result.try(list.first(next_scene.frames))
+          Ok(#(next_scene, frame))
+        }),
+      )
+
+      #(
+        Model(..model, auto_play: False, current: Ok(next_state)),
+        start_timeout(pair.second(next_state), current: model.timeout),
+      )
+    }
+
+    AutoPlayClicked -> {
+      let next_value = !model.auto_play
+
+      #(Model(..model, timeout: None, auto_play: next_value), {
+        case model.timeout {
+          Some(id) -> utils.clear_timeout(id)
+          None -> Nil
+        }
         use dispatch <- effect.from
-        dispatch(FrameStarted)
+        dispatch(TimeoutEnded)
       })
     }
+  }
+}
 
-    AutoPlayClicked -> #(Bingo(..model, auto_play: !model.auto_play), {
+fn try_recover_initial_state(
+  scenes: List(Scene),
+  state: Result(#(Scene, Frame), Nil),
+) -> Result(#(Scene, Frame), Nil) {
+  result.try_recover(state, fn(_) { initial_state(scenes) })
+}
+
+fn try_handle_error(
+  model: Model,
+  next_state: Result(#(Scene, Frame), Nil),
+  fun: fn(#(Scene, Frame)) -> #(Model, Effect(Msg)),
+) -> #(Model, Effect(Msg)) {
+  case next_state {
+    Ok(state) -> fun(state)
+    Error(_) -> #(model, effect.none())
+  }
+}
+
+fn handler(
+  model: Model,
+  next_state: Result(#(Scene, Frame), Nil),
+  fun: fn(#(Scene, Frame)) -> #(Model, Effect(Msg)),
+) -> #(Model, Effect(Msg)) {
+  let next_state = try_recover_initial_state(model.scenes, next_state)
+  try_handle_error(model, next_state, fun)
+}
+
+fn start_timeout(frame: Frame, current timeout_id: Option(Int)) -> Effect(Msg) {
+  case timeout_id {
+    // Already a timeout in progress so do nothing
+    Some(_) -> effect.none()
+
+    None -> {
       use dispatch <- effect.from
-      dispatch(FrameFinished)
-    })
+      let id = utils.set_timeout(frame.ms, fn() { dispatch(TimeoutEnded) })
+      dispatch(TimeoutStarted(id))
+    }
   }
 }
 
-fn next_frame(model: Bingo) -> Frame {
-  let all_frames =
-    model.scenes
-    |> list.flat_map(fn(scene) { scene.frames })
+pub fn find_next_state(
+  scenes: List(Scene),
+  current: #(Scene, Frame),
+) -> Result(#(Scene, Frame), Nil) {
+  let scene = pair.first(current)
+  let frame = pair.second(current)
 
-  case next_frame_recursive(all_frames, model.current) {
-    Ok(next) -> next
+  case find_next(scene.frames, frame) {
+    Ok(next_frame) -> Ok(#(scene, next_frame))
     Error(_) -> {
-      let assert Ok(next) = list.first(all_frames)
-      next
+      use next_scene <- result.try(find_next(scenes, scene))
+      use next_frame <- result.try(list.first(next_scene.frames))
+      Ok(#(next_scene, next_frame))
     }
   }
 }
 
-fn next_frame_recursive(
-  frames: List(Frame),
-  current: Frame,
-) -> Result(Frame, Nil) {
-  case frames {
-    [head, next, ..rest] -> {
-      case head == current {
-        True -> Ok(next)
-        _ -> next_frame_recursive([next, ..rest], current)
-      }
-    }
-    _ -> Error(Nil)
+// VIEW
+
+fn view(model: Model) -> Element(Msg) {
+  let lines = case model.current {
+    Ok(#(_, frame)) -> frame.lines
+    Error(_) -> []
   }
-}
 
-fn previous_scene(scenes: List(Scene), current: Frame) -> Scene {
-  scenes
-  |> list.window_by_2
-  |> list.find_map(fn(pair) {
-    let #(a, b) = pair
-    case list.contains(b.frames, current) {
-      True -> Ok(a)
-      False -> Error(Nil)
-    }
-  })
-  |> result.unwrap({
-    let assert Ok(last) = scenes |> list.reverse |> list.first
-    last
-  })
-}
-
-fn next_scene(scenes: List(Scene), current: Frame) -> Scene {
-  scenes
-  |> list.reverse
-  |> previous_scene(current)
-}
-
-fn view(model: Bingo) -> Element(Msg) {
   element.fragment([
     html.style([], css),
 
     html.div([attribute.class("panel"), component.part("panel")], [
       html.div([attribute.class("matrix"), component.part("matrix")], [
-        display.element(
-          model.current.lines,
-          cols: model.columns,
-          rows: 7,
-          chars: None,
-        ),
+        display.element(lines, cols: model.columns, rows: 7, chars: None),
 
         progress_bar.element(
           progress: calculate_progress_scenes(model),
@@ -212,26 +258,23 @@ fn view(model: Bingo) -> Element(Msg) {
   ])
 }
 
-fn calculate_progress_scenes(model: Bingo) -> Int {
+fn calculate_progress_scenes(model: Model) -> Int {
   let total_scenes = list.length(model.scenes) |> int.max(1)
-  let current_scene_index =
-    // Start at 1 for nonempty progress indicator
-    list.fold_until(model.scenes, 1, fn(acc, scene) {
-      case list.contains(scene.frames, model.current) {
-        True -> Stop(acc)
-        False -> Continue(acc + 1)
-      }
-    })
+  case model.current {
+    Ok(#(scene, _)) -> {
+      // Start at 1 for nonempty progress indicator
+      let idx =
+        list.fold_until(model.scenes, 1, fn(acc, item) {
+          case item == scene {
+            True -> Stop(acc)
+            False -> Continue(acc + 1)
+          }
+        })
 
-  current_scene_index * 100 / total_scenes
-}
-
-fn get_scene_name(model: Bingo) -> Result(String, Nil) {
-  list.find(model.scenes, fn(scene) {
-    list.find(scene.frames, fn(frame) { frame == model.current })
-    |> result.is_ok()
-  })
-  |> result.map(fn(scene) { scene.name })
+      idx * 100 / total_scenes
+    }
+    Error(_) -> 0
+  }
 }
 
 // Data for nick.bingo
@@ -268,9 +311,9 @@ fn scenes(columns: Int) -> List(Scene) {
     center("0|           "),
   )
 
-  let linked_in = Link(text: right("LINKEDIN >"), url: linkedin_url)
-  let github = Link(text: right("GITHUB >"), url: github_url)
-  let email = Link(text: right("EMAIL >"), url: mailto)
+  let linked_in = Link(text: right("LINKEDIN ▸"), url: linkedin_url)
+  let github = Link(text: right("GITHUB ▸"), url: github_url)
+  let email = Link(text: right("EMAIL ▸"), url: mailto)
 
   let #(what, a, time, to, be, alive, question) = #(
     center("          WHAT"),

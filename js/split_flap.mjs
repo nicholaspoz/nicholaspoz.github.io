@@ -1173,24 +1173,6 @@ function reverse_and_prepend(loop$prefix, loop$suffix) {
 function reverse(list4) {
   return reverse_and_prepend(list4, toList([]));
 }
-function contains(loop$list, loop$elem) {
-  while (true) {
-    let list4 = loop$list;
-    let elem = loop$elem;
-    if (list4 instanceof Empty) {
-      return false;
-    } else {
-      let first$1 = list4.head;
-      if (isEqual(first$1, elem)) {
-        return true;
-      } else {
-        let rest$1 = list4.tail;
-        loop$list = rest$1;
-        loop$elem = elem;
-      }
-    }
-  }
-}
 function first(list4) {
   if (list4 instanceof Empty) {
     return new Error(void 0);
@@ -1295,24 +1277,6 @@ function index_map_loop(loop$list, loop$fun, loop$index, loop$acc) {
 function index_map(list4, fun) {
   return index_map_loop(list4, fun, 0, toList([]));
 }
-function drop(loop$list, loop$n) {
-  while (true) {
-    let list4 = loop$list;
-    let n = loop$n;
-    let $ = n <= 0;
-    if ($) {
-      return list4;
-    } else {
-      if (list4 instanceof Empty) {
-        return list4;
-      } else {
-        let rest$1 = list4.tail;
-        loop$list = rest$1;
-        loop$n = n - 1;
-      }
-    }
-  }
-}
 function take_loop(loop$list, loop$n, loop$acc) {
   while (true) {
     let list4 = loop$list;
@@ -1339,40 +1303,20 @@ function take(list4, n) {
 }
 function append_loop(loop$first, loop$second) {
   while (true) {
-    let first3 = loop$first;
-    let second = loop$second;
-    if (first3 instanceof Empty) {
-      return second;
+    let first4 = loop$first;
+    let second2 = loop$second;
+    if (first4 instanceof Empty) {
+      return second2;
     } else {
-      let first$1 = first3.head;
-      let rest$1 = first3.tail;
+      let first$1 = first4.head;
+      let rest$1 = first4.tail;
       loop$first = rest$1;
-      loop$second = prepend(first$1, second);
+      loop$second = prepend(first$1, second2);
     }
   }
 }
-function append(first3, second) {
-  return append_loop(reverse(first3), second);
-}
-function flatten_loop(loop$lists, loop$acc) {
-  while (true) {
-    let lists = loop$lists;
-    let acc = loop$acc;
-    if (lists instanceof Empty) {
-      return reverse(acc);
-    } else {
-      let list4 = lists.head;
-      let further_lists = lists.tail;
-      loop$lists = further_lists;
-      loop$acc = reverse_and_prepend(list4, acc);
-    }
-  }
-}
-function flatten(lists) {
-  return flatten_loop(lists, toList([]));
-}
-function flat_map(list4, fun) {
-  return flatten(map(list4, fun));
+function append(first4, second2) {
+  return append_loop(reverse(first4), second2);
 }
 function fold(loop$list, loop$initial, loop$fun) {
   while (true) {
@@ -1412,67 +1356,6 @@ function fold_until(loop$list, loop$initial, loop$fun) {
       }
     }
   }
-}
-function find2(loop$list, loop$is_desired) {
-  while (true) {
-    let list4 = loop$list;
-    let is_desired = loop$is_desired;
-    if (list4 instanceof Empty) {
-      return new Error(void 0);
-    } else {
-      let first$1 = list4.head;
-      let rest$1 = list4.tail;
-      let $ = is_desired(first$1);
-      if ($) {
-        return new Ok(first$1);
-      } else {
-        loop$list = rest$1;
-        loop$is_desired = is_desired;
-      }
-    }
-  }
-}
-function find_map(loop$list, loop$fun) {
-  while (true) {
-    let list4 = loop$list;
-    let fun = loop$fun;
-    if (list4 instanceof Empty) {
-      return new Error(void 0);
-    } else {
-      let first$1 = list4.head;
-      let rest$1 = list4.tail;
-      let $ = fun(first$1);
-      if ($ instanceof Ok) {
-        return $;
-      } else {
-        loop$list = rest$1;
-        loop$fun = fun;
-      }
-    }
-  }
-}
-function zip_loop(loop$one, loop$other, loop$acc) {
-  while (true) {
-    let one = loop$one;
-    let other = loop$other;
-    let acc = loop$acc;
-    if (other instanceof Empty) {
-      return reverse(acc);
-    } else if (one instanceof Empty) {
-      return reverse(acc);
-    } else {
-      let first_other = other.head;
-      let rest_other = other.tail;
-      let first_one = one.head;
-      let rest_one = one.tail;
-      loop$one = rest_one;
-      loop$other = rest_other;
-      loop$acc = prepend([first_one, first_other], acc);
-    }
-  }
-}
-function zip(list4, other) {
-  return zip_loop(list4, other, toList([]));
 }
 function unique_loop(loop$list, loop$seen, loop$acc) {
   while (true) {
@@ -1855,9 +1738,6 @@ function range_loop(loop$start, loop$stop, loop$acc) {
 function range(start3, stop) {
   return range_loop(start3, stop, toList([]));
 }
-function window_by_2(list4) {
-  return zip(list4, drop(list4, 1));
-}
 
 // build/dev/javascript/gleam_stdlib/gleam/string.mjs
 function replace(string5, pattern, substitute) {
@@ -1885,8 +1765,8 @@ function slice(string5, idx, len) {
     }
   }
 }
-function append2(first3, second) {
-  return first3 + second;
+function append2(first4, second2) {
+  return first4 + second2;
 }
 function concat_loop(loop$strings, loop$accumulator) {
   while (true) {
@@ -2043,10 +1923,10 @@ function run_decoders(loop$data, loop$failure, loop$decoders) {
     }
   }
 }
-function one_of(first3, alternatives) {
+function one_of(first4, alternatives) {
   return new Decoder(
     (dynamic_data) => {
-      let $ = first3.function(dynamic_data);
+      let $ = first4.function(dynamic_data);
       let layer;
       let errors;
       layer = $;
@@ -2266,15 +2146,15 @@ function graphemes_iterator(string5) {
   }
 }
 function pop_grapheme(string5) {
-  let first3;
+  let first4;
   const iterator = graphemes_iterator(string5);
   if (iterator) {
-    first3 = iterator.next().value?.segment;
+    first4 = iterator.next().value?.segment;
   } else {
-    first3 = string5.match(/./su)?.[0];
+    first4 = string5.match(/./su)?.[0];
   }
-  if (first3) {
-    return new Ok([first3, string5.slice(first3.length)]);
+  if (first4) {
+    return new Ok([first4, string5.slice(first4.length)]);
   } else {
     return new Error(Nil);
   }
@@ -2444,14 +2324,19 @@ function max(a, b) {
   }
 }
 
-// build/dev/javascript/gleam_stdlib/gleam/result.mjs
-function is_ok(result) {
-  if (result instanceof Ok) {
-    return true;
-  } else {
-    return false;
-  }
+// build/dev/javascript/gleam_stdlib/gleam/pair.mjs
+function first3(pair) {
+  let a;
+  a = pair[0];
+  return a;
 }
+function second(pair) {
+  let a;
+  a = pair[1];
+  return a;
+}
+
+// build/dev/javascript/gleam_stdlib/gleam/result.mjs
 function map3(result, fun) {
   if (result instanceof Ok) {
     let x = result[0];
@@ -2482,6 +2367,14 @@ function unwrap(result, default$) {
     return v;
   } else {
     return default$;
+  }
+}
+function try_recover(result, fun) {
+  if (result instanceof Ok) {
+    return result;
+  } else {
+    let error = result[0];
+    return fun(error);
   }
 }
 
@@ -5788,7 +5681,37 @@ function on_click(msg) {
 
 // build/dev/javascript/split_flap/split_flap.ffi.mjs
 function set_timeout(delay, cb) {
-  window.setTimeout(cb, delay);
+  return window.setTimeout(cb, delay);
+}
+function clear_timeout(id) {
+  window.clearTimeout(id);
+}
+
+// build/dev/javascript/split_flap/utils.mjs
+function find_next(loop$l, loop$current) {
+  while (true) {
+    let l = loop$l;
+    let current = loop$current;
+    if (l instanceof Empty) {
+      return new Error(void 0);
+    } else {
+      let $ = l.tail;
+      if ($ instanceof Empty) {
+        return new Error(void 0);
+      } else {
+        let h1 = l.head;
+        let h2 = $.head;
+        let rest = $.tail;
+        let $1 = isEqual(h1, current);
+        if ($1) {
+          return new Ok(h2);
+        } else {
+          loop$l = prepend(h2, rest);
+          loop$current = current;
+        }
+      }
+    }
+  }
 }
 
 // build/dev/javascript/split_flap/components/char.mjs
@@ -5847,10 +5770,10 @@ function curr_and_next_chars(model) {
   }
 }
 function css(ms) {
-  let _pipe = '\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  .split-flap {\n    /* TODO -webkit-font-smoothing */\n    position: relative;\n    width: 100%;\n    height: 100%;\n    aspect-ratio: 1/1.618; /* golden ratio ;) */\n    font-family: "Fragment Mono", monospace;\n    font-weight: bold;\n    font-size: 120cqw;\n    border-radius: 5cqw;\n    perspective: 600cqw;\n  }\n\n  .split-flap::selection {\n    background: white;\n    color: black;\n  }\n\n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 3.5cqw;\n    background: rgb(20, 20, 20);\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    z-index: 1;\n    background: rgb(40, 40, 40);\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n    z-index: 0;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw;\n    user-select: text;\n    height: 100%;\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n  }\n\n  @keyframes flip-top {\n    0% {\n      transform: rotateX(0deg);\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n    50%, 100% {\n      transform: rotateX(-90deg);\n      box-shadow: none;\n    }\n    \n  }\n\n  @keyframes flip-bottom {\n    0% {\n      transform: rotateX(90deg);\n      box-shadow: none;\n    }\n    100% {\n      transform: rotateX(0deg);\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n  }\n\n  .flap.flipping-top {\n    pointer-events: none;\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw 5cqw 0 0;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n    animation: <flip_duration>ms ease-in flip-top;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap.flipping-bottom {\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n    animation: <flip_duration>ms ease-in flip-bottom;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n  \n  .flap.top .flap-content {\n    top: 0;\n    height: 100%\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n  .flap.flipping-top .flap-content {\n    top: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
+  let _pipe = '\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  .split-flap {\n    /* TODO -webkit-font-smoothing */\n    position: relative;\n    width: 100%;\n    height: 100%;\n    aspect-ratio: 1/1.618; /* golden ratio ;) */\n    font-family: Fragment Mono, math, monospace;\n    font-weight: bold;\n    font-size: 120cqw;\n    border-radius: 5cqw;\n    perspective: 600cqw;\n  }\n\n  .split-flap::selection {\n    background: white;\n    color: black;\n  }\n\n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 3.5cqw;\n    background: rgb(20, 20, 20);\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    z-index: 1;\n    background: rgb(40, 40, 40);\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n    z-index: 0;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw;\n    user-select: text;\n    height: 100%;\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n  }\n\n  @keyframes flip-top {\n    0% {\n      transform: rotateX(0deg);\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n    50%, 100% {\n      transform: rotateX(-90deg);\n      box-shadow: none;\n    }\n    \n  }\n\n  @keyframes flip-bottom {\n    0% {\n      transform: rotateX(90deg);\n      box-shadow: none;\n    }\n    100% {\n      transform: rotateX(0deg);\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n  }\n\n  .flap.flipping-top {\n    pointer-events: none;\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw 5cqw 0 0;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n    animation: <flip_duration>ms ease-in flip-top;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap.flipping-bottom {\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n    animation: <flip_duration>ms ease-in flip-bottom;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n  \n  .flap.top .flap-content {\n    top: 0;\n    height: 100%\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n  .flap.flipping-top .flap-content {\n    top: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
   return replace(_pipe, "<flip_duration>", to_string(ms));
 }
-var default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789<>()/\\|%#_!?";
+var default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\u25B8()\u{1D122}\u{1D15F}\u{1D13D}|#_!?";
 function element4(char, chars, on_click2) {
   return element2(
     "split-flap-char",
@@ -5902,15 +5825,15 @@ function view(model) {
       "let_assert",
       FILEPATH,
       "components/char",
-      152,
+      154,
       "view",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 3456,
-        end: 3513,
-        pattern_start: 3467,
-        pattern_end: 3484
+        start: 3505,
+        end: 3562,
+        pattern_start: 3516,
+        pattern_end: 3533
       }
     );
   }
@@ -6012,12 +5935,13 @@ function update2(model, msg) {
           new Model(model.chars, model.dest, new Flipping()),
           from(
             (dispatch) => {
-              return set_timeout(
+              set_timeout(
                 flip_duration_ms + 10,
                 () => {
                   return dispatch(new FlipStarted());
                 }
               );
+              return void 0;
             }
           )
         ];
@@ -6029,39 +5953,40 @@ function update2(model, msg) {
     }
   } else if (msg instanceof FlipStarted) {
     let $ = pop_grapheme(model.chars);
-    let first3;
+    let first4;
     let rest;
     if ($ instanceof Ok) {
-      first3 = $[0][0];
+      first4 = $[0][0];
       rest = $[0][1];
     } else {
       throw makeError(
         "let_assert",
         FILEPATH,
         "components/char",
-        132,
+        134,
         "update",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 2932,
-          end: 2996,
-          pattern_start: 2943,
-          pattern_end: 2961
+          start: 2974,
+          end: 3038,
+          pattern_start: 2985,
+          pattern_end: 3003
         }
       );
     }
-    let next = rest + first3;
+    let next = rest + first4;
     return [
       new Model(next, model.dest, new Idle()),
       from(
         (dispatch) => {
-          return set_timeout(
+          set_timeout(
             idle_duration_ms,
             () => {
               return dispatch(new FlipEnded());
             }
           );
+          return void 0;
         }
       )
     ];
@@ -6075,12 +6000,13 @@ function update2(model, msg) {
           new Model(model.chars, model.dest, new Flipping()),
           from(
             (dispatch) => {
-              return set_timeout(
+              set_timeout(
                 flip_duration_ms + 10,
                 () => {
                   return dispatch(new FlipStarted());
                 }
               );
+              return void 0;
             }
           )
         ];
@@ -6600,16 +6526,16 @@ var Echo$Inspector = class {
   }
   #dict(map4) {
     let body = "dict.from_list([";
-    let first3 = true;
+    let first4 = true;
     let key_value_pairs = [];
     map4.forEach((value, key) => {
       key_value_pairs.push([key, value]);
     });
     key_value_pairs.sort();
     key_value_pairs.forEach(([key, value]) => {
-      if (!first3) body = body + ", ";
+      if (!first4) body = body + ", ";
       body = body + "#(" + this.inspect(key) + ", " + this.inspect(value) + ")";
-      first3 = false;
+      first4 = false;
     });
     return body + "])";
   }
@@ -6844,6 +6770,20 @@ function progress_button(model) {
   let len = model.cols - 2;
   let progress = model.progress;
   let auto_play = model.auto_play;
+  let empty_char = "\u25AB";
+  let filled_char = "\u25AA";
+  let _block;
+  let _pipe = empty_char;
+  _block = repeat(_pipe, len);
+  let empty3 = _block;
+  let _block$1;
+  let _pipe$1 = filled_char;
+  _block$1 = repeat(
+    _pipe$1,
+    globalThis.Math.trunc(progress * len / 100)
+  );
+  let filled = _block$1;
+  let pct = left(filled, empty3);
   return button(
     toList([
       class$("progress-bar-button"),
@@ -6854,13 +6794,6 @@ function progress_button(model) {
         toList([
           new Text2(
             (() => {
-              let _block;
-              let _pipe = repeat(
-                "%",
-                globalThis.Math.trunc(progress * len / 100)
-              );
-              _block = pad_end(_pipe, len, " ");
-              let pct = _block;
               if (auto_play) {
                 return pct;
               } else {
@@ -6871,7 +6804,7 @@ function progress_button(model) {
         ]),
         model.cols - 2,
         1,
-        new None()
+        new Some("ABCDEFGHIJKLMNOPQRSTUVWXYZ()" + empty_char + filled_char)
       )
     ])
   );
@@ -6887,9 +6820,9 @@ function view3(model) {
       div(
         toList([class$("progress-bar")]),
         toList([
-          element4("<", new Some("<"), new Some(new BackClicked())),
+          element4("\u25C2", new Some("\u25C2"), new Some(new BackClicked())),
           progress_button(model),
-          element4(">", new Some(">"), new Some(new ForwardClicked()))
+          element4("\u25B8", new Some("\u25B8"), new Some(new ForwardClicked()))
         ])
       )
     ])
@@ -6941,7 +6874,6 @@ function register3() {
 }
 
 // build/dev/javascript/split_flap/components/bingo.mjs
-var FILEPATH2 = "src/components/bingo.gleam";
 var Frame = class extends CustomType {
   constructor(lines, ms) {
     super();
@@ -6956,13 +6888,14 @@ var Scene = class extends CustomType {
     this.frames = frames;
   }
 };
-var Bingo = class extends CustomType {
-  constructor(scenes2, current, auto_play, columns) {
+var Model4 = class extends CustomType {
+  constructor(scenes2, columns, current, auto_play, timeout) {
     super();
     this.scenes = scenes2;
+    this.columns = columns;
     this.current = current;
     this.auto_play = auto_play;
-    this.columns = columns;
+    this.timeout = timeout;
   }
 };
 var ColumnsAttrChanged = class extends CustomType {
@@ -6971,15 +6904,19 @@ var ColumnsAttrChanged = class extends CustomType {
     this[0] = $0;
   }
 };
-var FrameStarted = class extends CustomType {
-};
-var FrameFinished = class extends CustomType {
-};
 var BackClicked2 = class extends CustomType {
 };
 var ForwardClicked2 = class extends CustomType {
 };
 var AutoPlayClicked2 = class extends CustomType {
+};
+var TimeoutStarted = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var TimeoutEnded = class extends CustomType {
 };
 function element7(cols) {
   return element2(
@@ -6988,157 +6925,94 @@ function element7(cols) {
     toList([])
   );
 }
-function next_frame_recursive(loop$frames, loop$current) {
-  while (true) {
-    let frames = loop$frames;
-    let current = loop$current;
-    if (frames instanceof Empty) {
-      return new Error(void 0);
-    } else {
-      let $ = frames.tail;
-      if ($ instanceof Empty) {
-        return new Error(void 0);
-      } else {
-        let head = frames.head;
-        let next = $.head;
-        let rest = $.tail;
-        let $1 = isEqual(head, current);
-        if ($1) {
-          return new Ok(next);
-        } else {
-          loop$frames = prepend(next, rest);
-          loop$current = current;
-        }
-      }
-    }
-  }
-}
-function next_frame(model) {
-  let _block;
-  let _pipe = model.scenes;
-  _block = flat_map(_pipe, (scene) => {
-    return scene.frames;
-  });
-  let all_frames = _block;
-  let $ = next_frame_recursive(all_frames, model.current);
-  if ($ instanceof Ok) {
-    let next = $[0];
-    return next;
-  } else {
-    let $1 = first(all_frames);
-    let next;
-    if ($1 instanceof Ok) {
-      next = $1[0];
-    } else {
-      throw makeError(
-        "let_assert",
-        FILEPATH2,
-        "components/bingo",
-        146,
-        "next_frame",
-        "Pattern match failed, no pattern matched the value.",
-        {
-          value: $1,
-          start: 3681,
-          end: 3725,
-          pattern_start: 3692,
-          pattern_end: 3700
+function initial_state(scenes2) {
+  return try$(
+    first(scenes2),
+    (first_scene) => {
+      return try$(
+        first(first_scene.frames),
+        (first_frame) => {
+          return new Ok([first_scene, first_frame]);
         }
       );
     }
-    return next;
+  );
+}
+function try_recover_initial_state(scenes2, state) {
+  return try_recover(state, (_) => {
+    return initial_state(scenes2);
+  });
+}
+function try_handle_error(model, next_state, fun) {
+  if (next_state instanceof Ok) {
+    let state = next_state[0];
+    return fun(state);
+  } else {
+    return [model, none2()];
   }
 }
-function previous_scene(scenes2, current) {
-  let _pipe = scenes2;
-  let _pipe$1 = window_by_2(_pipe);
-  let _pipe$2 = find_map(
-    _pipe$1,
-    (pair) => {
-      let a;
-      let b;
-      a = pair[0];
-      b = pair[1];
-      let $ = contains(b.frames, current);
-      if ($) {
-        return new Ok(a);
-      } else {
-        return new Error(void 0);
+function start_timeout(frame, timeout_id) {
+  if (timeout_id instanceof Some) {
+    return none2();
+  } else {
+    return from(
+      (dispatch) => {
+        let id = set_timeout(
+          frame.ms,
+          () => {
+            return dispatch(new TimeoutEnded());
+          }
+        );
+        return dispatch(new TimeoutStarted(id));
       }
-    }
-  );
-  return unwrap(
-    _pipe$2,
-    (() => {
-      let _block;
-      let _pipe$3 = scenes2;
-      let _pipe$4 = reverse(_pipe$3);
-      _block = first(_pipe$4);
-      let $ = _block;
-      let last;
-      if ($ instanceof Ok) {
-        last = $[0];
-      } else {
-        throw makeError(
-          "let_assert",
-          FILEPATH2,
-          "components/bingo",
-          178,
-          "previous_scene",
-          "Pattern match failed, no pattern matched the value.",
-          {
-            value: $,
-            start: 4318,
-            end: 4376,
-            pattern_start: 4329,
-            pattern_end: 4337
+    );
+  }
+}
+function find_next_state(scenes2, current) {
+  let scene = first3(current);
+  let frame = second(current);
+  let $ = find_next(scene.frames, frame);
+  if ($ instanceof Ok) {
+    let next_frame = $[0];
+    return new Ok([scene, next_frame]);
+  } else {
+    return try$(
+      find_next(scenes2, scene),
+      (next_scene) => {
+        return try$(
+          first(next_scene.frames),
+          (next_frame) => {
+            return new Ok([next_scene, next_frame]);
           }
         );
       }
-      return last;
-    })()
-  );
-}
-function next_scene(scenes2, current) {
-  let _pipe = scenes2;
-  let _pipe$1 = reverse(_pipe);
-  return previous_scene(_pipe$1, current);
+    );
+  }
 }
 function calculate_progress_scenes(model) {
   let _block;
   let _pipe = length(model.scenes);
   _block = max(_pipe, 1);
   let total_scenes = _block;
-  let current_scene_index = fold_until(
-    model.scenes,
-    1,
-    (acc, scene) => {
-      let $ = contains(scene.frames, model.current);
-      if ($) {
-        return new Stop(acc);
-      } else {
-        return new Continue(acc + 1);
-      }
-    }
-  );
-  return divideInt(current_scene_index * 100, total_scenes);
-}
-function get_scene_name(model) {
-  let _pipe = find2(
-    model.scenes,
-    (scene) => {
-      let _pipe2 = find2(
-        scene.frames,
-        (frame) => {
-          return isEqual(frame, model.current);
+  let $ = model.current;
+  if ($ instanceof Ok) {
+    let scene = $[0][0];
+    let idx = fold_until(
+      model.scenes,
+      1,
+      (acc, item) => {
+        let $1 = isEqual(item, scene);
+        if ($1) {
+          return new Stop(acc);
+        } else {
+          return new Continue(acc + 1);
         }
-      );
-      return is_ok(_pipe2);
-    }
-  );
-  return map3(_pipe, (scene) => {
-    return scene.name;
-  });
+      }
+    );
+    return divideInt(idx * 100, total_scenes);
+  } else {
+    return 0;
+  }
 }
 var linkedin_url = "https://www.linkedin.com/in/nicholaspozoulakis/";
 var github_url = "https://github.com/nicholaspoz";
@@ -7189,9 +7063,9 @@ function scenes(columns) {
   notes_2 = $2[1];
   notes_3 = $2[2];
   notes_4 = $2[3];
-  let linked_in = new Link(right2("LINKEDIN >"), linkedin_url);
-  let github = new Link(right2("GITHUB >"), github_url);
-  let email = new Link(right2("EMAIL >"), mailto);
+  let linked_in = new Link(right2("LINKEDIN \u25B8"), linkedin_url);
+  let github = new Link(right2("GITHUB \u25B8"), github_url);
+  let email = new Link(right2("EMAIL \u25B8"), mailto);
   let $3 = [
     center2("          WHAT"),
     center2("        A     "),
@@ -7347,214 +7221,204 @@ function scenes(columns) {
 }
 function init4(_) {
   let scenes$1 = scenes(28);
-  let $ = first(scenes$1);
-  let first_scene;
-  if ($ instanceof Ok) {
-    first_scene = $[0];
-  } else {
-    throw makeError(
-      "let_assert",
-      FILEPATH2,
-      "components/bingo",
-      61,
-      "init",
-      "Pattern match failed, no pattern matched the value.",
-      {
-        value: $,
-        start: 1347,
-        end: 1394,
-        pattern_start: 1358,
-        pattern_end: 1373
-      }
-    );
-  }
-  let $1 = first(first_scene.frames);
-  let first_frame;
-  if ($1 instanceof Ok) {
-    first_frame = $1[0];
-  } else {
-    throw makeError(
-      "let_assert",
-      FILEPATH2,
-      "components/bingo",
-      62,
-      "init",
-      "Pattern match failed, no pattern matched the value.",
-      {
-        value: $1,
-        start: 1397,
-        end: 1456,
-        pattern_start: 1408,
-        pattern_end: 1423
-      }
-    );
-  }
+  let state = initial_state(scenes$1);
   return [
-    new Bingo(scenes$1, first_frame, true, 28),
-    from((dispatch) => {
-      return dispatch(new FrameStarted());
-    })
+    new Model4(scenes$1, 28, state, true, new None()),
+    (() => {
+      if (state instanceof Ok) {
+        let frame = state[0][1];
+        return start_timeout(frame, new None());
+      } else {
+        return none2();
+      }
+    })()
   ];
 }
 function update5(model, msg) {
   if (msg instanceof ColumnsAttrChanged) {
     let columns = msg[0];
     return [
-      new Bingo(scenes(columns), model.current, model.auto_play, columns),
+      new Model4(
+        scenes(columns),
+        columns,
+        model.current,
+        model.auto_play,
+        model.timeout
+      ),
       none2()
     ];
-  } else if (msg instanceof FrameStarted) {
-    return [
-      model,
-      from(
-        (dispatch) => {
-          return set_timeout(
-            model.current.ms,
-            () => {
-              return dispatch(new FrameFinished());
+  } else if (msg instanceof BackClicked2) {
+    let next_state = try_recover_initial_state(
+      model.scenes,
+      try$(
+        model.current,
+        (_use0) => {
+          let scene;
+          scene = _use0[0];
+          return try$(
+            find_next(reverse(model.scenes), scene),
+            (prev_scene) => {
+              return try$(
+                first(prev_scene.frames),
+                (frame) => {
+                  return new Ok([prev_scene, frame]);
+                }
+              );
             }
           );
         }
       )
-    ];
-  } else if (msg instanceof FrameFinished) {
-    let _block;
-    let $ = get_scene_name(model);
-    if ($ instanceof Ok) {
-      let name = $[0];
-      _block = name;
-    } else {
-      let $12 = first(model.scenes);
-      let first_scene;
-      if ($12 instanceof Ok) {
-        first_scene = $12[0];
-      } else {
-        throw makeError(
-          "let_assert",
-          FILEPATH2,
-          "components/bingo",
-          90,
-          "update",
-          "Pattern match failed, no pattern matched the value.",
-          {
-            value: $12,
-            start: 2105,
-            end: 2158,
-            pattern_start: 2116,
-            pattern_end: 2131
+    );
+    return try_handle_error(
+      model,
+      next_state,
+      (next_state2) => {
+        return [
+          new Model4(
+            model.scenes,
+            model.columns,
+            new Ok(next_state2),
+            false,
+            model.timeout
+          ),
+          start_timeout(second(next_state2), model.timeout)
+        ];
+      }
+    );
+  } else if (msg instanceof ForwardClicked2) {
+    return try_handle_error(
+      model,
+      try_recover_initial_state(
+        model.scenes,
+        try$(
+          model.current,
+          (_use0) => {
+            let scene;
+            scene = _use0[0];
+            return try$(
+              find_next(model.scenes, scene),
+              (next_scene) => {
+                return try$(
+                  first(next_scene.frames),
+                  (frame) => {
+                    return new Ok([next_scene, frame]);
+                  }
+                );
+              }
+            );
+          }
+        )
+      ),
+      (next_state) => {
+        return [
+          new Model4(
+            model.scenes,
+            model.columns,
+            new Ok(next_state),
+            false,
+            model.timeout
+          ),
+          start_timeout(second(next_state), model.timeout)
+        ];
+      }
+    );
+  } else if (msg instanceof AutoPlayClicked2) {
+    let next_value = !model.auto_play;
+    return [
+      new Model4(
+        model.scenes,
+        model.columns,
+        model.current,
+        next_value,
+        new None()
+      ),
+      (() => {
+        let $ = model.timeout;
+        if ($ instanceof Some) {
+          let id = $[0];
+          clear_timeout(id);
+        } else {
+        }
+        return from(
+          (dispatch) => {
+            return dispatch(new TimeoutEnded());
           }
         );
-      }
-      _block = first_scene.name;
-    }
-    let curr_scene = _block;
-    let next_model = new Bingo(
-      model.scenes,
-      next_frame(model),
-      model.auto_play,
-      model.columns
-    );
-    let $1 = get_scene_name(next_model);
-    let next_scene$1;
-    if ($1 instanceof Ok) {
-      next_scene$1 = $1[0];
-    } else {
-      throw makeError(
-        "let_assert",
-        FILEPATH2,
-        "components/bingo",
-        96,
-        "update",
-        "Pattern match failed, no pattern matched the value.",
-        {
-          value: $1,
-          start: 2277,
-          end: 2331,
-          pattern_start: 2288,
-          pattern_end: 2302
-        }
-      );
-    }
-    let should_continue = model.auto_play || curr_scene === next_scene$1;
-    if (should_continue) {
-      return [
-        next_model,
-        from((dispatch) => {
-          return dispatch(new FrameStarted());
-        })
-      ];
-    } else {
-      return [model, none2()];
-    }
-  } else if (msg instanceof BackClicked2) {
-    let next = previous_scene(model.scenes, model.current);
-    let $ = first(next.frames);
-    let frame;
-    if ($ instanceof Ok) {
-      frame = $[0];
-    } else {
-      throw makeError(
-        "let_assert",
-        FILEPATH2,
-        "components/bingo",
-        115,
-        "update",
-        "Pattern match failed, no pattern matched the value.",
-        {
-          value: $,
-          start: 2837,
-          end: 2883,
-          pattern_start: 2848,
-          pattern_end: 2857
-        }
-      );
-    }
-    return [
-      new Bingo(model.scenes, frame, false, model.columns),
-      from((dispatch) => {
-        return dispatch(new FrameStarted());
-      })
+      })()
     ];
-  } else if (msg instanceof ForwardClicked2) {
-    let next = next_scene(model.scenes, model.current);
-    let $ = first(next.frames);
-    let frame;
-    if ($ instanceof Ok) {
-      frame = $[0];
-    } else {
-      throw makeError(
-        "let_assert",
-        FILEPATH2,
-        "components/bingo",
-        124,
-        "update",
-        "Pattern match failed, no pattern matched the value.",
-        {
-          value: $,
-          start: 3114,
-          end: 3160,
-          pattern_start: 3125,
-          pattern_end: 3134
-        }
-      );
-    }
+  } else if (msg instanceof TimeoutStarted) {
+    let id = msg[0];
     return [
-      new Bingo(model.scenes, frame, false, model.columns),
-      from((dispatch) => {
-        return dispatch(new FrameStarted());
-      })
+      new Model4(
+        model.scenes,
+        model.columns,
+        model.current,
+        model.auto_play,
+        new Some(id)
+      ),
+      none2()
     ];
   } else {
-    return [
-      new Bingo(model.scenes, model.current, !model.auto_play, model.columns),
-      from((dispatch) => {
-        return dispatch(new FrameFinished());
-      })
-    ];
+    let next_state = try_recover_initial_state(
+      model.scenes,
+      try$(
+        model.current,
+        (state) => {
+          return find_next_state(model.scenes, state);
+        }
+      )
+    );
+    let next_state$1 = try$(
+      next_state,
+      (state) => {
+        let _block;
+        let _pipe = model.current;
+        let _pipe$1 = map3(_pipe, first3);
+        let _pipe$2 = map3(
+          _pipe$1,
+          (scene) => {
+            return isEqual(scene, first3(state));
+          }
+        );
+        _block = unwrap(_pipe$2, false);
+        let is_same_scene = _block;
+        let $ = model.auto_play || is_same_scene;
+        if ($) {
+          return new Ok(state);
+        } else {
+          return new Error(void 0);
+        }
+      }
+    );
+    return try_handle_error(
+      model,
+      next_state$1,
+      (next_state2) => {
+        return [
+          new Model4(
+            model.scenes,
+            model.columns,
+            new Ok(next_state2),
+            model.auto_play,
+            new None()
+          ),
+          start_timeout(second(next_state2), new None())
+        ];
+      }
+    );
   }
 }
 var css4 = "\n  :host {\n    display: block;\n    container-type: inline-size;\n    height: 100%;\n    width: 100%;\n  }\n\n  .panel {\n    position: relative;\n    width: 100%;\n    height: 100%;\n    min-height: fit-content;\n    background: linear-gradient(\n      250deg,\n      rgb(40, 40, 40) 0%,\n      rgb(50, 50, 50) 25%,\n      rgb(40, 40, 40) 80%\n    );\n    padding: 2cqh 10cqw;\n    /* This is in px on purpose */\n    box-shadow: inset 0px 3px 10px 10px rgba(0, 0, 0, 0.25);\n\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-content: center;\n    overflow: scroll;\n  }\n\n  .matrix {\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-content: center;\n  }\n  \n  @container (aspect-ratio < 1) {\n    .panel {\n      padding: 5cqh 5cqw;\n    }\n  }\n  ";
 function view4(model) {
+  let _block;
+  let $ = model.current;
+  if ($ instanceof Ok) {
+    let frame = $[0][1];
+    _block = frame.lines;
+  } else {
+    _block = toList([]);
+  }
+  let lines = _block;
   return fragment2(
     toList([
       style2(toList([]), css4),
@@ -7564,12 +7428,7 @@ function view4(model) {
           div(
             toList([class$("matrix"), part("matrix")]),
             toList([
-              element5(
-                model.current.lines,
-                model.columns,
-                7,
-                new None()
-              ),
+              element5(lines, model.columns, 7, new None()),
               element6(
                 calculate_progress_scenes(model),
                 model.columns,
@@ -7645,13 +7504,13 @@ function register5() {
 }
 
 // build/dev/javascript/split_flap/split_flap.mjs
-var FILEPATH3 = "src/split_flap.gleam";
+var FILEPATH2 = "src/split_flap.gleam";
 function main() {
   let $ = register();
   if (!($ instanceof Ok)) {
     throw makeError(
       "let_assert",
-      FILEPATH3,
+      FILEPATH2,
       "split_flap",
       8,
       "main",
@@ -7663,7 +7522,7 @@ function main() {
   if (!($1 instanceof Ok)) {
     throw makeError(
       "let_assert",
-      FILEPATH3,
+      FILEPATH2,
       "split_flap",
       9,
       "main",
@@ -7675,7 +7534,7 @@ function main() {
   if (!($2 instanceof Ok)) {
     throw makeError(
       "let_assert",
-      FILEPATH3,
+      FILEPATH2,
       "split_flap",
       10,
       "main",
@@ -7687,7 +7546,7 @@ function main() {
   if (!($3 instanceof Ok)) {
     throw makeError(
       "let_assert",
-      FILEPATH3,
+      FILEPATH2,
       "split_flap",
       11,
       "main",
@@ -7699,7 +7558,7 @@ function main() {
   if (!($4 instanceof Ok)) {
     throw makeError(
       "let_assert",
-      FILEPATH3,
+      FILEPATH2,
       "split_flap",
       12,
       "main",

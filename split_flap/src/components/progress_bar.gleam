@@ -122,11 +122,11 @@ fn view(model: Model) -> Element(Msg) {
   element.fragment([
     html.style([], css(model.cols)),
     html.div([attribute.class("progress-bar")], [
-      sf_char.element("<", Some("<"), on_click: Some(BackClicked)),
+      sf_char.element("◂", Some("◂"), on_click: Some(BackClicked)),
 
       progress_button(model),
 
-      sf_char.element(">", Some(">"), on_click: Some(ForwardClicked)),
+      sf_char.element("▸", Some("▸"), on_click: Some(ForwardClicked)),
     ]),
   ])
 }
@@ -135,6 +135,11 @@ fn progress_button(model: Model) -> Element(Msg) {
   let len = model.cols - 2
   let progress = model.progress
   let auto_play = model.auto_play
+  let empty_char = "▫"
+  let filled_char = "▪"
+  let empty = empty_char |> string.repeat(len)
+  let filled = filled_char |> string.repeat(progress * len / 100)
+  let pct = display_fns.left(filled, against: empty)
 
   html.button(
     [
@@ -145,10 +150,6 @@ fn progress_button(model: Model) -> Element(Msg) {
       sf_display.element(
         [
           sf_display.Text(text: {
-            let pct =
-              string.repeat("%", progress * len / 100)
-              |> string.pad_end(len, " ")
-
             case auto_play {
               True -> pct
               False -> display_fns.center("(PAUSED)", against: pct)
@@ -157,7 +158,7 @@ fn progress_button(model: Model) -> Element(Msg) {
         ],
         cols: model.cols - 2,
         rows: 1,
-        chars: None,
+        chars: Some("ABCDEFGHIJKLMNOPQRSTUVWXYZ()" <> empty_char <> filled_char),
       ),
     ],
   )
