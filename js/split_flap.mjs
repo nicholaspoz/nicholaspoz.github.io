@@ -2580,11 +2580,11 @@ var Property = class extends CustomType {
   }
 };
 var Event2 = class extends CustomType {
-  constructor(kind, name, handler, include, prevent_default, stop_propagation, immediate, debounce, throttle) {
+  constructor(kind, name, handler2, include, prevent_default, stop_propagation, immediate, debounce, throttle) {
     super();
     this.kind = kind;
     this.name = name;
-    this.handler = handler;
+    this.handler = handler2;
     this.include = include;
     this.prevent_default = prevent_default;
     this.stop_propagation = stop_propagation;
@@ -2738,11 +2738,11 @@ function attribute(name, value) {
 }
 var property_kind = 1;
 var event_kind = 2;
-function event(name, handler, include, prevent_default, stop_propagation, immediate, debounce, throttle) {
+function event(name, handler2, include, prevent_default, stop_propagation, immediate, debounce, throttle) {
   return new Event2(
     event_kind,
     name,
-    handler,
+    handler2,
     include,
     prevent_default,
     stop_propagation,
@@ -3195,8 +3195,8 @@ function handle(events, path, name, event4) {
     path + separator_event + name
   );
   if ($ instanceof Ok) {
-    let handler = $[0];
-    return [events$1, run(event4, handler)];
+    let handler2 = $[0];
+    return [events$1, run(event4, handler2)];
   } else {
     return [events$1, new Error(toList([]))];
   }
@@ -3204,24 +3204,24 @@ function handle(events, path, name, event4) {
 function has_dispatched_events(events, path) {
   return matches(path, events.dispatched_paths);
 }
-function do_add_event(handlers, mapper, path, name, handler) {
+function do_add_event(handlers, mapper, path, name, handler2) {
   return insert2(
     handlers,
     event3(path, name),
     map2(
-      handler,
-      (handler2) => {
+      handler2,
+      (handler3) => {
         return new Handler(
-          handler2.prevent_default,
-          handler2.stop_propagation,
-          identity2(mapper)(handler2.message)
+          handler3.prevent_default,
+          handler3.stop_propagation,
+          identity2(mapper)(handler3.message)
         );
       }
     )
   );
 }
-function add_event(events, mapper, path, name, handler) {
-  let handlers = do_add_event(events.handlers, mapper, path, name, handler);
+function add_event(events, mapper, path, name, handler2) {
+  let handlers = do_add_event(events.handlers, mapper, path, name, handler2);
   return new Events(
     handlers,
     events.dispatched_paths,
@@ -3235,8 +3235,8 @@ function add_attributes(handlers, mapper, path, attributes) {
     (events, attribute3) => {
       if (attribute3 instanceof Event2) {
         let name = attribute3.name;
-        let handler = attribute3.handler;
-        return do_add_event(events, mapper, path, name, handler);
+        let handler2 = attribute3.handler;
+        return do_add_event(events, mapper, path, name, handler2);
       } else {
         return events;
       }
@@ -3594,9 +3594,9 @@ function diff_attributes(loop$controlled, loop$path, loop$mapper, loop$events, l
         let next = $;
         let new$1 = new$8.tail;
         let name = $.name;
-        let handler = $.handler;
+        let handler2 = $.handler;
         let added$1 = prepend(next, added);
-        let events$1 = add_event(events, mapper, path, name, handler);
+        let events$1 = add_event(events, mapper, path, name, handler2);
         loop$controlled = controlled;
         loop$path = path;
         loop$mapper = mapper;
@@ -3772,7 +3772,7 @@ function diff_attributes(loop$controlled, loop$path, loop$mapper, loop$events, l
           }
         } else if (prev instanceof Event2) {
           let name = next.name;
-          let handler = next.handler;
+          let handler2 = next.handler;
           let has_changes = prev.prevent_default.kind !== next.prevent_default.kind || prev.stop_propagation.kind !== next.stop_propagation.kind || prev.immediate !== next.immediate || prev.debounce !== next.debounce || prev.throttle !== next.throttle;
           let _block;
           if (has_changes) {
@@ -3781,7 +3781,7 @@ function diff_attributes(loop$controlled, loop$path, loop$mapper, loop$events, l
             _block = added;
           }
           let added$1 = _block;
-          let events$1 = add_event(events, mapper, path, name, handler);
+          let events$1 = add_event(events, mapper, path, name, handler2);
           loop$controlled = controlled;
           loop$path = path;
           loop$mapper = mapper;
@@ -3792,10 +3792,10 @@ function diff_attributes(loop$controlled, loop$path, loop$mapper, loop$events, l
           loop$removed = removed;
         } else {
           let name = next.name;
-          let handler = next.handler;
+          let handler2 = next.handler;
           let added$1 = prepend(next, added);
           let removed$1 = prepend(prev, removed);
-          let events$1 = add_event(events, mapper, path, name, handler);
+          let events$1 = add_event(events, mapper, path, name, handler2);
           loop$controlled = controlled;
           loop$path = path;
           loop$mapper = mapper;
@@ -3807,9 +3807,9 @@ function diff_attributes(loop$controlled, loop$path, loop$mapper, loop$events, l
         }
       } else if (next instanceof Event2) {
         let name = next.name;
-        let handler = next.handler;
+        let handler2 = next.handler;
         let added$1 = prepend(next, added);
-        let events$1 = add_event(events, mapper, path, name, handler);
+        let events$1 = add_event(events, mapper, path, name, handler2);
         loop$controlled = controlled;
         loop$path = path;
         loop$mapper = mapper;
@@ -4478,8 +4478,8 @@ var removeChild = (parent, child) => parent.removeChild(child);
 var getAttribute = (node, name) => node.getAttribute(name);
 var setAttribute = (node, name, value) => node.setAttribute(name, value);
 var removeAttribute = (node, name) => node.removeAttribute(name);
-var addEventListener = (node, name, handler, options) => node.addEventListener(name, handler, options);
-var removeEventListener = (node, name, handler) => node.removeEventListener(name, handler);
+var addEventListener = (node, name, handler2, options) => node.addEventListener(name, handler2, options);
+var removeEventListener = (node, name, handler2) => node.removeEventListener(name, handler2);
 var setInnerHtml = (node, innerHtml) => node.innerHTML = innerHtml;
 var setData = (node, data) => node.data = data;
 var meta = Symbol("lustre");
@@ -4843,8 +4843,8 @@ var iterate = (list4, callback) => {
 };
 var handleEvent = (event4) => {
   const { currentTarget, type } = event4;
-  const handler = currentTarget[meta].handlers.get(type);
-  handler(event4);
+  const handler2 = currentTarget[meta].handlers.get(type);
+  handler2(event4);
 };
 var createServerEvent = (event4, include = []) => {
   const data = {};
@@ -5140,10 +5140,10 @@ var Runtime = class {
       const [events, result] = handle(this.#events, path, name, event4);
       this.#events = events;
       if (result.isOk()) {
-        const handler = result[0];
-        if (handler.stop_propagation) event4.stopPropagation();
-        if (handler.prevent_default) event4.preventDefault();
-        this.dispatch(handler.message, false);
+        const handler2 = result[0];
+        if (handler2.stop_propagation) event4.stopPropagation();
+        if (handler2.prevent_default) event4.preventDefault();
+        this.dispatch(handler2.message, false);
       }
     });
     this.#vdom = virtualise(this.root);
@@ -5661,10 +5661,10 @@ function is_immediate_event(name) {
     return false;
   }
 }
-function on(name, handler) {
+function on(name, handler2) {
   return event(
     name,
-    map2(handler, (msg) => {
+    map2(handler2, (msg) => {
       return new Handler(false, false, msg);
     }),
     empty_list,
@@ -6632,6 +6632,22 @@ var Echo$Inspector = class {
   }
 };
 
+// build/dev/javascript/split_flap/components/bingo/model.mjs
+var Frame = class extends CustomType {
+  constructor(lines, ms) {
+    super();
+    this.lines = lines;
+    this.ms = ms;
+  }
+};
+var Scene = class extends CustomType {
+  constructor(name, frames) {
+    super();
+    this.name = name;
+    this.frames = frames;
+  }
+};
+
 // build/dev/javascript/split_flap/components/display_fns.mjs
 function center(text4, background) {
   let len = string_length(background);
@@ -6656,6 +6672,213 @@ function right(text4, background) {
   let text$1 = slice(text4, 0, bg_len);
   let text_len = string_length(text$1);
   return slice(background, 0, bg_len - text_len) + text$1;
+}
+
+// build/dev/javascript/split_flap/components/bingo/scenes.mjs
+var linkedin_url = "https://www.linkedin.com/in/nicholaspozoulakis/";
+var github_url = "https://github.com/nicholaspoz";
+var mailto = "mailto:nicholaspoz@gmail.com";
+function scenes(columns) {
+  let blank_line = repeat(" ", columns);
+  let left2 = (_capture) => {
+    return left(_capture, blank_line);
+  };
+  let center2 = (_capture) => {
+    return center(_capture, blank_line);
+  };
+  let right2 = (_capture) => {
+    return right(_capture, blank_line);
+  };
+  let $ = [
+    left2("NICK"),
+    left2("((POZOULAKIS))"),
+    center2("(DOT)"),
+    right2("BINGO")
+  ];
+  let nick;
+  let poz;
+  let dot;
+  let bingo;
+  nick = $[0];
+  poz = $[1];
+  dot = $[2];
+  bingo = $[3];
+  let $1 = [left2("FREELANCE"), left2("TECHNOLOGIST"), left2("CELLIST")];
+  let freelance;
+  let tech;
+  let cellist;
+  freelance = $1[0];
+  tech = $1[1];
+  cellist = $1[2];
+  let $2 = [
+    center2("  ___  |0    "),
+    center2(" |   | |   |0"),
+    center2(" | #0| |___| "),
+    center2("0|           ")
+  ];
+  let notes_1;
+  let notes_2;
+  let notes_3;
+  let notes_4;
+  notes_1 = $2[0];
+  notes_2 = $2[1];
+  notes_3 = $2[2];
+  notes_4 = $2[3];
+  let linked_in = new Link(right2("LINKEDIN \u25B8"), linkedin_url);
+  let github = new Link(right2("GITHUB \u25B8"), github_url);
+  let email = new Link(right2("EMAIL \u25B8"), mailto);
+  let $3 = [
+    center2("          WHAT"),
+    center2("        A     "),
+    center2("   TIME       "),
+    center2("TO            "),
+    center2("   BE         "),
+    center2("      ALIVE   "),
+    center2("            ? ")
+  ];
+  let what;
+  let a;
+  let time;
+  let to;
+  let be;
+  let alive;
+  let question;
+  what = $3[0];
+  a = $3[1];
+  time = $3[2];
+  to = $3[3];
+  be = $3[4];
+  alive = $3[5];
+  question = $3[6];
+  return toList([
+    new Scene(
+      "HOME",
+      toList([
+        new Frame(
+          toList([
+            new Text2(nick),
+            new Text2(""),
+            new Text2(""),
+            new Text2(""),
+            new Text2(""),
+            new Text2("")
+          ]),
+          1e3
+        ),
+        new Frame(
+          toList([
+            new Text2(nick),
+            new Text2(""),
+            new Text2(""),
+            new Text2(dot),
+            new Text2(""),
+            new Text2(""),
+            new Text2("")
+          ]),
+          1e3
+        ),
+        new Frame(
+          toList([
+            new Text2(nick),
+            new Text2(""),
+            new Text2(""),
+            new Text2(dot),
+            new Text2(""),
+            new Text2(""),
+            new Text2(bingo)
+          ]),
+          1200
+        ),
+        new Frame(
+          toList([
+            new Text2(nick),
+            new Text2(poz),
+            new Text2(""),
+            new Text2(dot),
+            new Text2(""),
+            new Text2(""),
+            new Text2(bingo)
+          ]),
+          7e3
+        )
+      ])
+    ),
+    new Scene(
+      "TECH",
+      toList([
+        new Frame(
+          toList([
+            new Text2(freelance),
+            new Text2(tech),
+            new Text2(""),
+            new Text2(""),
+            linked_in,
+            github,
+            email
+          ]),
+          8e3
+        )
+      ])
+    ),
+    new Scene(
+      "MUSIC",
+      toList([
+        new Frame(
+          toList([
+            new Text2(freelance),
+            new Text2(cellist),
+            new Text2(""),
+            new Text2(""),
+            new Text2(""),
+            new Text2(""),
+            email
+          ]),
+          1e3
+        ),
+        new Frame(
+          toList([
+            new Text2(freelance),
+            new Text2(cellist),
+            new Text2(notes_1),
+            new Text2(notes_2),
+            new Text2(notes_3),
+            new Text2(notes_4),
+            email
+          ]),
+          7e3
+        )
+      ])
+    ),
+    new Scene(
+      "!",
+      toList([
+        new Frame(
+          toList([
+            new Text2(what),
+            new Text2(a),
+            new Text2(time),
+            new Text2(to),
+            new Text2(be),
+            new Text2(alive),
+            new Text2("")
+          ]),
+          2e3
+        ),
+        new Frame(
+          toList([
+            new Text2(what),
+            new Text2(a),
+            new Text2(time),
+            new Text2(to),
+            new Text2(be),
+            new Text2(alive),
+            new Text2(question)
+          ]),
+          4e3
+        )
+      ])
+    )
+  ]);
 }
 
 // build/dev/javascript/split_flap/components/progress_bar.mjs
@@ -6874,20 +7097,6 @@ function register3() {
 }
 
 // build/dev/javascript/split_flap/components/bingo.mjs
-var Frame = class extends CustomType {
-  constructor(lines, ms) {
-    super();
-    this.lines = lines;
-    this.ms = ms;
-  }
-};
-var Scene = class extends CustomType {
-  constructor(name, frames) {
-    super();
-    this.name = name;
-    this.frames = frames;
-  }
-};
 var Model4 = class extends CustomType {
   constructor(scenes2, columns, current, auto_play, timeout) {
     super();
@@ -6938,15 +7147,30 @@ function initial_state(scenes2) {
     }
   );
 }
-function try_recover_initial_state(scenes2, state) {
-  return try_recover(state, (_) => {
-    return initial_state(scenes2);
-  });
-}
-function try_handle_error(model, next_state, fun) {
-  if (next_state instanceof Ok) {
-    let state = next_state[0];
-    return fun(state);
+function handler(model, state, predicate, fun) {
+  let next_state = try_recover(
+    state,
+    (_) => {
+      return initial_state(model.scenes);
+    }
+  );
+  let _block;
+  if (predicate instanceof Some && next_state instanceof Ok) {
+    let predicate$1 = predicate[0];
+    let next_state$12 = next_state[0];
+    let $ = predicate$1(next_state$12);
+    if ($) {
+      _block = new Ok(next_state$12);
+    } else {
+      _block = new Error(void 0);
+    }
+  } else {
+    _block = next_state;
+  }
+  let next_state$1 = _block;
+  if (next_state$1 instanceof Ok) {
+    let state$1 = next_state$1[0];
+    return fun(state$1);
   } else {
     return [model, none2()];
   }
@@ -6967,6 +7191,21 @@ function start_timeout(frame, timeout_id) {
       }
     );
   }
+}
+function init4(_) {
+  let scenes$1 = scenes(28);
+  let state = initial_state(scenes$1);
+  return [
+    new Model4(scenes$1, 28, state, true, new None()),
+    (() => {
+      if (state instanceof Ok) {
+        let frame = state[0][1];
+        return start_timeout(frame, new None());
+      } else {
+        return none2();
+      }
+    })()
+  ];
 }
 function find_next_state(scenes2, current) {
   let scene = first3(current);
@@ -6989,251 +7228,6 @@ function find_next_state(scenes2, current) {
     );
   }
 }
-function calculate_progress_scenes(model) {
-  let _block;
-  let _pipe = length(model.scenes);
-  _block = max(_pipe, 1);
-  let total_scenes = _block;
-  let $ = model.current;
-  if ($ instanceof Ok) {
-    let scene = $[0][0];
-    let idx = fold_until(
-      model.scenes,
-      1,
-      (acc, item) => {
-        let $1 = isEqual(item, scene);
-        if ($1) {
-          return new Stop(acc);
-        } else {
-          return new Continue(acc + 1);
-        }
-      }
-    );
-    return divideInt(idx * 100, total_scenes);
-  } else {
-    return 0;
-  }
-}
-var linkedin_url = "https://www.linkedin.com/in/nicholaspozoulakis/";
-var github_url = "https://github.com/nicholaspoz";
-var mailto = "mailto:nicholaspoz@gmail.com";
-function scenes(columns) {
-  let blank_line = repeat(" ", columns);
-  let left2 = (_capture) => {
-    return left(_capture, blank_line);
-  };
-  let center2 = (_capture) => {
-    return center(_capture, blank_line);
-  };
-  let right2 = (_capture) => {
-    return right(_capture, blank_line);
-  };
-  let $ = [
-    left2("NICK"),
-    left2("((POZOULAKIS))"),
-    center2("(DOT)"),
-    right2("BINGO")
-  ];
-  let nick;
-  let poz;
-  let dot;
-  let bingo;
-  nick = $[0];
-  poz = $[1];
-  dot = $[2];
-  bingo = $[3];
-  let $1 = [left2("FREELANCE"), left2("TECHNOLOGIST"), left2("CELLIST")];
-  let freelance;
-  let tech;
-  let cellist;
-  freelance = $1[0];
-  tech = $1[1];
-  cellist = $1[2];
-  let $2 = [
-    center2("  ___  |0    "),
-    center2(" |   | |   |0"),
-    center2(" | #0| |___| "),
-    center2("0|           ")
-  ];
-  let notes_1;
-  let notes_2;
-  let notes_3;
-  let notes_4;
-  notes_1 = $2[0];
-  notes_2 = $2[1];
-  notes_3 = $2[2];
-  notes_4 = $2[3];
-  let linked_in = new Link(right2("LINKEDIN \u25B8"), linkedin_url);
-  let github = new Link(right2("GITHUB \u25B8"), github_url);
-  let email = new Link(right2("EMAIL \u25B8"), mailto);
-  let $3 = [
-    center2("          WHAT"),
-    center2("        A     "),
-    center2("   TIME       "),
-    center2("TO            "),
-    center2("   BE         "),
-    center2("      ALIVE   "),
-    center2("            ? ")
-  ];
-  let what;
-  let a;
-  let time;
-  let to;
-  let be;
-  let alive;
-  let question;
-  what = $3[0];
-  a = $3[1];
-  time = $3[2];
-  to = $3[3];
-  be = $3[4];
-  alive = $3[5];
-  question = $3[6];
-  return toList([
-    new Scene(
-      "HOME",
-      toList([
-        new Frame(
-          toList([
-            new Text2(nick),
-            new Text2(""),
-            new Text2(""),
-            new Text2(""),
-            new Text2(""),
-            new Text2("")
-          ]),
-          1e3
-        ),
-        new Frame(
-          toList([
-            new Text2(nick),
-            new Text2(""),
-            new Text2(""),
-            new Text2(dot),
-            new Text2(""),
-            new Text2(""),
-            new Text2("")
-          ]),
-          1e3
-        ),
-        new Frame(
-          toList([
-            new Text2(nick),
-            new Text2(""),
-            new Text2(""),
-            new Text2(dot),
-            new Text2(""),
-            new Text2(""),
-            new Text2(bingo)
-          ]),
-          1200
-        ),
-        new Frame(
-          toList([
-            new Text2(nick),
-            new Text2(poz),
-            new Text2(""),
-            new Text2(dot),
-            new Text2(""),
-            new Text2(""),
-            new Text2(bingo)
-          ]),
-          7e3
-        )
-      ])
-    ),
-    new Scene(
-      "TECH",
-      toList([
-        new Frame(
-          toList([
-            new Text2(freelance),
-            new Text2(tech),
-            new Text2(""),
-            new Text2(""),
-            linked_in,
-            github,
-            email
-          ]),
-          8e3
-        )
-      ])
-    ),
-    new Scene(
-      "MUSIC",
-      toList([
-        new Frame(
-          toList([
-            new Text2(freelance),
-            new Text2(cellist),
-            new Text2(""),
-            new Text2(""),
-            new Text2(""),
-            new Text2(""),
-            email
-          ]),
-          1e3
-        ),
-        new Frame(
-          toList([
-            new Text2(freelance),
-            new Text2(cellist),
-            new Text2(notes_1),
-            new Text2(notes_2),
-            new Text2(notes_3),
-            new Text2(notes_4),
-            email
-          ]),
-          7e3
-        )
-      ])
-    ),
-    new Scene(
-      "!",
-      toList([
-        new Frame(
-          toList([
-            new Text2(what),
-            new Text2(a),
-            new Text2(time),
-            new Text2(to),
-            new Text2(be),
-            new Text2(alive),
-            new Text2("")
-          ]),
-          2e3
-        ),
-        new Frame(
-          toList([
-            new Text2(what),
-            new Text2(a),
-            new Text2(time),
-            new Text2(to),
-            new Text2(be),
-            new Text2(alive),
-            new Text2(question)
-          ]),
-          4e3
-        )
-      ])
-    )
-  ]);
-}
-function init4(_) {
-  let scenes$1 = scenes(28);
-  let state = initial_state(scenes$1);
-  return [
-    new Model4(scenes$1, 28, state, true, new None()),
-    (() => {
-      if (state instanceof Ok) {
-        let frame = state[0][1];
-        return start_timeout(frame, new None());
-      } else {
-        return none2();
-      }
-    })()
-  ];
-}
 function update5(model, msg) {
   if (msg instanceof ColumnsAttrChanged) {
     let columns = msg[0];
@@ -7248,8 +7242,8 @@ function update5(model, msg) {
       none2()
     ];
   } else if (msg instanceof BackClicked2) {
-    let next_state = try_recover_initial_state(
-      model.scenes,
+    return handler(
+      model,
       try$(
         model.current,
         (_use0) => {
@@ -7267,48 +7261,43 @@ function update5(model, msg) {
             }
           );
         }
-      )
-    );
-    return try_handle_error(
-      model,
-      next_state,
-      (next_state2) => {
+      ),
+      new None(),
+      (next_state) => {
         return [
           new Model4(
             model.scenes,
             model.columns,
-            new Ok(next_state2),
+            new Ok(next_state),
             false,
             model.timeout
           ),
-          start_timeout(second(next_state2), model.timeout)
+          start_timeout(second(next_state), model.timeout)
         ];
       }
     );
   } else if (msg instanceof ForwardClicked2) {
-    return try_handle_error(
+    return handler(
       model,
-      try_recover_initial_state(
-        model.scenes,
-        try$(
-          model.current,
-          (_use0) => {
-            let scene;
-            scene = _use0[0];
-            return try$(
-              find_next(model.scenes, scene),
-              (next_scene) => {
-                return try$(
-                  first(next_scene.frames),
-                  (frame) => {
-                    return new Ok([next_scene, frame]);
-                  }
-                );
-              }
-            );
-          }
-        )
+      try$(
+        model.current,
+        (_use0) => {
+          let scene;
+          scene = _use0[0];
+          return try$(
+            find_next(model.scenes, scene),
+            (next_scene) => {
+              return try$(
+                first(next_scene.frames),
+                (frame) => {
+                  return new Ok([next_scene, frame]);
+                }
+              );
+            }
+          );
+        }
       ),
+      new None(),
       (next_state) => {
         return [
           new Model4(
@@ -7359,53 +7348,68 @@ function update5(model, msg) {
       none2()
     ];
   } else {
-    let next_state = try_recover_initial_state(
-      model.scenes,
+    return handler(
+      model,
       try$(
         model.current,
         (state) => {
           return find_next_state(model.scenes, state);
         }
-      )
-    );
-    let next_state$1 = try$(
-      next_state,
-      (state) => {
-        let _block;
-        let _pipe = model.current;
-        let _pipe$1 = map3(_pipe, first3);
-        let _pipe$2 = map3(
-          _pipe$1,
-          (scene) => {
-            return isEqual(scene, first3(state));
-          }
-        );
-        _block = unwrap(_pipe$2, false);
-        let is_same_scene = _block;
-        let $ = model.auto_play || is_same_scene;
-        if ($) {
-          return new Ok(state);
-        } else {
-          return new Error(void 0);
+      ),
+      new Some(
+        (state) => {
+          let _block;
+          let _pipe = model.current;
+          let _pipe$1 = map3(_pipe, first3);
+          let _pipe$2 = map3(
+            _pipe$1,
+            (scene) => {
+              return isEqual(scene, first3(state));
+            }
+          );
+          _block = unwrap(_pipe$2, false);
+          let is_same_scene = _block;
+          return model.auto_play || is_same_scene;
         }
-      }
-    );
-    return try_handle_error(
-      model,
-      next_state$1,
-      (next_state2) => {
+      ),
+      (state) => {
         return [
           new Model4(
             model.scenes,
             model.columns,
-            new Ok(next_state2),
+            new Ok(state),
             model.auto_play,
-            new None()
+            model.timeout
           ),
-          start_timeout(second(next_state2), new None())
+          start_timeout(second(state), new None())
         ];
       }
     );
+  }
+}
+function calculate_progress_scenes(model) {
+  let _block;
+  let _pipe = length(model.scenes);
+  _block = max(_pipe, 1);
+  let total_scenes = _block;
+  let $ = model.current;
+  if ($ instanceof Ok) {
+    let scene = $[0][0];
+    let idx = fold_until(
+      model.scenes,
+      1,
+      (acc, item) => {
+        let $1 = isEqual(item, scene);
+        if ($1) {
+          return new Stop(acc);
+        } else {
+          return new Continue(acc + 1);
+        }
+      }
+    );
+    return divideInt(idx * 100, total_scenes);
+  } else {
+    return 0;
   }
 }
 var css4 = "\n  :host {\n    display: block;\n    container-type: inline-size;\n    height: 100%;\n    width: 100%;\n  }\n\n  .panel {\n    position: relative;\n    width: 100%;\n    height: 100%;\n    min-height: fit-content;\n    background: linear-gradient(\n      250deg,\n      rgb(40, 40, 40) 0%,\n      rgb(50, 50, 50) 25%,\n      rgb(40, 40, 40) 80%\n    );\n    padding: 2cqh 10cqw;\n    /* This is in px on purpose */\n    box-shadow: inset 0px 3px 10px 10px rgba(0, 0, 0, 0.25);\n\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-content: center;\n    overflow: scroll;\n  }\n\n  .matrix {\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-content: center;\n  }\n  \n  @container (aspect-ratio < 1) {\n    .panel {\n      padding: 5cqh 5cqw;\n    }\n  }\n  ";
