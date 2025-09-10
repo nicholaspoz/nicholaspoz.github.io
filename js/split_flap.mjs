@@ -390,6 +390,24 @@ function makeError(variant, file, module, line, fn, message, extra) {
   return error;
 }
 
+// build/dev/javascript/gleam_stdlib/gleam/order.mjs
+var Lt = class extends CustomType {
+};
+var Eq = class extends CustomType {
+};
+var Gt = class extends CustomType {
+};
+
+// build/dev/javascript/gleam_stdlib/gleam/option.mjs
+var Some = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var None = class extends CustomType {
+};
+
 // build/dev/javascript/gleam_stdlib/dict.mjs
 var referenceMap = /* @__PURE__ */ new WeakMap();
 var tempDataView = /* @__PURE__ */ new DataView(
@@ -1094,33 +1112,6 @@ var Dict = class _Dict {
 };
 var unequalDictSymbol = /* @__PURE__ */ Symbol();
 
-// build/dev/javascript/gleam_stdlib/gleam/bool.mjs
-function to_string(bool4) {
-  if (bool4) {
-    return "True";
-  } else {
-    return "False";
-  }
-}
-
-// build/dev/javascript/gleam_stdlib/gleam/order.mjs
-var Lt = class extends CustomType {
-};
-var Eq = class extends CustomType {
-};
-var Gt = class extends CustomType {
-};
-
-// build/dev/javascript/gleam_stdlib/gleam/option.mjs
-var Some = class extends CustomType {
-  constructor($0) {
-    super();
-    this[0] = $0;
-  }
-};
-var None = class extends CustomType {
-};
-
 // build/dev/javascript/gleam_stdlib/gleam/dict.mjs
 function do_has_key(key, dict3) {
   return !isEqual(map_get(dict3, key), new Error(void 0));
@@ -1312,20 +1303,20 @@ function take(list4, n) {
 }
 function append_loop(loop$first, loop$second) {
   while (true) {
-    let first4 = loop$first;
-    let second2 = loop$second;
-    if (first4 instanceof Empty) {
-      return second2;
+    let first3 = loop$first;
+    let second = loop$second;
+    if (first3 instanceof Empty) {
+      return second;
     } else {
-      let first$1 = first4.head;
-      let rest$1 = first4.tail;
+      let first$1 = first3.head;
+      let rest$1 = first3.tail;
       loop$first = rest$1;
-      loop$second = prepend(first$1, second2);
+      loop$second = prepend(first$1, second);
     }
   }
 }
-function append(first4, second2) {
-  return append_loop(reverse(first4), second2);
+function append(first3, second) {
+  return append_loop(reverse(first3), second);
 }
 function fold(loop$list, loop$initial, loop$fun) {
   while (true) {
@@ -1774,8 +1765,8 @@ function slice(string5, idx, len) {
     }
   }
 }
-function append2(first4, second2) {
-  return first4 + second2;
+function append2(first3, second) {
+  return first3 + second;
 }
 function concat_loop(loop$strings, loop$accumulator) {
   while (true) {
@@ -1932,10 +1923,10 @@ function run_decoders(loop$data, loop$failure, loop$decoders) {
     }
   }
 }
-function one_of(first4, alternatives) {
+function one_of(first3, alternatives) {
   return new Decoder(
     (dynamic_data) => {
-      let $ = first4.function(dynamic_data);
+      let $ = first3.function(dynamic_data);
       let layer;
       let errors;
       layer = $;
@@ -2000,7 +1991,7 @@ function push_path(layer, path) {
     toList([
       (() => {
         let _pipe = int2;
-        return map2(_pipe, to_string2);
+        return map2(_pipe, to_string);
       })()
     ])
   );
@@ -2118,7 +2109,7 @@ function parse_int(value) {
     return new Error(Nil);
   }
 }
-function to_string2(term) {
+function to_string(term) {
   return term.toString();
 }
 function string_replace(string5, target2, substitute) {
@@ -2155,15 +2146,15 @@ function graphemes_iterator(string5) {
   }
 }
 function pop_grapheme(string5) {
-  let first4;
+  let first3;
   const iterator = graphemes_iterator(string5);
   if (iterator) {
-    first4 = iterator.next().value?.segment;
+    first3 = iterator.next().value?.segment;
   } else {
-    first4 = string5.match(/./su)?.[0];
+    first3 = string5.match(/./su)?.[0];
   }
-  if (first4) {
-    return new Ok([first4, string5.slice(first4.length)]);
+  if (first3) {
+    return new Ok([first3, string5.slice(first3.length)]);
   } else {
     return new Error(Nil);
   }
@@ -2333,27 +2324,7 @@ function max(a, b) {
   }
 }
 
-// build/dev/javascript/gleam_stdlib/gleam/pair.mjs
-function first3(pair) {
-  let a;
-  a = pair[0];
-  return a;
-}
-function second(pair) {
-  let a;
-  a = pair[1];
-  return a;
-}
-
 // build/dev/javascript/gleam_stdlib/gleam/result.mjs
-function map3(result, fun) {
-  if (result instanceof Ok) {
-    let x = result[0];
-    return new Ok(fun(x));
-  } else {
-    return result;
-  }
-}
 function map_error(result, fun) {
   if (result instanceof Ok) {
     return result;
@@ -2370,20 +2341,18 @@ function try$(result, fun) {
     return result;
   }
 }
-function unwrap(result, default$) {
-  if (result instanceof Ok) {
-    let v = result[0];
-    return v;
+function or(first3, second) {
+  if (first3 instanceof Ok) {
+    return first3;
   } else {
-    return default$;
+    return second;
   }
 }
-function try_recover(result, fun) {
-  if (result instanceof Ok) {
-    return result;
+function lazy_or(first3, second) {
+  if (first3 instanceof Ok) {
+    return first3;
   } else {
-    let error = result[0];
-    return fun(error);
+    return second();
   }
 }
 
@@ -2525,7 +2494,7 @@ function do_parse(json2, decoder) {
 function parse(json2, decoder) {
   return do_parse(json2, decoder);
 }
-function to_string3(json2) {
+function to_string2(json2) {
   return json_to_string(json2);
 }
 function string3(input) {
@@ -2589,11 +2558,11 @@ var Property = class extends CustomType {
   }
 };
 var Event2 = class extends CustomType {
-  constructor(kind, name, handler2, include, prevent_default, stop_propagation, immediate, debounce, throttle) {
+  constructor(kind, name, handler, include, prevent_default, stop_propagation, immediate, debounce, throttle) {
     super();
     this.kind = kind;
     this.name = name;
-    this.handler = handler2;
+    this.handler = handler;
     this.include = include;
     this.prevent_default = prevent_default;
     this.stop_propagation = stop_propagation;
@@ -2747,11 +2716,11 @@ function attribute(name, value) {
 }
 var property_kind = 1;
 var event_kind = 2;
-function event(name, handler2, include, prevent_default, stop_propagation, immediate, debounce, throttle) {
+function event(name, handler, include, prevent_default, stop_propagation, immediate, debounce, throttle) {
   return new Event2(
     event_kind,
     name,
-    handler2,
+    handler,
     include,
     prevent_default,
     stop_propagation,
@@ -2913,19 +2882,19 @@ function do_to_string(loop$path, loop$acc) {
       loop$path = parent;
       loop$acc = prepend(
         separator_element,
-        prepend(to_string2(index4), acc)
+        prepend(to_string(index4), acc)
       );
     }
   }
 }
-function to_string4(path) {
+function to_string3(path) {
   return do_to_string(path, toList([]));
 }
 function matches(path, candidates) {
   if (candidates instanceof Empty) {
     return false;
   } else {
-    return do_matches(to_string4(path), candidates);
+    return do_matches(to_string3(path), candidates);
   }
 }
 var separator_event = "\n";
@@ -3204,8 +3173,8 @@ function handle(events, path, name, event4) {
     path + separator_event + name
   );
   if ($ instanceof Ok) {
-    let handler2 = $[0];
-    return [events$1, run(event4, handler2)];
+    let handler = $[0];
+    return [events$1, run(event4, handler)];
   } else {
     return [events$1, new Error(toList([]))];
   }
@@ -3213,24 +3182,24 @@ function handle(events, path, name, event4) {
 function has_dispatched_events(events, path) {
   return matches(path, events.dispatched_paths);
 }
-function do_add_event(handlers, mapper, path, name, handler2) {
+function do_add_event(handlers, mapper, path, name, handler) {
   return insert2(
     handlers,
     event3(path, name),
     map2(
-      handler2,
-      (handler3) => {
+      handler,
+      (handler2) => {
         return new Handler(
-          handler3.prevent_default,
-          handler3.stop_propagation,
-          identity2(mapper)(handler3.message)
+          handler2.prevent_default,
+          handler2.stop_propagation,
+          identity2(mapper)(handler2.message)
         );
       }
     )
   );
 }
-function add_event(events, mapper, path, name, handler2) {
-  let handlers = do_add_event(events.handlers, mapper, path, name, handler2);
+function add_event(events, mapper, path, name, handler) {
+  let handlers = do_add_event(events.handlers, mapper, path, name, handler);
   return new Events(
     handlers,
     events.dispatched_paths,
@@ -3244,8 +3213,8 @@ function add_attributes(handlers, mapper, path, attributes) {
     (events, attribute3) => {
       if (attribute3 instanceof Event2) {
         let name = attribute3.name;
-        let handler2 = attribute3.handler;
-        return do_add_event(events, mapper, path, name, handler2);
+        let handler = attribute3.handler;
+        return do_add_event(events, mapper, path, name, handler);
       } else {
         return events;
       }
@@ -3603,9 +3572,9 @@ function diff_attributes(loop$controlled, loop$path, loop$mapper, loop$events, l
         let next = $;
         let new$1 = new$8.tail;
         let name = $.name;
-        let handler2 = $.handler;
+        let handler = $.handler;
         let added$1 = prepend(next, added);
-        let events$1 = add_event(events, mapper, path, name, handler2);
+        let events$1 = add_event(events, mapper, path, name, handler);
         loop$controlled = controlled;
         loop$path = path;
         loop$mapper = mapper;
@@ -3781,7 +3750,7 @@ function diff_attributes(loop$controlled, loop$path, loop$mapper, loop$events, l
           }
         } else if (prev instanceof Event2) {
           let name = next.name;
-          let handler2 = next.handler;
+          let handler = next.handler;
           let has_changes = prev.prevent_default.kind !== next.prevent_default.kind || prev.stop_propagation.kind !== next.stop_propagation.kind || prev.immediate !== next.immediate || prev.debounce !== next.debounce || prev.throttle !== next.throttle;
           let _block;
           if (has_changes) {
@@ -3790,7 +3759,7 @@ function diff_attributes(loop$controlled, loop$path, loop$mapper, loop$events, l
             _block = added;
           }
           let added$1 = _block;
-          let events$1 = add_event(events, mapper, path, name, handler2);
+          let events$1 = add_event(events, mapper, path, name, handler);
           loop$controlled = controlled;
           loop$path = path;
           loop$mapper = mapper;
@@ -3801,10 +3770,10 @@ function diff_attributes(loop$controlled, loop$path, loop$mapper, loop$events, l
           loop$removed = removed;
         } else {
           let name = next.name;
-          let handler2 = next.handler;
+          let handler = next.handler;
           let added$1 = prepend(next, added);
           let removed$1 = prepend(prev, removed);
-          let events$1 = add_event(events, mapper, path, name, handler2);
+          let events$1 = add_event(events, mapper, path, name, handler);
           loop$controlled = controlled;
           loop$path = path;
           loop$mapper = mapper;
@@ -3816,9 +3785,9 @@ function diff_attributes(loop$controlled, loop$path, loop$mapper, loop$events, l
         }
       } else if (next instanceof Event2) {
         let name = next.name;
-        let handler2 = next.handler;
+        let handler = next.handler;
         let added$1 = prepend(next, added);
-        let events$1 = add_event(events, mapper, path, name, handler2);
+        let events$1 = add_event(events, mapper, path, name, handler);
         loop$controlled = controlled;
         loop$path = path;
         loop$mapper = mapper;
@@ -4487,8 +4456,8 @@ var removeChild = (parent, child) => parent.removeChild(child);
 var getAttribute = (node, name) => node.getAttribute(name);
 var setAttribute = (node, name, value) => node.setAttribute(name, value);
 var removeAttribute = (node, name) => node.removeAttribute(name);
-var addEventListener = (node, name, handler2, options) => node.addEventListener(name, handler2, options);
-var removeEventListener = (node, name, handler2) => node.removeEventListener(name, handler2);
+var addEventListener = (node, name, handler, options) => node.addEventListener(name, handler, options);
+var removeEventListener = (node, name, handler) => node.removeEventListener(name, handler);
 var setInnerHtml = (node, innerHtml) => node.innerHTML = innerHtml;
 var setData = (node, data) => node.data = data;
 var meta = Symbol("lustre");
@@ -4852,8 +4821,8 @@ var iterate = (list4, callback) => {
 };
 var handleEvent = (event4) => {
   const { currentTarget, type } = event4;
-  const handler2 = currentTarget[meta].handlers.get(type);
-  handler2(event4);
+  const handler = currentTarget[meta].handlers.get(type);
+  handler(event4);
 };
 var createServerEvent = (event4, include = []) => {
   const data = {};
@@ -5149,10 +5118,10 @@ var Runtime = class {
       const [events, result] = handle(this.#events, path, name, event4);
       this.#events = events;
       if (result.isOk()) {
-        const handler2 = result[0];
-        if (handler2.stop_propagation) event4.stopPropagation();
-        if (handler2.prevent_default) event4.preventDefault();
-        this.dispatch(handler2.message, false);
+        const handler = result[0];
+        if (handler.stop_propagation) event4.stopPropagation();
+        if (handler.prevent_default) event4.preventDefault();
+        this.dispatch(handler.message, false);
       }
     });
     this.#vdom = virtualise(this.root);
@@ -5670,10 +5639,10 @@ function is_immediate_event(name) {
     return false;
   }
 }
-function on(name, handler2) {
+function on(name, handler) {
   return event(
     name,
-    map2(handler2, (msg) => {
+    map2(handler, (msg) => {
       return new Handler(false, false, msg);
     }),
     empty_list,
@@ -5779,8 +5748,8 @@ function curr_and_next_chars(model) {
   }
 }
 function css(ms) {
-  let _pipe = '\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  .split-flap {\n    /* TODO -webkit-font-smoothing */\n    position: relative;\n    width: 100%;\n    height: 100%;\n    aspect-ratio: 1/1.618; /* golden ratio ;) */\n    font-family: Fragment Mono, math, monospace;\n    font-weight: bold;\n    font-size: 120cqw;\n    border-radius: 5cqw;\n    perspective: 600cqw;\n  }\n\n  .split-flap::selection {\n    background: white;\n    color: black;\n  }\n\n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 3.5cqw;\n    background: rgb(20, 20, 20);\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    z-index: 1;\n    background: rgb(40, 40, 40);\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n    z-index: 0;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw;\n    user-select: text;\n    height: 100%;\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n  }\n\n  @keyframes flip-top {\n    0% {\n      transform: rotateX(0deg);\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n    50%, 100% {\n      transform: rotateX(-90deg);\n      box-shadow: none;\n    }\n    \n  }\n\n  @keyframes flip-bottom {\n    0% {\n      transform: rotateX(90deg);\n      box-shadow: none;\n    }\n    100% {\n      transform: rotateX(0deg);\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n  }\n\n  .flap.flipping-top {\n    pointer-events: none;\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw 5cqw 0 0;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n    animation: <flip_duration>ms ease-in flip-top;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap.flipping-bottom {\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n    animation: <flip_duration>ms ease-in flip-bottom;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n  \n  .flap.top .flap-content {\n    top: 0;\n    height: 100%\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n  .flap.flipping-top .flap-content {\n    top: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
-  return replace(_pipe, "<flip_duration>", to_string2(ms));
+  let _pipe = '\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  .split-flap {\n    /* TODO -webkit-font-smoothing */\n    position: relative;\n    width: 100%;\n    height: 100%;\n    aspect-ratio: 1/1.618; /* golden ratio ;) */\n    font-family: Fragment Mono, math, monospace, Noto Music;\n    font-weight: bold;\n    font-size: 120cqw;\n    border-radius: 5cqw;\n    perspective: 600cqw;\n  }\n\n  .split-flap::selection {\n    background: white;\n    color: black;\n  }\n\n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 3.5cqw;\n    background: rgb(20, 20, 20);\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    z-index: 1;\n    background: rgb(40, 40, 40);\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n    z-index: 0;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw;\n    user-select: text;\n    height: 100%;\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n  }\n\n  @keyframes flip-top {\n    0% {\n      transform: rotateX(0deg);\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n    50%, 100% {\n      transform: rotateX(-90deg);\n      box-shadow: none;\n    }\n    \n  }\n\n  @keyframes flip-bottom {\n    0% {\n      transform: rotateX(90deg);\n      box-shadow: none;\n    }\n    100% {\n      transform: rotateX(0deg);\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n  }\n\n  .flap.flipping-top {\n    pointer-events: none;\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw 5cqw 0 0;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n    animation: <flip_duration>ms ease-in flip-top;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap.flipping-bottom {\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n    animation: <flip_duration>ms ease-in flip-bottom;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n  \n  .flap.top .flap-content {\n    top: 0;\n    height: 100%\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n  .flap.flipping-top .flap-content {\n    top: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
+  return replace(_pipe, "<flip_duration>", to_string(ms));
 }
 var default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\u25B8()\u{1D122}\u{1D15F}\u{1D13D}|#_!?";
 function element4(char, chars, on_click2) {
@@ -5834,15 +5803,15 @@ function view(model) {
       "let_assert",
       FILEPATH,
       "components/char",
-      154,
+      155,
       "view",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 3505,
-        end: 3562,
-        pattern_start: 3516,
-        pattern_end: 3533
+        start: 3574,
+        end: 3631,
+        pattern_start: 3585,
+        pattern_end: 3602
       }
     );
   }
@@ -5962,29 +5931,29 @@ function update2(model, msg) {
     }
   } else if (msg instanceof FlipStarted) {
     let $ = pop_grapheme(model.chars);
-    let first4;
+    let first3;
     let rest;
     if ($ instanceof Ok) {
-      first4 = $[0][0];
+      first3 = $[0][0];
       rest = $[0][1];
     } else {
       throw makeError(
         "let_assert",
         FILEPATH,
         "components/char",
-        134,
+        135,
         "update",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 2974,
-          end: 3038,
-          pattern_start: 2985,
-          pattern_end: 3003
+          start: 3043,
+          end: 3107,
+          pattern_start: 3054,
+          pattern_end: 3072
         }
       );
     }
-    let next = rest + first4;
+    let next = rest + first3;
     return [
       new Model(next, model.dest, new Idle()),
       from(
@@ -6174,9 +6143,9 @@ function element5(contents, cols, rows, chars) {
   return element2(
     "split-flap-display",
     toList([
-      attribute2("lines", to_string3(contents_to_json(contents))),
-      attribute2("cols", to_string2(cols)),
-      attribute2("rows", to_string2(rows)),
+      attribute2("lines", to_string2(contents_to_json(contents))),
+      attribute2("cols", to_string(cols)),
+      attribute2("rows", to_string(rows)),
       (() => {
         if (chars instanceof Some) {
           let stack = chars[0];
@@ -6233,7 +6202,7 @@ function row(line, row_num, num_cols, char_stack) {
   _block$1 = index_map(
     _pipe$1,
     (char, idx) => {
-      let key = to_string2(row_num) + "-" + to_string2(idx);
+      let key = to_string(row_num) + "-" + to_string(idx);
       return [key, element4(char, char_stack, new None())];
     }
   );
@@ -6369,7 +6338,7 @@ function view2(model) {
           sanitized_lines,
           (line, line_num) => {
             return [
-              to_string2(line_num),
+              to_string(line_num),
               row(line, line_num, model.cols, model.chars)
             ];
           }
@@ -6535,16 +6504,16 @@ var Echo$Inspector = class {
   }
   #dict(map4) {
     let body = "dict.from_list([";
-    let first4 = true;
+    let first3 = true;
     let key_value_pairs = [];
     map4.forEach((value, key) => {
       key_value_pairs.push([key, value]);
     });
     key_value_pairs.sort();
     key_value_pairs.forEach(([key, value]) => {
-      if (!first4) body = body + ", ";
+      if (!first3) body = body + ", ";
       body = body + "#(" + this.inspect(key) + ", " + this.inspect(value) + ")";
-      first4 = false;
+      first3 = false;
     });
     return body + "])";
   }
@@ -6937,8 +6906,8 @@ function element6(progress, cols, back_msg, forward_msg, auto_play, auto_play_ms
     "progress-bar",
     toList([
       part("progress-bar"),
-      attribute2("progress", to_string2(progress)),
-      attribute2("cols", to_string2(cols)),
+      attribute2("progress", to_string(progress)),
+      attribute2("cols", to_string(cols)),
       attribute2(
         "auto_play",
         (() => {
@@ -7043,7 +7012,7 @@ function progress_button(model) {
 }
 function css3(cols) {
   let _pipe = "\n  :host {\n    display: inline-block;\n    width: 100%;\n  }\n\n  split-flap-char {\n    padding: 0.9cqw 0.3cqw;\n  }\n\n  .progress-bar {\n    width: 100%;\n    display: grid;\n    grid-template-columns: 1fr <cols>fr 1fr;\n    gap: 0;\n  }\n\n  .progress-bar-button {\n    width: 100%;\n    height: 100%;\n    background: none;\n    padding: 0;\n    margin: 0;\n    border: none;\n  }\n  \n  split-flap-display::part(row) {\n    cursor: pointer;\n  }\n  ";
-  return replace(_pipe, "<cols>", to_string2(cols - 2));
+  return replace(_pipe, "<cols>", to_string(cols - 2));
 }
 function view3(model) {
   return fragment2(
@@ -7106,6 +7075,13 @@ function register3() {
 }
 
 // build/dev/javascript/split_flap/components/bingo.mjs
+var BingoState = class extends CustomType {
+  constructor(scene, frame) {
+    super();
+    this.scene = scene;
+    this.frame = frame;
+  }
+};
 var Model4 = class extends CustomType {
   constructor(scenes2, columns, current, auto_play, timeout) {
     super();
@@ -7139,7 +7115,7 @@ var TimeoutEnded = class extends CustomType {
 function element7(cols) {
   return element2(
     "nick-dot-bingo",
-    toList([attribute2("columns", to_string2(cols))]),
+    toList([attribute2("columns", to_string(cols))]),
     toList([])
   );
 }
@@ -7150,53 +7126,25 @@ function initial_state(scenes2) {
       return try$(
         first(first_scene.frames),
         (first_frame) => {
-          return new Ok([first_scene, first_frame]);
+          return new Ok(new BingoState(first_scene, first_frame));
         }
       );
     }
   );
 }
-function handler(model, state, predicate, fun) {
-  let next_state = try_recover(
-    state,
-    (_) => {
-      return initial_state(model.scenes);
-    }
-  );
-  let _block;
-  if (predicate instanceof Some && next_state instanceof Ok) {
-    let predicate$1 = predicate[0];
-    let next_state$12 = next_state[0];
-    let $ = predicate$1(next_state$12);
-    if ($) {
-      _block = new Ok(next_state$12);
-    } else {
-      _block = new Error(void 0);
-    }
-  } else {
-    _block = next_state;
-  }
-  let next_state$1 = _block;
-  if (next_state$1 instanceof Ok) {
-    let state$1 = next_state$1[0];
-    return fun(state$1);
-  } else {
-    return [model, none2()];
-  }
-}
-function start_timeout(frame, timeout_id) {
-  if (timeout_id instanceof Some) {
+function start_timeout(frame, id) {
+  if (id instanceof Some) {
     return none2();
   } else {
     return from(
       (dispatch) => {
-        let id = set_timeout(
+        let id$1 = set_timeout(
           frame.ms,
           () => {
             return dispatch(new TimeoutEnded());
           }
         );
-        return dispatch(new TimeoutStarted(id));
+        return dispatch(new TimeoutStarted(id$1));
       }
     );
   }
@@ -7208,7 +7156,7 @@ function init4(_) {
     new Model4(scenes$1, 28, state, true, new None()),
     (() => {
       if (state instanceof Ok) {
-        let frame = state[0][1];
+        let frame = state[0].frame;
         return start_timeout(frame, new None());
       } else {
         return none2();
@@ -7217,20 +7165,176 @@ function init4(_) {
   ];
 }
 function find_next_state(scenes2, current) {
-  let scene = first3(current);
-  let frame = second(current);
-  let $ = find_next(scene.frames, frame);
+  let $ = find_next(current.scene.frames, current.frame);
   if ($ instanceof Ok) {
-    let next_frame = $[0];
-    return new Ok([scene, next_frame]);
+    let frame = $[0];
+    return new Ok(new BingoState(current.scene, frame));
+  } else {
+    return lazy_or(
+      try$(
+        find_next(scenes2, current.scene),
+        (scene) => {
+          return try$(
+            first(scene.frames),
+            (frame) => {
+              return new Ok(new BingoState(scene, frame));
+            }
+          );
+        }
+      ),
+      () => {
+        return initial_state(scenes2);
+      }
+    );
+  }
+}
+function reduce(model, msg) {
+  if (msg instanceof ColumnsAttrChanged) {
+    let columns = msg[0];
+    return new Ok(
+      [
+        new Model4(
+          scenes(columns),
+          columns,
+          model.current,
+          model.auto_play,
+          model.timeout
+        ),
+        none2()
+      ]
+    );
+  } else if (msg instanceof BackClicked2) {
+    return try$(
+      model.current,
+      (current) => {
+        let reversed = reverse(model.scenes);
+        return try$(
+          or(find_next(reversed, current.scene), first(reversed)),
+          (scene) => {
+            return try$(
+              first(scene.frames),
+              (frame) => {
+                return new Ok(
+                  [
+                    new Model4(
+                      model.scenes,
+                      model.columns,
+                      new Ok(new BingoState(scene, frame)),
+                      false,
+                      model.timeout
+                    ),
+                    start_timeout(frame, model.timeout)
+                  ]
+                );
+              }
+            );
+          }
+        );
+      }
+    );
+  } else if (msg instanceof ForwardClicked2) {
+    return try$(
+      model.current,
+      (current) => {
+        return try$(
+          or(find_next(model.scenes, current.scene), first(model.scenes)),
+          (scene) => {
+            return try$(
+              first(scene.frames),
+              (frame) => {
+                return new Ok(
+                  [
+                    new Model4(
+                      model.scenes,
+                      model.columns,
+                      new Ok(new BingoState(scene, frame)),
+                      false,
+                      model.timeout
+                    ),
+                    start_timeout(frame, model.timeout)
+                  ]
+                );
+              }
+            );
+          }
+        );
+      }
+    );
+  } else if (msg instanceof AutoPlayClicked2) {
+    let next_value = !model.auto_play;
+    return new Ok(
+      [
+        new Model4(
+          model.scenes,
+          model.columns,
+          model.current,
+          next_value,
+          new None()
+        ),
+        (() => {
+          let $ = model.timeout;
+          if ($ instanceof Some) {
+            let id = $[0];
+            clear_timeout(id);
+          } else {
+          }
+          return from(
+            (dispatch) => {
+              return dispatch(new TimeoutEnded());
+            }
+          );
+        })()
+      ]
+    );
+  } else if (msg instanceof TimeoutStarted) {
+    let id = msg[0];
+    return new Ok(
+      [
+        new Model4(
+          model.scenes,
+          model.columns,
+          model.current,
+          model.auto_play,
+          new Some(id)
+        ),
+        none2()
+      ]
+    );
   } else {
     return try$(
-      find_next(scenes2, scene),
-      (next_scene) => {
+      model.current,
+      (current) => {
         return try$(
-          first(next_scene.frames),
-          (next_frame) => {
-            return new Ok([next_scene, next_frame]);
+          find_next_state(model.scenes, current),
+          (next) => {
+            let continue$ = isEqual(current.scene, next.scene) || model.auto_play;
+            if (continue$) {
+              return new Ok(
+                [
+                  new Model4(
+                    model.scenes,
+                    model.columns,
+                    new Ok(next),
+                    model.auto_play,
+                    new None()
+                  ),
+                  start_timeout(next.frame, new None())
+                ]
+              );
+            } else {
+              return new Ok(
+                [
+                  new Model4(
+                    model.scenes,
+                    model.columns,
+                    model.current,
+                    model.auto_play,
+                    new None()
+                  ),
+                  none2()
+                ]
+              );
+            }
           }
         );
       }
@@ -7238,197 +7342,12 @@ function find_next_state(scenes2, current) {
   }
 }
 function update5(model, msg) {
-  if (msg instanceof ColumnsAttrChanged) {
-    let columns = msg[0];
-    return [
-      new Model4(
-        scenes(columns),
-        columns,
-        model.current,
-        model.auto_play,
-        model.timeout
-      ),
-      none2()
-    ];
-  } else if (msg instanceof BackClicked2) {
-    return handler(
-      model,
-      try$(
-        model.current,
-        (_use0) => {
-          let scene;
-          scene = _use0[0];
-          let reversed = reverse(model.scenes);
-          let prev_scene = try_recover(
-            find_next(reversed, scene),
-            (_) => {
-              return first(reversed);
-            }
-          );
-          if (prev_scene instanceof Ok) {
-            let prev_scene$1 = prev_scene[0];
-            return try$(
-              first(prev_scene$1.frames),
-              (frame) => {
-                return new Ok([prev_scene$1, frame]);
-              }
-            );
-          } else {
-            return new Error(void 0);
-          }
-        }
-      ),
-      new None(),
-      (next_state) => {
-        return [
-          new Model4(
-            model.scenes,
-            model.columns,
-            new Ok(next_state),
-            false,
-            model.timeout
-          ),
-          start_timeout(second(next_state), model.timeout)
-        ];
-      }
-    );
-  } else if (msg instanceof ForwardClicked2) {
-    return handler(
-      model,
-      try$(
-        model.current,
-        (_use0) => {
-          let scene;
-          scene = _use0[0];
-          return try$(
-            find_next(model.scenes, scene),
-            (next_scene) => {
-              return try$(
-                first(next_scene.frames),
-                (frame) => {
-                  return new Ok([next_scene, frame]);
-                }
-              );
-            }
-          );
-        }
-      ),
-      new None(),
-      (next_state) => {
-        return [
-          new Model4(
-            model.scenes,
-            model.columns,
-            new Ok(next_state),
-            false,
-            model.timeout
-          ),
-          start_timeout(second(next_state), model.timeout)
-        ];
-      }
-    );
-  } else if (msg instanceof AutoPlayClicked2) {
-    let next_value = !model.auto_play;
-    return [
-      new Model4(
-        model.scenes,
-        model.columns,
-        model.current,
-        next_value,
-        new None()
-      ),
-      (() => {
-        let $ = model.timeout;
-        if ($ instanceof Some) {
-          let id = $[0];
-          clear_timeout(id);
-        } else {
-        }
-        return from(
-          (dispatch) => {
-            return dispatch(new TimeoutEnded());
-          }
-        );
-      })()
-    ];
-  } else if (msg instanceof TimeoutStarted) {
-    let id = msg[0];
-    return [
-      new Model4(
-        model.scenes,
-        model.columns,
-        model.current,
-        model.auto_play,
-        new Some(id)
-      ),
-      none2()
-    ];
+  let $ = reduce(model, msg);
+  if ($ instanceof Ok) {
+    let next = $[0];
+    return next;
   } else {
-    let next_state = try_recover(
-      try$(
-        model.current,
-        (state) => {
-          return find_next_state(model.scenes, state);
-        }
-      ),
-      (_) => {
-        return initial_state(model.scenes);
-      }
-    );
-    let _block;
-    if (next_state instanceof Ok) {
-      let next_state$12 = next_state[0];
-      let _block$1;
-      let _pipe = model.current;
-      let _pipe$1 = map3(_pipe, first3);
-      let _pipe$2 = map3(
-        _pipe$1,
-        (scene) => {
-          return isEqual(scene, first3(next_state$12));
-        }
-      );
-      _block$1 = unwrap(_pipe$2, false);
-      let is_same_scene = _block$1;
-      echo2(
-        "HELLO " + to_string(is_same_scene),
-        void 0,
-        "src/components/bingo.gleam",
-        113
-      );
-      let $ = model.auto_play || is_same_scene;
-      if ($) {
-        _block = new Ok(next_state$12);
-      } else {
-        _block = new Error(void 0);
-      }
-    } else {
-      _block = next_state;
-    }
-    let next_state$1 = _block;
-    if (next_state$1 instanceof Ok) {
-      let state = next_state$1[0];
-      return [
-        new Model4(
-          model.scenes,
-          model.columns,
-          new Ok(state),
-          model.auto_play,
-          new None()
-        ),
-        start_timeout(second(state), new None())
-      ];
-    } else {
-      return [
-        new Model4(
-          model.scenes,
-          model.columns,
-          model.current,
-          model.auto_play,
-          new None()
-        ),
-        none2()
-      ];
-    }
+    return [model, none2()];
   }
 }
 function calculate_progress_scenes(model) {
@@ -7438,7 +7357,7 @@ function calculate_progress_scenes(model) {
   let total_scenes = _block;
   let $ = model.current;
   if ($ instanceof Ok) {
-    let scene = $[0][0];
+    let scene = $[0].scene;
     let idx = fold_until(
       model.scenes,
       1,
@@ -7461,7 +7380,7 @@ function view4(model) {
   let _block;
   let $ = model.current;
   if ($ instanceof Ok) {
-    let frame = $[0][1];
+    let frame = $[0].frame;
     _block = frame.lines;
   } else {
     _block = toList([]);
@@ -7514,209 +7433,6 @@ function register4() {
   );
   return make_component(component2, "nick-dot-bingo");
 }
-function echo2(value, message, file, line) {
-  const grey = "\x1B[90m";
-  const reset_color = "\x1B[39m";
-  const file_line = `${file}:${line}`;
-  const inspector = new Echo$Inspector2();
-  const string_value = inspector.inspect(value);
-  const string_message = message === void 0 ? "" : " " + message;
-  if (globalThis.process?.stderr?.write) {
-    const string5 = `${grey}${file_line}${reset_color}${string_message}
-${string_value}
-`;
-    globalThis.process.stderr.write(string5);
-  } else if (globalThis.Deno) {
-    const string5 = `${grey}${file_line}${reset_color}${string_message}
-${string_value}
-`;
-    globalThis.Deno.stderr.writeSync(new TextEncoder().encode(string5));
-  } else {
-    const string5 = `${file_line}
-${string_value}`;
-    globalThis.console.log(string5);
-  }
-  return value;
-}
-var Echo$Inspector2 = class {
-  #references = /* @__PURE__ */ new Set();
-  #isDict(value) {
-    try {
-      return value instanceof Dict;
-    } catch {
-      return false;
-    }
-  }
-  #float(float2) {
-    const string5 = float2.toString().replace("+", "");
-    if (string5.indexOf(".") >= 0) {
-      return string5;
-    } else {
-      const index4 = string5.indexOf("e");
-      if (index4 >= 0) {
-        return string5.slice(0, index4) + ".0" + string5.slice(index4);
-      } else {
-        return string5 + ".0";
-      }
-    }
-  }
-  inspect(v) {
-    const t = typeof v;
-    if (v === true) return "True";
-    if (v === false) return "False";
-    if (v === null) return "//js(null)";
-    if (v === void 0) return "Nil";
-    if (t === "string") return this.#string(v);
-    if (t === "bigint" || Number.isInteger(v)) return v.toString();
-    if (t === "number") return this.#float(v);
-    if (v instanceof UtfCodepoint) return this.#utfCodepoint(v);
-    if (v instanceof BitArray) return this.#bit_array(v);
-    if (v instanceof RegExp) return `//js(${v})`;
-    if (v instanceof Date) return `//js(Date("${v.toISOString()}"))`;
-    if (v instanceof globalThis.Error) return `//js(${v.toString()})`;
-    if (v instanceof Function) {
-      const args = [];
-      for (const i of Array(v.length).keys())
-        args.push(String.fromCharCode(i + 97));
-      return `//fn(${args.join(", ")}) { ... }`;
-    }
-    if (this.#references.size === this.#references.add(v).size) {
-      return "//js(circular reference)";
-    }
-    let printed;
-    if (Array.isArray(v)) {
-      printed = `#(${v.map((v2) => this.inspect(v2)).join(", ")})`;
-    } else if (v instanceof List) {
-      printed = this.#list(v);
-    } else if (v instanceof CustomType) {
-      printed = this.#customType(v);
-    } else if (this.#isDict(v)) {
-      printed = this.#dict(v);
-    } else if (v instanceof Set) {
-      return `//js(Set(${[...v].map((v2) => this.inspect(v2)).join(", ")}))`;
-    } else {
-      printed = this.#object(v);
-    }
-    this.#references.delete(v);
-    return printed;
-  }
-  #object(v) {
-    const name = Object.getPrototypeOf(v)?.constructor?.name || "Object";
-    const props = [];
-    for (const k of Object.keys(v)) {
-      props.push(`${this.inspect(k)}: ${this.inspect(v[k])}`);
-    }
-    const body = props.length ? " " + props.join(", ") + " " : "";
-    const head = name === "Object" ? "" : name + " ";
-    return `//js(${head}{${body}})`;
-  }
-  #dict(map4) {
-    let body = "dict.from_list([";
-    let first4 = true;
-    let key_value_pairs = [];
-    map4.forEach((value, key) => {
-      key_value_pairs.push([key, value]);
-    });
-    key_value_pairs.sort();
-    key_value_pairs.forEach(([key, value]) => {
-      if (!first4) body = body + ", ";
-      body = body + "#(" + this.inspect(key) + ", " + this.inspect(value) + ")";
-      first4 = false;
-    });
-    return body + "])";
-  }
-  #customType(record) {
-    const props = Object.keys(record).map((label) => {
-      const value = this.inspect(record[label]);
-      return isNaN(parseInt(label)) ? `${label}: ${value}` : value;
-    }).join(", ");
-    return props ? `${record.constructor.name}(${props})` : record.constructor.name;
-  }
-  #list(list4) {
-    if (list4 instanceof Empty) {
-      return "[]";
-    }
-    let char_out = 'charlist.from_string("';
-    let list_out = "[";
-    let current = list4;
-    while (current instanceof NonEmpty) {
-      let element8 = current.head;
-      current = current.tail;
-      if (list_out !== "[") {
-        list_out += ", ";
-      }
-      list_out += this.inspect(element8);
-      if (char_out) {
-        if (Number.isInteger(element8) && element8 >= 32 && element8 <= 126) {
-          char_out += String.fromCharCode(element8);
-        } else {
-          char_out = null;
-        }
-      }
-    }
-    if (char_out) {
-      return char_out + '")';
-    } else {
-      return list_out + "]";
-    }
-  }
-  #string(str) {
-    let new_str = '"';
-    for (let i = 0; i < str.length; i++) {
-      const char = str[i];
-      switch (char) {
-        case "\n":
-          new_str += "\\n";
-          break;
-        case "\r":
-          new_str += "\\r";
-          break;
-        case "	":
-          new_str += "\\t";
-          break;
-        case "\f":
-          new_str += "\\f";
-          break;
-        case "\\":
-          new_str += "\\\\";
-          break;
-        case '"':
-          new_str += '\\"';
-          break;
-        default:
-          if (char < " " || char > "~" && char < "\xA0") {
-            new_str += "\\u{" + char.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0") + "}";
-          } else {
-            new_str += char;
-          }
-      }
-    }
-    new_str += '"';
-    return new_str;
-  }
-  #utfCodepoint(codepoint2) {
-    return `//utfcodepoint(${String.fromCodePoint(codepoint2.value)})`;
-  }
-  #bit_array(bits) {
-    if (bits.bitSize === 0) {
-      return "<<>>";
-    }
-    let acc = "<<";
-    for (let i = 0; i < bits.byteSize - 1; i++) {
-      acc += bits.byteAt(i).toString();
-      acc += ", ";
-    }
-    if (bits.byteSize * 8 === bits.bitSize) {
-      acc += bits.byteAt(bits.byteSize - 1).toString();
-    } else {
-      const trailingBitsCount = bits.bitSize % 8;
-      acc += bits.byteAt(bits.byteSize - 1) >> 8 - trailingBitsCount;
-      acc += `:size(${trailingBitsCount})`;
-    }
-    acc += ">>";
-    return acc;
-  }
-};
 
 // build/dev/javascript/split_flap/components/office.mjs
 var css5 = "\n  :host {\n    --position-x: 50%;\n    --position-y: 60%;\n    --min-height: 55cqw;\n    width: 100%;\n    height: 100%;\n    min-height: var(--min-height);\n    overflow-x: hidden;\n    overflow-y: scroll;\n    position: relative;\n    container-type: inline-size;\n  }\n  \n  .office-void {\n    width: 100%;\n    height: 100%;\n    min-height: var(--min-height);\n    overflow: hidden;\n    position: relative;\n    container-type: size;\n  }\n  \n  .office-void-bg {\n    position: absolute;\n    width: max(100cqw, 100cqh);\n    height: max(100cqw, 100cqh);\n    left: var(--position-x);\n    top: var(--position-y);\n    transform: translate(calc(var(--position-x) * -1), calc(var(--position-y) * -1));\n    background-image: url(./img/bg-3840.webp);\n    background-size: cover;\n    background-position: var(--position-x) var(--position-y);\n  }\n  \n  .split-flap-void {\n    position: absolute;\n    /* background: lime; */\n    /* mix-blend-mode: difference; */\n    /* do not, and I repeat, do not touch this\u2014otherwise the flip-flap will be very very sad and I will cry */\n    top: 28.75%;\n    left: 26.66%;\n    width: 46.66%;\n    height: 23.4%;\n    container-type: size; \n  }\n\n  nick-dot-bingo::part(panel) {\n    background: rgba(50, 50, 50, 0.3);    \n    box-shadow: none;\n  }\n";

@@ -13,6 +13,7 @@ import lustre/event
 
 import utils
 
+// NOTE: you need to have a music font installed to see this unicode
 pub const default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▸()𝄢𝅘𝅥𝄽|#_!?"
 
 const flip_duration_ms = 30
@@ -210,7 +211,7 @@ fn css(flip_duration ms: Int) -> String {
     width: 100%;
     height: 100%;
     aspect-ratio: 1/1.618; /* golden ratio ;) */
-    font-family: Fragment Mono, math, monospace;
+    font-family: Fragment Mono, math, monospace, Noto Music;
     font-weight: bold;
     font-size: 120cqw;
     border-radius: 5cqw;

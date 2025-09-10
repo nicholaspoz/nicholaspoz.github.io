@@ -1,9 +1,9 @@
 html {
   box-sizing: border-box;
   font-size: 16px;
-  font-family: "Fragment Mono", monospace;
-  /* -webkit-font-smoothing: auto;
-  -moz-osx-font-smoothing: grayscale; */
+  font-family: "Fragment Mono", monospace, "Noto Music";
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 *,
