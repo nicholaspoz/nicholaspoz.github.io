@@ -71,7 +71,7 @@ fn get_cols_effect() -> Effect(Msg) {
   use dispatch, root_element <- effect.before_paint
   let cols = case utils.measure_orientation(root_element) {
     "portrait" -> 15
-    _ -> 29
+    _ -> 27
   }
   dispatch(ColumnsChanged(cols))
 }
@@ -263,7 +263,7 @@ const css = "
       rgb(50, 50, 50) 25%,
       rgb(40, 40, 40) 80%
     );
-    padding: 2cqh 10cqw;
+    padding: 2cqh 12cqw;
     /* This is in px on purpose */
     box-shadow: inset 0px 3px 10px 10px rgba(0, 0, 0, 0.25);
 
@@ -284,6 +284,11 @@ const css = "
   @container (aspect-ratio < 1) {
     .panel {
       padding: 5cqh 5cqw;
+    }
+
+    .matrix {
+      justify-content: space-around;
+      height: 100%;
     }
   }
   "
