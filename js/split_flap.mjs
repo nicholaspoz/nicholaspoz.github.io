@@ -5862,7 +5862,7 @@ function css(ms) {
   let _pipe = '\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  .split-flap {\n    /* TODO -webkit-font-smoothing */\n    position: relative;\n    width: 100%;\n    height: 100%;\n    aspect-ratio: 1/1.618; /* golden ratio ;) */\n    font-size: 120cqw;\n    font-weight: 500;\n    border-radius: 5cqw;\n    perspective: 400cqw;\n  }\n\n  .split-flap::selection {\n    background: white;\n    color: black;\n  }\n\n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 3.5cqw;\n    background: rgb(20, 20, 20);\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    z-index: 1;\n    background: rgb(40, 40, 40);\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n    z-index: 0;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw;\n    user-select: text;\n    height: 100%;\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    opacity: 0;\n  }\n  .flap.bottom.flipping {\n    opacity: 1;\n  }\n\n  @keyframes flip-top {\n    0% {\n      transform: rotateX(0deg);\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n    50%, 100% {\n      transform: rotateX(-90deg);\n      box-shadow: none;\n    }\n    \n  }\n\n  @keyframes flip-bottom {\n    0% {\n      transform: rotateX(90deg);\n      box-shadow: none;\n    }\n    100% {\n      transform: rotateX(0deg);\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n  }\n\n  .flap.flipping-top {\n    pointer-events: none;\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw 5cqw 0 0;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n    animation: <flip_duration>ms ease-in flip-top;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap.flipping-bottom {\n    opacity: 0;\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n  }\n  \n  .flap.flipping-bottom.flipping {\n    opacity: 1;\n    animation: <flip_duration>ms ease-in flip-bottom;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n  }\n  \n  .flap.top .flap-content {\n    top: 0;\n    height: 100%\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n  .flap.flipping-top .flap-content {\n    top: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
   return replace(_pipe, "<flip_duration>", to_string(ms));
 }
-var default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\u25B8()\u{1D122}\u{1D15F}\u{1D13D}|#_!?";
+var default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\u25B6()\u{1D122}\u{1D15F}\u{1D13D}|#_!?";
 function element4(char, chars, on_click2, flip_duration_ms2) {
   return element2(
     "split-flap-char",
@@ -6862,9 +6862,9 @@ function scenes(columns) {
   notes_2 = $2[1];
   notes_3 = $2[2];
   notes_4 = $2[3];
-  let linked_in = new Link(right2("LINKEDIN \u25B8"), linkedin_url);
-  let github = new Link(right2("GITHUB \u25B8"), github_url);
-  let email = new Link(right2("EMAIL \u25B8"), mailto);
+  let linked_in = new Link(right2("LINKEDIN \u25B6"), linkedin_url);
+  let github = new Link(right2("GITHUB \u25B6"), github_url);
+  let email = new Link(right2("EMAIL \u25B6"), mailto);
   let $3 = [
     center2("         WHAT"),
     center2("       A     "),

@@ -36,9 +36,9 @@ pub fn scenes(columns: Int) -> List(Scene) {
     center("0|           "),
   )
 
-  let linked_in = Link(text: right("LINKEDIN ▸"), url: linkedin_url)
-  let github = Link(text: right("GITHUB ▸"), url: github_url)
-  let email = Link(text: right("EMAIL ▸"), url: mailto)
+  let linked_in = Link(text: right("LINKEDIN ▶"), url: linkedin_url)
+  let github = Link(text: right("GITHUB ▶"), url: github_url)
+  let email = Link(text: right("EMAIL ▶"), url: mailto)
 
   let #(what, a, time, to, be, alive, exclaim) = #(
     center("         WHAT"),
