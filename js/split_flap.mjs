@@ -5862,7 +5862,7 @@ function css(ms) {
   let _pipe = '\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  .split-flap {\n    /* TODO -webkit-font-smoothing */\n    position: relative;\n    width: 100%;\n    height: 100%;\n    aspect-ratio: 1/1.618; /* golden ratio ;) */\n    font-size: 120cqw;\n    font-weight: 500;\n    border-radius: 5cqw;\n    perspective: 400cqw;\n  }\n\n  .split-flap::selection {\n    background: white;\n    color: black;\n  }\n\n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 3.5cqw;\n    background: rgb(20, 20, 20);\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    z-index: 1;\n    background: rgb(40, 40, 40);\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n    z-index: 0;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw;\n    user-select: text;\n    height: 100%;\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    opacity: 0;\n  }\n  .flap.bottom.flipping {\n    opacity: 1;\n  }\n\n  @keyframes flip-top {\n    0% {\n      transform: rotateX(0deg);\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n    50%, 100% {\n      transform: rotateX(-90deg);\n      box-shadow: none;\n    }\n    \n  }\n\n  @keyframes flip-bottom {\n    0% {\n      transform: rotateX(80deg);      \n    }\n    100% {\n      transform: rotateX(0deg);\n    }\n  }\n\n  .flap.flipping-top {\n    pointer-events: none;\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw 5cqw 0 0;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n    animation: <flip_duration>ms ease-in flip-top;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap.flipping-bottom {\n    opacity: 0;\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.1), 0cqw -3cqw 2cqw 2cqw rgba(0, 0, 0, 0.1);\n  }\n  \n  .flap.flipping-bottom.flipping {\n    opacity: 1;\n    animation: <flip_duration>ms ease-in flip-bottom;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n  }\n  \n  .flap.top .flap-content {\n    top: 0;\n    height: 100%\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n  .flap.flipping-top .flap-content {\n    top: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
   return replace(_pipe, "<flip_duration>", to_string(ms));
 }
-var default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\u25B6()\u{1D122}\u{1D15F}\u{1D13D}|#_!?";
+var default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\u25B6()\u{1D122}\u{1D15F}\u{1D13D}#!";
 function element4(char, chars, on_click2, flip_duration_ms2) {
   return element2(
     "split-flap-char",
@@ -5926,10 +5926,10 @@ function view(model) {
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 4803,
-        end: 4860,
-        pattern_start: 4814,
-        pattern_end: 4831
+        start: 4800,
+        end: 4857,
+        pattern_start: 4811,
+        pattern_end: 4828
       }
     );
   }
@@ -6311,7 +6311,7 @@ function element5(contents, cols, rows, chars) {
           let stack = chars[0];
           return attribute2("chars", stack);
         } else {
-          return none();
+          return attribute2("chars", "");
         }
       })()
     ]),
@@ -6340,7 +6340,7 @@ function update3(model, msg) {
   } else {
     let chars = msg[0];
     return [
-      new Model2(model.lines, model.cols, model.rows, new Some(chars)),
+      new Model2(model.lines, model.cols, model.rows, chars),
       none2()
     ];
   }
@@ -6559,7 +6559,17 @@ function register2() {
       on_attribute_change(
         "chars",
         (val) => {
-          return new Ok(new CharsAttrChanged2(val));
+          return new Ok(
+            new CharsAttrChanged2(
+              (() => {
+                if (val === "") {
+                  return new None();
+                } else {
+                  return new Some(val);
+                }
+              })()
+            )
+          );
         }
       )
     ])
@@ -6779,10 +6789,11 @@ var Frame = class extends CustomType {
   }
 };
 var Scene = class extends CustomType {
-  constructor(name, frames) {
+  constructor(name, frames, chars) {
     super();
     this.name = name;
     this.frames = frames;
+    this.chars = chars;
   }
 };
 
@@ -6849,10 +6860,10 @@ function scenes(columns) {
   tech = $1[1];
   cellist = $1[2];
   let $2 = [
-    center2("  ___  |0    "),
-    center2(" |   | |   |0"),
-    center2(" | #0| |___| "),
-    center2("0|           ")
+    center2(" \u250F\u2501\u2501\u2501\u2513 \u257B\u25CF    "),
+    center2(" \u2503   \u2503 \u2503   \u257B\u25CF"),
+    center2(" \u2503 #\u25CF\u2579 \u2517\u2501\u2501\u2501\u251B "),
+    center2("\u25CF\u2579           ")
   ];
   let notes_1;
   let notes_2;
@@ -6939,7 +6950,8 @@ function scenes(columns) {
           ]),
           7e3
         )
-      ])
+      ]),
+      new None()
     ),
     new Scene(
       "TECH",
@@ -6956,7 +6968,8 @@ function scenes(columns) {
           ]),
           8e3
         )
-      ])
+      ]),
+      new None()
     ),
     new Scene(
       "MUSIC",
@@ -6985,7 +6998,8 @@ function scenes(columns) {
           ]),
           7e3
         )
-      ])
+      ]),
+      new Some("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\u25B6#\u250F\u2501\u2513\u2503\u25CF\u2579\u257B\u2517\u251B")
     ),
     new Scene(
       "!",
@@ -7014,7 +7028,8 @@ function scenes(columns) {
           ]),
           4500
         )
-      ])
+      ]),
+      new None()
     )
   ]);
 }
@@ -7600,14 +7615,19 @@ function update5(model, msg) {
 var css4 = "\n  :host {\n    display: block;\n    container-type: inline-size;\n    height: 100%;\n    width: 100%;\n  }\n\n  .panel {\n    position: relative;\n    width: 100%;\n    height: 100%;\n    min-height: fit-content;\n    background: linear-gradient(\n      250deg,\n      rgb(40, 40, 40) 0%,\n      rgb(50, 50, 50) 25%,\n      rgb(40, 40, 40) 80%\n    );\n    padding: 2cqh 12cqw;\n    /* This is in px on purpose */\n    box-shadow: inset 0px 3px 10px 10px rgba(0, 0, 0, 0.25);\n\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-content: center;\n    overflow: scroll;\n  }\n\n  .matrix {\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-content: center;\n  }\n  \n  @container (aspect-ratio < 1) {\n    .panel {\n      padding: 5cqh 5cqw;\n      background: rgb(40,40,40);\n      box-shadow: none;\n    }\n\n    .matrix {\n      justify-content: space-around;\n      height: 100%;\n    }\n  }\n  ";
 function view4(model) {
   let _block;
-  let $ = model.current;
-  if ($ instanceof Ok) {
-    let frame = $[0].frame;
-    _block = frame.lines;
+  let $1 = model.current;
+  if ($1 instanceof Ok) {
+    let scene = $1[0].scene;
+    let frame = $1[0].frame;
+    _block = [frame.lines, scene.chars];
   } else {
-    _block = toList([]);
+    _block = [toList([]), new None()];
   }
-  let lines = _block;
+  let $ = _block;
+  let lines;
+  let chars;
+  lines = $[0];
+  chars = $[1];
   return fragment2(
     toList([
       style2(toList([]), css4),
@@ -7617,16 +7637,16 @@ function view4(model) {
           div(
             toList([class$("matrix"), part("matrix")]),
             toList([
-              element5(lines, model.columns, 7, new None()),
+              element5(lines, model.columns, 7, chars),
               element6(
                 length2(model.scenes),
                 fold_until(
                   model.scenes,
                   1,
                   (acc, s) => {
-                    let $1 = model.current;
-                    if ($1 instanceof Ok) {
-                      let state = $1[0];
+                    let $2 = model.current;
+                    if ($2 instanceof Ok) {
+                      let state = $2[0];
                       if (isEqual(s, state.scene)) {
                         return new Stop(acc);
                       } else {

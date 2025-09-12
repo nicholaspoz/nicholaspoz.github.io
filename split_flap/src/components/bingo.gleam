@@ -211,9 +211,9 @@ fn find_next_state(
 }
 
 fn view(model: Model) -> Element(Msg) {
-  let lines = case model.current {
-    Ok(BingoState(_, frame)) -> frame.lines
-    Error(_) -> []
+  let #(lines, chars) = case model.current {
+    Ok(BingoState(scene, frame)) -> #(frame.lines, scene.chars)
+    Error(_) -> #([], None)
   }
 
   element.fragment([
@@ -221,7 +221,7 @@ fn view(model: Model) -> Element(Msg) {
 
     html.div([attribute.class("panel"), component.part("panel")], [
       html.div([attribute.class("matrix"), component.part("matrix")], [
-        display.element(lines, cols: model.columns, rows: 7, chars: None),
+        display.element(lines, cols: model.columns, rows: 7, chars: chars),
 
         progress_bar.element(
           pages: list.length(model.scenes),

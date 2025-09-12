@@ -1,3 +1,4 @@
+import gleam/option.{None, Some}
 import gleam/string
 
 import components/bingo/model.{type Scene, Frame, Scene}
@@ -30,10 +31,10 @@ pub fn scenes(columns: Int) -> List(Scene) {
   )
 
   let #(notes_1, notes_2, notes_3, notes_4) = #(
-    center("  ___  |0    "),
-    center(" |   | |   |0"),
-    center(" | #0| |___| "),
-    center("0|           "),
+    center(" ┏━━━┓ ╻●    "),
+    center(" ┃   ┃ ┃   ╻●"),
+    center(" ┃ #●╹ ┗━━━┛ "),
+    center("●╹           "),
   )
 
   let linked_in = Link(text: right("LINKEDIN ▶"), url: linkedin_url)
@@ -51,7 +52,7 @@ pub fn scenes(columns: Int) -> List(Scene) {
   )
 
   [
-    Scene("HOME", [
+    Scene(name: "HOME", chars: None, frames: [
       Frame(ms: 1000, lines: [
         Text(nick),
         Text(""),
@@ -90,7 +91,7 @@ pub fn scenes(columns: Int) -> List(Scene) {
       ]),
     ]),
 
-    Scene("TECH", [
+    Scene(name: "TECH", chars: None, frames: [
       Frame(ms: 8000, lines: [
         Text(freelance),
         Text(tech),
@@ -102,28 +103,32 @@ pub fn scenes(columns: Int) -> List(Scene) {
       ]),
     ]),
 
-    Scene("MUSIC", [
-      Frame(ms: 1000, lines: [
-        Text(freelance),
-        Text(cellist),
-        Text(""),
-        Text(""),
-        Text(""),
-        Text(""),
-        email,
-      ]),
-      Frame(ms: 7000, lines: [
-        Text(freelance),
-        Text(cellist),
-        Text(notes_1),
-        Text(notes_2),
-        Text(notes_3),
-        Text(notes_4),
-        email,
-      ]),
-    ]),
+    Scene(
+      name: "MUSIC",
+      chars: Some("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶#┏━┓┃●╹╻┗┛"),
+      frames: [
+        Frame(ms: 1000, lines: [
+          Text(freelance),
+          Text(cellist),
+          Text(""),
+          Text(""),
+          Text(""),
+          Text(""),
+          email,
+        ]),
+        Frame(ms: 7000, lines: [
+          Text(freelance),
+          Text(cellist),
+          Text(notes_1),
+          Text(notes_2),
+          Text(notes_3),
+          Text(notes_4),
+          email,
+        ]),
+      ],
+    ),
 
-    Scene("!", [
+    Scene(name: "!", chars: None, frames: [
       Frame(ms: 3000, lines: [
         Text(what),
         Text(a),

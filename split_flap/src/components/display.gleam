@@ -67,7 +67,7 @@ type Msg {
   ColsAttrChanged(Int)
   RowsAttrChanged(Int)
   LinesAttrChanged(List(Content))
-  CharsAttrChanged(String)
+  CharsAttrChanged(Option(String))
 }
 
 pub fn register() -> Result(Nil, lustre.Error) {
@@ -99,7 +99,12 @@ pub fn register() -> Result(Nil, lustre.Error) {
       }),
 
       component.on_attribute_change("chars", fn(val) {
-        Ok(CharsAttrChanged(val))
+        Ok(
+          CharsAttrChanged(case val {
+            "" -> None
+            _ -> Some(val)
+          }),
+        )
       }),
     ])
 
@@ -120,7 +125,7 @@ pub fn element(
       attribute.attribute("rows", int.to_string(rows)),
       case chars {
         Some(stack) -> attribute.attribute("chars", stack)
-        None -> attribute.none()
+        None -> attribute.attribute("chars", "")
       },
     ],
     [],
@@ -137,10 +142,7 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
     LinesAttrChanged(lines) -> #(Model(..model, lines:), effect.none())
     ColsAttrChanged(cols) -> #(Model(..model, cols:), effect.none())
     RowsAttrChanged(rows) -> #(Model(..model, rows:), effect.none())
-    CharsAttrChanged(chars) -> #(
-      Model(..model, chars: Some(chars)),
-      effect.none(),
-    )
+    CharsAttrChanged(chars) -> #(Model(..model, chars: chars), effect.none())
   }
 }
 

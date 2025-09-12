@@ -15,7 +15,7 @@ import lustre/event
 import utils
 
 // NOTE: you need to have a music font installed to see this unicode
-pub const default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶()𝄢𝅘𝅥𝄽|#_!?"
+pub const default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶()𝄢𝅘𝅥𝄽#!"
 
 const flip_duration_ms = 30
 
