@@ -5806,12 +5806,13 @@ function find_next(loop$l, loop$current) {
 // build/dev/javascript/split_flap/components/char.mjs
 var FILEPATH = "src/components/char.gleam";
 var Model = class extends CustomType {
-  constructor(adjacency_list, current_char, dest_char, state) {
+  constructor(adjacency_list, current_char, dest_char, state, flip_duration_ms2) {
     super();
     this.adjacency_list = adjacency_list;
     this.current_char = current_char;
     this.dest_char = dest_char;
     this.state = state;
+    this.flip_duration_ms = flip_duration_ms2;
   }
 };
 var Idle = class extends CustomType {
@@ -5825,6 +5826,12 @@ var LetterAttrChanged = class extends CustomType {
   }
 };
 var CharsAttrChanged = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var FlipDurationAttrChanged = class extends CustomType {
   constructor($0) {
     super();
     this[0] = $0;
@@ -5852,11 +5859,11 @@ function curr_and_next_chars(model) {
   return new Ok([curr, next]);
 }
 function css(ms) {
-  let _pipe = '\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  .split-flap {\n    /* TODO -webkit-font-smoothing */\n    position: relative;\n    width: 100%;\n    height: 100%;\n    aspect-ratio: 1/1.618; /* golden ratio ;) */\n    font-family: Fragment Mono, math, monospace, Noto Music;\n    font-weight: bold;\n    font-size: 120cqw;\n    border-radius: 5cqw;\n    perspective: 600cqw;\n  }\n\n  .split-flap::selection {\n    background: white;\n    color: black;\n  }\n\n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 3.5cqw;\n    background: rgb(20, 20, 20);\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    z-index: 1;\n    background: rgb(40, 40, 40);\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n    z-index: 0;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw;\n    user-select: text;\n    height: 100%;\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    opacity: 0;\n  }\n  .flap.bottom.flipping {\n    opacity: 1;\n  }\n\n  @keyframes flip-top {\n    0% {\n      transform: rotateX(0deg);\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n    50%, 100% {\n      transform: rotateX(-90deg);\n      box-shadow: none;\n    }\n    \n  }\n\n  @keyframes flip-bottom {\n    0% {\n      transform: rotateX(90deg);\n      box-shadow: none;\n    }\n    100% {\n      transform: rotateX(0deg);\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n  }\n\n  .flap.flipping-top {\n    pointer-events: none;\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw 5cqw 0 0;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n    animation: <flip_duration>ms ease-in flip-top;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap.flipping-bottom {\n    opacity: 0;\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n  }\n  \n  .flap.flipping-bottom.flipping {\n    opacity: 1;\n    animation: <flip_duration>ms ease-in flip-bottom;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n  }\n  \n  .flap.top .flap-content {\n    top: 0;\n    height: 100%\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n  .flap.flipping-top .flap-content {\n    top: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
+  let _pipe = '\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  .split-flap {\n    /* TODO -webkit-font-smoothing */\n    position: relative;\n    width: 100%;\n    height: 100%;\n    aspect-ratio: 1/1.618; /* golden ratio ;) */\n    font-size: 120cqw;\n    font-weight: 500;\n    border-radius: 5cqw;\n    perspective: 400cqw;\n  }\n\n  .split-flap::selection {\n    background: white;\n    color: black;\n  }\n\n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 3.5cqw;\n    background: rgb(20, 20, 20);\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    z-index: 1;\n    background: rgb(40, 40, 40);\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n    z-index: 0;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw;\n    user-select: text;\n    height: 100%;\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    opacity: 0;\n  }\n  .flap.bottom.flipping {\n    opacity: 1;\n  }\n\n  @keyframes flip-top {\n    0% {\n      transform: rotateX(0deg);\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n    50%, 100% {\n      transform: rotateX(-90deg);\n      box-shadow: none;\n    }\n    \n  }\n\n  @keyframes flip-bottom {\n    0% {\n      transform: rotateX(90deg);\n      box-shadow: none;\n    }\n    100% {\n      transform: rotateX(0deg);\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n  }\n\n  .flap.flipping-top {\n    pointer-events: none;\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw 5cqw 0 0;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n    animation: <flip_duration>ms ease-in flip-top;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap.flipping-bottom {\n    opacity: 0;\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n  }\n  \n  .flap.flipping-bottom.flipping {\n    opacity: 1;\n    animation: <flip_duration>ms ease-in flip-bottom;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n  }\n  \n  .flap.top .flap-content {\n    top: 0;\n    height: 100%\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n  .flap.flipping-top .flap-content {\n    top: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
   return replace(_pipe, "<flip_duration>", to_string(ms));
 }
 var default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\u25B8()\u{1D122}\u{1D15F}\u{1D13D}|#_!?";
-function element4(char, chars, on_click2) {
+function element4(char, chars, on_click2, flip_duration_ms2) {
   return element2(
     "split-flap-char",
     toList([
@@ -5873,6 +5880,17 @@ function element4(char, chars, on_click2) {
         })()
       ),
       (() => {
+        if (flip_duration_ms2 instanceof Some) {
+          let flip_duration_ms$1 = flip_duration_ms2[0];
+          return attribute2(
+            "flip_duration",
+            to_string(flip_duration_ms$1)
+          );
+        } else {
+          return none();
+        }
+      })(),
+      (() => {
         if (on_click2 instanceof Some) {
           let on_click$1 = on_click2[0];
           return on_click(on_click$1);
@@ -5884,20 +5902,13 @@ function element4(char, chars, on_click2) {
         if (on_click2 instanceof Some) {
           return style("cursor", "pointer");
         } else {
-          return style("cursor", "default");
+          return style("cursor", "inherit");
         }
       })()
     ]),
     toList([])
   );
 }
-function init(_) {
-  return [
-    new Model(to_adjacency_list(default_chars), " ", " ", new Idle()),
-    none2()
-  ];
-}
-var flip_duration_ms = 30;
 function view(model) {
   let $ = curr_and_next_chars(model);
   let curr;
@@ -5910,21 +5921,21 @@ function view(model) {
       "let_assert",
       FILEPATH,
       "components/char",
-      180,
+      199,
       "view",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 4163,
-        end: 4220,
-        pattern_start: 4174,
-        pattern_end: 4191
+        start: 4803,
+        end: 4860,
+        pattern_start: 4814,
+        pattern_end: 4831
       }
     );
   }
   return fragment2(
     toList([
-      style2(toList([]), css(flip_duration_ms)),
+      style2(toList([]), css(model.flip_duration_ms)),
       div(
         toList([class$("split-flap")]),
         toList([
@@ -5948,55 +5959,78 @@ function view(model) {
               )
             ])
           ),
-          div(
-            toList([
-              class$("flap bottom"),
-              (() => {
-                let $1 = model.state;
-                if ($1 instanceof Idle) {
-                  return none();
-                } else {
-                  return class$("flipping");
-                }
-              })()
-            ]),
-            toList([
-              span(
-                toList([class$("flap-content")]),
-                toList([text3(curr)])
-              )
-            ])
-          ),
-          div(
-            toList([
-              class$("flap flipping-bottom"),
-              (() => {
-                let $1 = model.state;
-                if ($1 instanceof Idle) {
-                  return none();
-                } else {
-                  return class$("flipping");
-                }
-              })()
-            ]),
-            toList([
-              span(
-                toList([class$("flap-content")]),
-                toList([text3(next)])
-              )
-            ])
-          )
+          (() => {
+            let $1 = model.state;
+            if ($1 instanceof Idle) {
+              return none3();
+            } else {
+              return div(
+                toList([class$("flap bottom")]),
+                toList([
+                  span(
+                    toList([class$("flap-content")]),
+                    toList([text3(curr)])
+                  )
+                ])
+              );
+            }
+          })(),
+          (() => {
+            let $1 = model.state;
+            if ($1 instanceof Idle) {
+              return none3();
+            } else {
+              return div(
+                toList([
+                  class$("flap flipping-bottom"),
+                  (() => {
+                    let $2 = model.state;
+                    if ($2 instanceof Idle) {
+                      return none();
+                    } else {
+                      return class$("flipping");
+                    }
+                  })()
+                ]),
+                toList([
+                  span(
+                    toList([class$("flap-content")]),
+                    toList([text3(next)])
+                  )
+                ])
+              );
+            }
+          })()
         ])
       )
     ])
   );
 }
-var idle_duration_ms = 20;
+var flip_duration_ms = 40;
+function init(_) {
+  return [
+    new Model(
+      to_adjacency_list(default_chars),
+      " ",
+      " ",
+      new Idle(),
+      flip_duration_ms
+    ),
+    none2()
+  ];
+}
+var idle_duration_ms = 17;
 function update2(model, msg) {
   if (msg instanceof LetterAttrChanged) {
     let dest = msg[0];
     return [
-      new Model(model.adjacency_list, model.current_char, dest, model.state),
+      new Model(
+        model.adjacency_list,
+        model.current_char,
+        dest,
+        model.state,
+        model.flip_duration_ms
+      ),
       from((dispatch) => {
         return dispatch(new DestinationChanged());
       })
@@ -6008,11 +6042,24 @@ function update2(model, msg) {
         to_adjacency_list(chars),
         model.current_char,
         model.dest_char,
-        model.state
+        model.state,
+        model.flip_duration_ms
       ),
       from((dispatch) => {
         return dispatch(new DestinationChanged());
       })
+    ];
+  } else if (msg instanceof FlipDurationAttrChanged) {
+    let flip_duration_ms$1 = msg[0];
+    return [
+      new Model(
+        model.adjacency_list,
+        model.current_char,
+        model.dest_char,
+        model.state,
+        flip_duration_ms$1
+      ),
+      none2()
     ];
   } else if (msg instanceof DestinationChanged) {
     let has_dest = has_key(model.adjacency_list, model.dest_char);
@@ -6024,12 +6071,13 @@ function update2(model, msg) {
           model.adjacency_list,
           model.current_char,
           model.dest_char,
-          new Flipping()
+          new Flipping(),
+          model.flip_duration_ms
         ),
         from(
           (dispatch) => {
             set_timeout(
-              flip_duration_ms + 10,
+              model.flip_duration_ms + 20,
               () => {
                 return dispatch(new FlipStarted());
               }
@@ -6047,7 +6095,13 @@ function update2(model, msg) {
       " "
     );
     return [
-      new Model(model.adjacency_list, next, model.dest_char, new Idle()),
+      new Model(
+        model.adjacency_list,
+        next,
+        model.dest_char,
+        new Idle(),
+        model.flip_duration_ms
+      ),
       from(
         (dispatch) => {
           let jitter = random(20);
@@ -6071,12 +6125,13 @@ function update2(model, msg) {
           model.adjacency_list,
           model.current_char,
           model.dest_char,
-          new Flipping()
+          new Flipping(),
+          model.flip_duration_ms
         ),
         from(
           (dispatch) => {
             set_timeout(
-              flip_duration_ms + 10,
+              model.flip_duration_ms + 20,
               () => {
                 return dispatch(new FlipStarted());
               }
@@ -6125,6 +6180,17 @@ function register() {
           let _pipe$5 = append(" ", _pipe$4);
           let _pipe$6 = new CharsAttrChanged(_pipe$5);
           return new Ok(_pipe$6);
+        }
+      ),
+      on_attribute_change(
+        "flip_duration",
+        (val) => {
+          return try$(
+            parse_int(val),
+            (parsed) => {
+              return new Ok(new FlipDurationAttrChanged(parsed));
+            }
+          );
         }
       )
     ])
@@ -6297,7 +6363,7 @@ function row(line, row_num, num_cols, char_stack) {
     _pipe$1,
     (char, idx) => {
       let key = to_string(row_num) + "-" + to_string(idx);
-      return [key, element4(char, char_stack, new None())];
+      return [key, element4(char, char_stack, new None(), new None())];
     }
   );
   let children = _block$1;
@@ -7071,10 +7137,6 @@ function view3(model) {
   let pages = model.pages;
   let current_page = model.page;
   let auto_play = model.auto_play;
-  let empty_dot = "\u25CB";
-  let filled_dot = "\u25CF";
-  let forward_repeat = "\u{1D106}";
-  let backward_repeat = "\u{1D107}";
   let empty3 = repeat(" ", model.cols);
   let _block;
   let _pipe = range(1, pages);
@@ -7083,9 +7145,9 @@ function view3(model) {
     (idx) => {
       let $ = idx === current_page;
       if ($) {
-        return filled_dot;
+        return "\u25CF";
       } else {
-        return empty_dot;
+        return "\u25CB";
       }
     }
   );
@@ -7095,7 +7157,7 @@ function view3(model) {
   if (auto_play) {
     _block$1 = "( " + dots + " )";
   } else {
-    _block$1 = forward_repeat + " " + dots + " " + backward_repeat;
+    _block$1 = "\u{1D106} " + dots + " \u{1D107}";
   }
   let dots$1 = _block$1;
   let _block$2;
@@ -7131,17 +7193,17 @@ function view3(model) {
                 char,
                 (() => {
                   if (char === "\u25CB") {
-                    return new Some(empty_dot + filled_dot);
+                    return new Some("\u25CB\u25CF");
                   } else if (char === "\u25CF") {
-                    return new Some(empty_dot + filled_dot);
+                    return new Some("\u25CB\u25CF");
                   } else if (char === "\u{1D106}") {
-                    return new Some("()" + forward_repeat);
-                  } else if (char === "(") {
-                    return new Some("()" + forward_repeat);
-                  } else if (char === ")") {
-                    return new Some("()" + forward_repeat);
+                    return new Some("()\u{1D106}\u{1D107}");
                   } else if (char === "\u{1D107}") {
-                    return new Some(backward_repeat);
+                    return new Some("()\u{1D106}\u{1D107}");
+                  } else if (char === "(") {
+                    return new Some("()\u{1D106}\u{1D107}");
+                  } else if (char === ")") {
+                    return new Some("()\u{1D106}\u{1D107}");
                   } else {
                     return new None();
                   }
@@ -7162,7 +7224,8 @@ function view3(model) {
                   } else {
                     return new None();
                   }
-                })()
+                })(),
+                new Some(100)
               )
             ];
           }

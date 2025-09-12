@@ -1,7 +1,7 @@
 html {
   box-sizing: border-box;
   font-size: 16px;
-  font-family: "Fragment Mono", monospace, "Noto Music";
+  font-family: Fragment Mono, Nanum Gothic Coding, Noto Music, monospace;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }

@@ -17,9 +17,9 @@ import utils
 // NOTE: you need to have a music font installed to see this unicode
 pub const default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▸()𝄢𝅘𝅥𝄽|#_!?"
 
-const flip_duration_ms = 30
+const flip_duration_ms = 40
 
-const idle_duration_ms = 20
+const idle_duration_ms = 17
 
 type Model {
   // Model(chars: String, dest: String, state: State)
@@ -28,6 +28,7 @@ type Model {
     current_char: String,
     dest_char: String,
     state: State,
+    flip_duration_ms: Int,
   )
 }
 
@@ -39,6 +40,7 @@ type State {
 type Msg {
   LetterAttrChanged(String)
   CharsAttrChanged(String)
+  FlipDurationAttrChanged(Int)
   DestinationChanged
   FlipStarted
   FlipEnded
@@ -72,6 +74,11 @@ pub fn register() -> Result(Nil, lustre.Error) {
         |> CharsAttrChanged
         |> Ok
       }),
+
+      component.on_attribute_change("flip_duration", fn(val) {
+        use parsed <- result.try(int.parse(val))
+        Ok(FlipDurationAttrChanged(parsed))
+      }),
     ])
 
   lustre.register(component, "split-flap-char")
@@ -81,6 +88,7 @@ pub fn element(
   char char: String,
   char_stack chars: Option(String),
   on_click on_click: Option(msg),
+  flip_duration flip_duration_ms: Option(Int),
 ) -> Element(msg) {
   element.element(
     "split-flap-char",
@@ -92,6 +100,12 @@ pub fn element(
         None -> default_chars
       }),
 
+      case flip_duration_ms {
+        Some(flip_duration_ms) ->
+          attribute.attribute("flip_duration", int.to_string(flip_duration_ms))
+        None -> attribute.none()
+      },
+
       case on_click {
         Some(on_click) -> event.on_click(on_click)
         None -> attribute.none()
@@ -99,7 +113,7 @@ pub fn element(
 
       case on_click {
         Some(_) -> attribute.style("cursor", "pointer")
-        None -> attribute.style("cursor", "default")
+        None -> attribute.style("cursor", "inherit")
       },
     ],
     [],
@@ -113,6 +127,7 @@ fn init(_) -> #(Model, effect.Effect(Msg)) {
       dest_char: " ",
       current_char: " ",
       state: Idle,
+      flip_duration_ms: flip_duration_ms,
     ),
     effect.none(),
   )
@@ -134,6 +149,10 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
       })
     }
 
+    FlipDurationAttrChanged(flip_duration_ms) -> {
+      #(Model(..model, flip_duration_ms: flip_duration_ms), effect.none())
+    }
+
     DestinationChanged | FlipEnded -> {
       let has_dest = dict.has_key(model.adjacency_list, model.dest_char)
       let finished = model.current_char == model.dest_char
@@ -142,7 +161,7 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
         Idle, False, True -> {
           #(Model(..model, state: Flipping), {
             use dispatch <- effect.from
-            utils.set_timeout(flip_duration_ms + 10, fn() {
+            utils.set_timeout(model.flip_duration_ms + 20, fn() {
               dispatch(FlipStarted)
             })
             Nil
@@ -180,7 +199,7 @@ fn view(model: Model) -> Element(Msg) {
   let assert Ok(#(curr, next)) = curr_and_next_chars(model)
 
   element.fragment([
-    html.style([], css(flip_duration_ms)),
+    html.style([], css(model.flip_duration_ms)),
 
     html.div([attribute.class("split-flap")], [
       // TOP FLAP (always visible)
@@ -194,32 +213,36 @@ fn view(model: Model) -> Element(Msg) {
       ]),
 
       // BOTTOM FLAP
-      html.div(
-        [
-          attribute.class("flap bottom"),
-          case model.state {
-            Idle -> attribute.none()
-            _ -> attribute.class("flipping")
-          },
-        ],
-        [
-          html.span([attribute.class("flap-content")], [html.text(curr)]),
-        ],
-      ),
+      case model.state {
+        Idle -> element.none()
+        Flipping ->
+          html.div(
+            [
+              attribute.class("flap bottom"),
+            ],
+            [
+              html.span([attribute.class("flap-content")], [html.text(curr)]),
+            ],
+          )
+      },
 
       // FLIPPING BOTTOM
-      html.div(
-        [
-          attribute.class("flap flipping-bottom"),
-          case model.state {
-            Idle -> attribute.none()
-            _ -> attribute.class("flipping")
-          },
-        ],
-        [
-          html.span([attribute.class("flap-content")], [html.text(next)]),
-        ],
-      ),
+      case model.state {
+        Idle -> element.none()
+        Flipping ->
+          html.div(
+            [
+              attribute.class("flap flipping-bottom"),
+              case model.state {
+                Idle -> attribute.none()
+                _ -> attribute.class("flipping")
+              },
+            ],
+            [
+              html.span([attribute.class("flap-content")], [html.text(next)]),
+            ],
+          )
+      },
     ]),
   ])
 }
@@ -245,11 +268,10 @@ fn css(flip_duration ms: Int) -> String {
     width: 100%;
     height: 100%;
     aspect-ratio: 1/1.618; /* golden ratio ;) */
-    font-family: Fragment Mono, math, monospace, Noto Music;
-    font-weight: bold;
     font-size: 120cqw;
+    font-weight: 500;
     border-radius: 5cqw;
-    perspective: 600cqw;
+    perspective: 400cqw;
   }
 
   .split-flap::selection {

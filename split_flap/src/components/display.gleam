@@ -185,7 +185,15 @@ fn row(
     |> string.to_graphemes
     |> list.index_map(fn(char, idx) {
       let key = int.to_string(row_num) <> "-" <> int.to_string(idx)
-      #(key, sf_char.element(char:, char_stack:, on_click: None))
+      #(
+        key,
+        sf_char.element(
+          char: char,
+          char_stack:,
+          on_click: None,
+          flip_duration: None,
+        ),
+      )
     })
 
   let link_attrs = case line {
