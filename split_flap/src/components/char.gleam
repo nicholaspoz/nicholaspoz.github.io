@@ -1,3 +1,4 @@
+import gleam/dict
 import gleam/int
 import gleam/list
 import gleam/option.{type Option, None, Some}
@@ -21,7 +22,13 @@ const flip_duration_ms = 30
 const idle_duration_ms = 20
 
 type Model {
-  Model(chars: String, dest: String, state: State)
+  // Model(chars: String, dest: String, state: State)
+  Model(
+    adjacency_list: dict.Dict(String, String),
+    current_char: String,
+    dest_char: String,
+    state: State,
+  )
 }
 
 type State {
@@ -36,6 +43,15 @@ type Msg {
   FlipStarted
   FlipEnded
   Clicked
+}
+
+fn to_adjacency_list(chars: String) -> dict.Dict(String, String) {
+  string.first(chars)
+  |> result.map(fn(char) { chars <> char })
+  |> result.unwrap("")
+  |> string.to_graphemes
+  |> list.window_by_2
+  |> dict.from_list
 }
 
 pub fn register() -> Result(Nil, lustre.Error) {
@@ -91,33 +107,39 @@ pub fn element(
 }
 
 fn init(_) -> #(Model, effect.Effect(Msg)) {
-  #(Model(default_chars, " ", Idle), effect.none())
+  #(
+    Model(
+      adjacency_list: to_adjacency_list(default_chars),
+      dest_char: " ",
+      current_char: " ",
+      state: Idle,
+    ),
+    effect.none(),
+  )
 }
 
 fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
   case msg {
     CharsAttrChanged(chars) -> {
-      #(Model(..model, chars:), {
+      #(Model(..model, adjacency_list: to_adjacency_list(chars)), {
         use dispatch <- effect.from
         dispatch(DestinationChanged)
       })
     }
 
     LetterAttrChanged(dest) -> {
-      case { string.contains(model.chars, dest) } {
-        True -> {
-          #(Model(..model, dest:), {
-            use dispatch <- effect.from
-            dispatch(DestinationChanged)
-          })
-        }
-        False -> #(model, effect.none())
-      }
+      #(Model(..model, dest_char: dest), {
+        use dispatch <- effect.from
+        dispatch(DestinationChanged)
+      })
     }
 
     DestinationChanged | FlipEnded -> {
-      case model.state, string.first(model.chars) {
-        Idle, Ok(x) if x != model.dest -> {
+      let has_dest = dict.has_key(model.adjacency_list, model.dest_char)
+      let finished = model.current_char == model.dest_char
+
+      case model.state, finished, has_dest {
+        Idle, False, True -> {
           #(Model(..model, state: Flipping), {
             use dispatch <- effect.from
             utils.set_timeout(flip_duration_ms + 10, fn() {
@@ -127,16 +149,19 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
           })
         }
 
-        _, _ -> #(model, effect.none())
+        _, _, _ -> #(model, effect.none())
       }
     }
 
     FlipStarted -> {
-      let assert Ok(#(first, rest)) = string.pop_grapheme(model.chars)
-      let next = rest <> first
-      #(Model(..model, chars: next, state: Idle), {
+      let next =
+        result.unwrap(dict.get(model.adjacency_list, model.current_char), " ")
+      #(Model(..model, current_char: next, state: Idle), {
         use dispatch <- effect.from
-        utils.set_timeout(idle_duration_ms, fn() { dispatch(FlipEnded) })
+        let jitter = int.random(20)
+        utils.set_timeout(idle_duration_ms + jitter, fn() {
+          dispatch(FlipEnded)
+        })
         Nil
       })
     }
@@ -169,31 +194,40 @@ fn view(model: Model) -> Element(Msg) {
       ]),
 
       // BOTTOM FLAP
-      case model.state {
-        Idle -> element.none()
-        _ ->
-          html.div([attribute.class("flap bottom")], [
-            html.span([attribute.class("flap-content")], [html.text(curr)]),
-          ])
-      },
+      html.div(
+        [
+          attribute.class("flap bottom"),
+          case model.state {
+            Idle -> attribute.none()
+            _ -> attribute.class("flipping")
+          },
+        ],
+        [
+          html.span([attribute.class("flap-content")], [html.text(curr)]),
+        ],
+      ),
 
       // FLIPPING BOTTOM
-      case model.state {
-        Idle -> element.none()
-        Flipping ->
-          html.div([attribute.class("flap flipping-bottom")], [
-            html.span([attribute.class("flap-content")], [html.text(next)]),
-          ])
-      },
+      html.div(
+        [
+          attribute.class("flap flipping-bottom"),
+          case model.state {
+            Idle -> attribute.none()
+            _ -> attribute.class("flipping")
+          },
+        ],
+        [
+          html.span([attribute.class("flap-content")], [html.text(next)]),
+        ],
+      ),
     ]),
   ])
 }
 
 fn curr_and_next_chars(from model: Model) -> Result(#(String, String), Nil) {
-  case string.to_graphemes(model.chars) |> list.take(2) {
-    [a, b] -> Ok(#(a, b))
-    _ -> Error(Nil)
-  }
+  let curr = model.current_char
+  let next = result.unwrap(dict.get(model.adjacency_list, curr), " ")
+  Ok(#(curr, next))
 }
 
 fn css(flip_duration ms: Int) -> String {
@@ -272,6 +306,10 @@ fn css(flip_duration ms: Int) -> String {
     bottom: 0;
     transform-origin: top;
     border-radius: 0 0 5cqw 5cqw;
+    opacity: 0;
+  }
+  .flap.bottom.flipping {
+    opacity: 1;
   }
 
   @keyframes flip-top {
@@ -311,16 +349,20 @@ fn css(flip_duration ms: Int) -> String {
   }
 
   .flap.flipping-bottom {
+    opacity: 0;
     pointer-events: none;
     bottom: 0;
     transform-origin: top;
     border-radius: 0 0 5cqw 5cqw;
     z-index: 10;
     background: rgb(40, 40, 40);
+  }
+  
+  .flap.flipping-bottom.flipping {
+    opacity: 1;
     animation: <flip_duration>ms ease-in flip-bottom;
     animation-iteration-count: 1;
     animation-fill-mode: forwards;
-    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);
   }
   
   .flap.top .flap-content {

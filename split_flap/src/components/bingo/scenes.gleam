@@ -40,14 +40,14 @@ pub fn scenes(columns: Int) -> List(Scene) {
   let github = Link(text: right("GITHUB ▸"), url: github_url)
   let email = Link(text: right("EMAIL ▸"), url: mailto)
 
-  let #(what, a, time, to, be, alive, question) = #(
-    center("          WHAT"),
-    center("        A     "),
-    center("   TIME       "),
-    center("TO            "),
-    center("   BE         "),
-    center("      ALIVE   "),
-    center("            ? "),
+  let #(what, a, time, to, be, alive, exclaim) = #(
+    center("         WHAT"),
+    center("       A     "),
+    center("  TIME       "),
+    center("TO           "),
+    center("   BE        "),
+    center("      ALIVE  "),
+    center("            !"),
   )
 
   [
@@ -124,7 +124,7 @@ pub fn scenes(columns: Int) -> List(Scene) {
     ]),
 
     Scene("!", [
-      Frame(ms: 2000, lines: [
+      Frame(ms: 3000, lines: [
         Text(what),
         Text(a),
         Text(time),
@@ -133,14 +133,14 @@ pub fn scenes(columns: Int) -> List(Scene) {
         Text(alive),
         Text(""),
       ]),
-      Frame(ms: 4000, lines: [
+      Frame(ms: 4500, lines: [
         Text(what),
         Text(a),
         Text(time),
         Text(to),
         Text(be),
         Text(alive),
-        Text(question),
+        Text(exclaim),
       ]),
     ]),
   ]

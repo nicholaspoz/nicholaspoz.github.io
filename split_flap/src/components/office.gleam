@@ -15,7 +15,7 @@ fn view(_) -> Element(Nil) {
     html.div([attribute.class("office-void")], [
       html.div([attribute.class("office-void-bg")], [
         html.div([attribute.class("split-flap-void")], [
-          bingo.element(cols: 28),
+          bingo.element(),
         ]),
       ]),
     ]),

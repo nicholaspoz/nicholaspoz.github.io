@@ -74,7 +74,6 @@ pub fn register() -> Result(Nil, lustre.Error) {
   let component =
     lustre.component(init, update, view, [
       component.on_attribute_change("lines", fn(val) {
-        // echo "lines " <> val
         let lines = json.parse(val, using: decode.list(of: content_decoder()))
         case lines {
           Ok(lines) -> Ok(LinesAttrChanged(lines))
@@ -274,7 +273,6 @@ const css = "
     display: flex;
     flex-direction: row;
     gap: 0rem;
-
     cursor: default;
   }
 

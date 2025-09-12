@@ -390,24 +390,6 @@ function makeError(variant, file, module, line, fn, message, extra) {
   return error;
 }
 
-// build/dev/javascript/gleam_stdlib/gleam/order.mjs
-var Lt = class extends CustomType {
-};
-var Eq = class extends CustomType {
-};
-var Gt = class extends CustomType {
-};
-
-// build/dev/javascript/gleam_stdlib/gleam/option.mjs
-var Some = class extends CustomType {
-  constructor($0) {
-    super();
-    this[0] = $0;
-  }
-};
-var None = class extends CustomType {
-};
-
 // build/dev/javascript/gleam_stdlib/dict.mjs
 var referenceMap = /* @__PURE__ */ new WeakMap();
 var tempDataView = /* @__PURE__ */ new DataView(
@@ -542,21 +524,21 @@ function bitcount(x) {
 function index(bitmap, bit) {
   return bitcount(bitmap & bit - 1);
 }
-function cloneAndSet(arr, at, val) {
+function cloneAndSet(arr, at2, val) {
   const len = arr.length;
   const out = new Array(len);
   for (let i = 0; i < len; ++i) {
     out[i] = arr[i];
   }
-  out[at] = val;
+  out[at2] = val;
   return out;
 }
-function spliceIn(arr, at, val) {
+function spliceIn(arr, at2, val) {
   const len = arr.length;
   const out = new Array(len + 1);
   let i = 0;
   let g = 0;
-  while (i < at) {
+  while (i < at2) {
     out[g++] = arr[i++];
   }
   out[g++] = val;
@@ -565,12 +547,12 @@ function spliceIn(arr, at, val) {
   }
   return out;
 }
-function spliceOut(arr, at) {
+function spliceOut(arr, at2) {
   const len = arr.length;
   const out = new Array(len - 1);
   let i = 0;
   let g = 0;
-  while (i < at) {
+  while (i < at2) {
     out[g++] = arr[i++];
   }
   ++i;
@@ -1112,6 +1094,668 @@ var Dict = class _Dict {
 };
 var unequalDictSymbol = /* @__PURE__ */ Symbol();
 
+// build/dev/javascript/gleam_stdlib/gleam/bool.mjs
+function guard(requirement, consequence, alternative) {
+  if (requirement) {
+    return consequence;
+  } else {
+    return alternative();
+  }
+}
+
+// build/dev/javascript/gleam_stdlib/gleam/option.mjs
+var Some = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var None = class extends CustomType {
+};
+
+// build/dev/javascript/gleam_stdlib/gleam/order.mjs
+var Lt = class extends CustomType {
+};
+var Eq = class extends CustomType {
+};
+var Gt = class extends CustomType {
+};
+
+// build/dev/javascript/gleam_stdlib/gleam/float.mjs
+function negate(x) {
+  return -1 * x;
+}
+function round2(x) {
+  let $ = x >= 0;
+  if ($) {
+    return round(x);
+  } else {
+    return 0 - round(negate(x));
+  }
+}
+
+// build/dev/javascript/gleam_stdlib/gleam/int.mjs
+function compare(a, b) {
+  let $ = a === b;
+  if ($) {
+    return new Eq();
+  } else {
+    let $1 = a < b;
+    if ($1) {
+      return new Lt();
+    } else {
+      return new Gt();
+    }
+  }
+}
+function max(a, b) {
+  let $ = a > b;
+  if ($) {
+    return a;
+  } else {
+    return b;
+  }
+}
+function random(max2) {
+  let _pipe = random_uniform() * identity(max2);
+  let _pipe$1 = floor(_pipe);
+  return round2(_pipe$1);
+}
+
+// build/dev/javascript/gleam_stdlib/gleam/string.mjs
+function replace(string5, pattern, substitute) {
+  let _pipe = string5;
+  let _pipe$1 = identity(_pipe);
+  let _pipe$2 = string_replace(_pipe$1, pattern, substitute);
+  return identity(_pipe$2);
+}
+function slice(string5, idx, len) {
+  let $ = len < 0;
+  if ($) {
+    return "";
+  } else {
+    let $1 = idx < 0;
+    if ($1) {
+      let translated_idx = string_length(string5) + idx;
+      let $2 = translated_idx < 0;
+      if ($2) {
+        return "";
+      } else {
+        return string_slice(string5, translated_idx, len);
+      }
+    } else {
+      return string_slice(string5, idx, len);
+    }
+  }
+}
+function append(first3, second) {
+  return first3 + second;
+}
+function concat_loop(loop$strings, loop$accumulator) {
+  while (true) {
+    let strings = loop$strings;
+    let accumulator = loop$accumulator;
+    if (strings instanceof Empty) {
+      return accumulator;
+    } else {
+      let string5 = strings.head;
+      let strings$1 = strings.tail;
+      loop$strings = strings$1;
+      loop$accumulator = accumulator + string5;
+    }
+  }
+}
+function concat2(strings) {
+  return concat_loop(strings, "");
+}
+function repeat_loop(loop$string, loop$times, loop$acc) {
+  while (true) {
+    let string5 = loop$string;
+    let times = loop$times;
+    let acc = loop$acc;
+    let $ = times <= 0;
+    if ($) {
+      return acc;
+    } else {
+      loop$string = string5;
+      loop$times = times - 1;
+      loop$acc = acc + string5;
+    }
+  }
+}
+function repeat(string5, times) {
+  return repeat_loop(string5, times, "");
+}
+function join_loop(loop$strings, loop$separator, loop$accumulator) {
+  while (true) {
+    let strings = loop$strings;
+    let separator = loop$separator;
+    let accumulator = loop$accumulator;
+    if (strings instanceof Empty) {
+      return accumulator;
+    } else {
+      let string5 = strings.head;
+      let strings$1 = strings.tail;
+      loop$strings = strings$1;
+      loop$separator = separator;
+      loop$accumulator = accumulator + separator + string5;
+    }
+  }
+}
+function join(strings, separator) {
+  if (strings instanceof Empty) {
+    return "";
+  } else {
+    let first$1 = strings.head;
+    let rest = strings.tail;
+    return join_loop(rest, separator, first$1);
+  }
+}
+function padding(size2, pad_string) {
+  let pad_string_length = string_length(pad_string);
+  let num_pads = divideInt(size2, pad_string_length);
+  let extra = remainderInt(size2, pad_string_length);
+  return repeat(pad_string, num_pads) + slice(pad_string, 0, extra);
+}
+function pad_end(string5, desired_length, pad_string) {
+  let current_length = string_length(string5);
+  let to_pad_length = desired_length - current_length;
+  let $ = to_pad_length <= 0;
+  if ($) {
+    return string5;
+  } else {
+    return string5 + padding(to_pad_length, pad_string);
+  }
+}
+function first(string5) {
+  let $ = pop_grapheme(string5);
+  if ($ instanceof Ok) {
+    let first$1 = $[0][0];
+    return new Ok(first$1);
+  } else {
+    return $;
+  }
+}
+
+// build/dev/javascript/gleam_stdlib/gleam/dynamic/decode.mjs
+var DecodeError = class extends CustomType {
+  constructor(expected, found, path) {
+    super();
+    this.expected = expected;
+    this.found = found;
+    this.path = path;
+  }
+};
+var Decoder = class extends CustomType {
+  constructor(function$) {
+    super();
+    this.function = function$;
+  }
+};
+function run(data, decoder) {
+  let $ = decoder.function(data);
+  let maybe_invalid_data;
+  let errors;
+  maybe_invalid_data = $[0];
+  errors = $[1];
+  if (errors instanceof Empty) {
+    return new Ok(maybe_invalid_data);
+  } else {
+    return new Error(errors);
+  }
+}
+function success(data) {
+  return new Decoder((_) => {
+    return [data, toList([])];
+  });
+}
+function map2(decoder, transformer) {
+  return new Decoder(
+    (d) => {
+      let $ = decoder.function(d);
+      let data;
+      let errors;
+      data = $[0];
+      errors = $[1];
+      return [transformer(data), errors];
+    }
+  );
+}
+function run_decoders(loop$data, loop$failure, loop$decoders) {
+  while (true) {
+    let data = loop$data;
+    let failure2 = loop$failure;
+    let decoders = loop$decoders;
+    if (decoders instanceof Empty) {
+      return failure2;
+    } else {
+      let decoder = decoders.head;
+      let decoders$1 = decoders.tail;
+      let $ = decoder.function(data);
+      let layer;
+      let errors;
+      layer = $;
+      errors = $[1];
+      if (errors instanceof Empty) {
+        return layer;
+      } else {
+        loop$data = data;
+        loop$failure = failure2;
+        loop$decoders = decoders$1;
+      }
+    }
+  }
+}
+function one_of(first3, alternatives) {
+  return new Decoder(
+    (dynamic_data) => {
+      let $ = first3.function(dynamic_data);
+      let layer;
+      let errors;
+      layer = $;
+      errors = $[1];
+      if (errors instanceof Empty) {
+        return layer;
+      } else {
+        return run_decoders(dynamic_data, layer, alternatives);
+      }
+    }
+  );
+}
+function decode_error(expected, found) {
+  return toList([
+    new DecodeError(expected, classify_dynamic(found), toList([]))
+  ]);
+}
+function run_dynamic_function(data, name, f) {
+  let $ = f(data);
+  if ($ instanceof Ok) {
+    let data$1 = $[0];
+    return [data$1, toList([])];
+  } else {
+    let zero = $[0];
+    return [
+      zero,
+      toList([new DecodeError(name, classify_dynamic(data), toList([]))])
+    ];
+  }
+}
+function decode_int(data) {
+  return run_dynamic_function(data, "Int", int);
+}
+function failure(zero, expected) {
+  return new Decoder((d) => {
+    return [zero, decode_error(expected, d)];
+  });
+}
+var int2 = /* @__PURE__ */ new Decoder(decode_int);
+function decode_string(data) {
+  return run_dynamic_function(data, "String", string);
+}
+var string2 = /* @__PURE__ */ new Decoder(decode_string);
+function list2(inner) {
+  return new Decoder(
+    (data) => {
+      return list(
+        data,
+        inner.function,
+        (p, k) => {
+          return push_path(p, toList([k]));
+        },
+        0,
+        toList([])
+      );
+    }
+  );
+}
+function push_path(layer, path) {
+  let decoder = one_of(
+    string2,
+    toList([
+      (() => {
+        let _pipe = int2;
+        return map2(_pipe, to_string);
+      })()
+    ])
+  );
+  let path$1 = map(
+    path,
+    (key) => {
+      let key$1 = identity(key);
+      let $ = run(key$1, decoder);
+      if ($ instanceof Ok) {
+        let key$2 = $[0];
+        return key$2;
+      } else {
+        return "<" + classify_dynamic(key$1) + ">";
+      }
+    }
+  );
+  let errors = map(
+    layer[1],
+    (error) => {
+      return new DecodeError(
+        error.expected,
+        error.found,
+        append2(path$1, error.path)
+      );
+    }
+  );
+  return [layer[0], errors];
+}
+function index3(loop$path, loop$position, loop$inner, loop$data, loop$handle_miss) {
+  while (true) {
+    let path = loop$path;
+    let position = loop$position;
+    let inner = loop$inner;
+    let data = loop$data;
+    let handle_miss = loop$handle_miss;
+    if (path instanceof Empty) {
+      let _pipe = inner(data);
+      return push_path(_pipe, reverse(position));
+    } else {
+      let key = path.head;
+      let path$1 = path.tail;
+      let $ = index2(data, key);
+      if ($ instanceof Ok) {
+        let $1 = $[0];
+        if ($1 instanceof Some) {
+          let data$1 = $1[0];
+          loop$path = path$1;
+          loop$position = prepend(key, position);
+          loop$inner = inner;
+          loop$data = data$1;
+          loop$handle_miss = handle_miss;
+        } else {
+          return handle_miss(data, prepend(key, position));
+        }
+      } else {
+        let kind = $[0];
+        let $1 = inner(data);
+        let default$;
+        default$ = $1[0];
+        let _pipe = [
+          default$,
+          toList([new DecodeError(kind, classify_dynamic(data), toList([]))])
+        ];
+        return push_path(_pipe, reverse(position));
+      }
+    }
+  }
+}
+function subfield(field_path, field_decoder, next) {
+  return new Decoder(
+    (data) => {
+      let $ = index3(
+        field_path,
+        toList([]),
+        field_decoder.function,
+        data,
+        (data2, position) => {
+          let $12 = field_decoder.function(data2);
+          let default$;
+          default$ = $12[0];
+          let _pipe = [
+            default$,
+            toList([new DecodeError("Field", "Nothing", toList([]))])
+          ];
+          return push_path(_pipe, reverse(position));
+        }
+      );
+      let out;
+      let errors1;
+      out = $[0];
+      errors1 = $[1];
+      let $1 = next(out).function(data);
+      let out$1;
+      let errors2;
+      out$1 = $1[0];
+      errors2 = $1[1];
+      return [out$1, append2(errors1, errors2)];
+    }
+  );
+}
+function at(path, inner) {
+  return new Decoder(
+    (data) => {
+      return index3(
+        path,
+        toList([]),
+        inner.function,
+        data,
+        (data2, position) => {
+          let $ = inner.function(data2);
+          let default$;
+          default$ = $[0];
+          let _pipe = [
+            default$,
+            toList([new DecodeError("Field", "Nothing", toList([]))])
+          ];
+          return push_path(_pipe, reverse(position));
+        }
+      );
+    }
+  );
+}
+function field(field_name, field_decoder, next) {
+  return subfield(toList([field_name]), field_decoder, next);
+}
+
+// build/dev/javascript/gleam_stdlib/gleam_stdlib.mjs
+var Nil = void 0;
+var NOT_FOUND = {};
+function identity(x) {
+  return x;
+}
+function parse_int(value) {
+  if (/^[-+]?(\d+)$/.test(value)) {
+    return new Ok(parseInt(value));
+  } else {
+    return new Error(Nil);
+  }
+}
+function to_string(term) {
+  return term.toString();
+}
+function string_replace(string5, target2, substitute) {
+  return string5.replaceAll(target2, substitute);
+}
+function string_length(string5) {
+  if (string5 === "") {
+    return 0;
+  }
+  const iterator = graphemes_iterator(string5);
+  if (iterator) {
+    let i = 0;
+    for (const _ of iterator) {
+      i++;
+    }
+    return i;
+  } else {
+    return string5.match(/./gsu).length;
+  }
+}
+function graphemes(string5) {
+  const iterator = graphemes_iterator(string5);
+  if (iterator) {
+    return List.fromArray(Array.from(iterator).map((item) => item.segment));
+  } else {
+    return List.fromArray(string5.match(/./gsu));
+  }
+}
+var segmenter = void 0;
+function graphemes_iterator(string5) {
+  if (globalThis.Intl && Intl.Segmenter) {
+    segmenter ||= new Intl.Segmenter();
+    return segmenter.segment(string5)[Symbol.iterator]();
+  }
+}
+function pop_grapheme(string5) {
+  let first3;
+  const iterator = graphemes_iterator(string5);
+  if (iterator) {
+    first3 = iterator.next().value?.segment;
+  } else {
+    first3 = string5.match(/./su)?.[0];
+  }
+  if (first3) {
+    return new Ok([first3, string5.slice(first3.length)]);
+  } else {
+    return new Error(Nil);
+  }
+}
+function string_slice(string5, idx, len) {
+  if (len <= 0 || idx >= string5.length) {
+    return "";
+  }
+  const iterator = graphemes_iterator(string5);
+  if (iterator) {
+    while (idx-- > 0) {
+      iterator.next();
+    }
+    let result = "";
+    while (len-- > 0) {
+      const v = iterator.next().value;
+      if (v === void 0) {
+        break;
+      }
+      result += v.segment;
+    }
+    return result;
+  } else {
+    return string5.match(/./gsu).slice(idx, idx + len).join("");
+  }
+}
+function starts_with(haystack, needle) {
+  return haystack.startsWith(needle);
+}
+var unicode_whitespaces = [
+  " ",
+  // Space
+  "	",
+  // Horizontal tab
+  "\n",
+  // Line feed
+  "\v",
+  // Vertical tab
+  "\f",
+  // Form feed
+  "\r",
+  // Carriage return
+  "\x85",
+  // Next line
+  "\u2028",
+  // Line separator
+  "\u2029"
+  // Paragraph separator
+].join("");
+var trim_start_regex = /* @__PURE__ */ new RegExp(
+  `^[${unicode_whitespaces}]*`
+);
+var trim_end_regex = /* @__PURE__ */ new RegExp(`[${unicode_whitespaces}]*$`);
+function floor(float2) {
+  return Math.floor(float2);
+}
+function round(float2) {
+  return Math.round(float2);
+}
+function random_uniform() {
+  const random_uniform_result = Math.random();
+  if (random_uniform_result === 1) {
+    return random_uniform();
+  }
+  return random_uniform_result;
+}
+function new_map() {
+  return Dict.new();
+}
+function map_get(map4, key) {
+  const value = map4.get(key, NOT_FOUND);
+  if (value === NOT_FOUND) {
+    return new Error(Nil);
+  }
+  return new Ok(value);
+}
+function map_insert(key, value, map4) {
+  return map4.set(key, value);
+}
+function classify_dynamic(data) {
+  if (typeof data === "string") {
+    return "String";
+  } else if (typeof data === "boolean") {
+    return "Bool";
+  } else if (data instanceof Result) {
+    return "Result";
+  } else if (data instanceof List) {
+    return "List";
+  } else if (data instanceof BitArray) {
+    return "BitArray";
+  } else if (data instanceof Dict) {
+    return "Dict";
+  } else if (Number.isInteger(data)) {
+    return "Int";
+  } else if (Array.isArray(data)) {
+    return `Array`;
+  } else if (typeof data === "number") {
+    return "Float";
+  } else if (data === null) {
+    return "Nil";
+  } else if (data === void 0) {
+    return "Nil";
+  } else {
+    const type = typeof data;
+    return type.charAt(0).toUpperCase() + type.slice(1);
+  }
+}
+function index2(data, key) {
+  if (data instanceof Dict || data instanceof WeakMap || data instanceof Map) {
+    const token = {};
+    const entry = data.get(key, token);
+    if (entry === token) return new Ok(new None());
+    return new Ok(new Some(entry));
+  }
+  const key_is_int = Number.isInteger(key);
+  if (key_is_int && key >= 0 && key < 8 && data instanceof List) {
+    let i = 0;
+    for (const value of data) {
+      if (i === key) return new Ok(new Some(value));
+      i++;
+    }
+    return new Error("Indexable");
+  }
+  if (key_is_int && Array.isArray(data) || data && typeof data === "object" || data && Object.getPrototypeOf(data) === Object.prototype) {
+    if (key in data) return new Ok(new Some(data[key]));
+    return new Ok(new None());
+  }
+  return new Error(key_is_int ? "Indexable" : "Dict");
+}
+function list(data, decode2, pushPath, index4, emptyList) {
+  if (!(data instanceof List || Array.isArray(data))) {
+    const error = new DecodeError("List", classify_dynamic(data), emptyList);
+    return [emptyList, List.fromArray([error])];
+  }
+  const decoded = [];
+  for (const element8 of data) {
+    const layer = decode2(element8);
+    const [out, errors] = layer;
+    if (errors instanceof NonEmpty) {
+      const [_, errors2] = pushPath(layer, index4.toString());
+      return [emptyList, errors2];
+    }
+    decoded.push(out);
+    index4++;
+  }
+  return [List.fromArray(decoded), emptyList];
+}
+function int(data) {
+  if (Number.isInteger(data)) return new Ok(data);
+  return new Error(0);
+}
+function string(data) {
+  if (typeof data === "string") return new Ok(data);
+  return new Error("");
+}
+
 // build/dev/javascript/gleam_stdlib/gleam/dict.mjs
 function do_has_key(key, dict3) {
   return !isEqual(map_get(dict3, key), new Error(void 0));
@@ -1121,6 +1765,24 @@ function has_key(dict3, key) {
 }
 function insert(dict3, key, value) {
   return map_insert(key, value, dict3);
+}
+function from_list_loop(loop$list, loop$initial) {
+  while (true) {
+    let list4 = loop$list;
+    let initial = loop$initial;
+    if (list4 instanceof Empty) {
+      return initial;
+    } else {
+      let rest = list4.tail;
+      let key = list4.head[0];
+      let value = list4.head[1];
+      loop$list = rest;
+      loop$initial = insert(initial, key, value);
+    }
+  }
+}
+function from_list(list4) {
+  return from_list_loop(list4, new_map());
 }
 
 // build/dev/javascript/gleam_stdlib/gleam/list.mjs
@@ -1153,7 +1815,7 @@ function length_loop(loop$list, loop$count) {
     }
   }
 }
-function length(list4) {
+function length2(list4) {
   return length_loop(list4, 0);
 }
 function reverse_and_prepend(loop$prefix, loop$suffix) {
@@ -1173,7 +1835,7 @@ function reverse_and_prepend(loop$prefix, loop$suffix) {
 function reverse(list4) {
   return reverse_and_prepend(list4, toList([]));
 }
-function first(list4) {
+function first2(list4) {
   if (list4 instanceof Empty) {
     return new Error(void 0);
   } else {
@@ -1277,29 +1939,23 @@ function index_map_loop(loop$list, loop$fun, loop$index, loop$acc) {
 function index_map(list4, fun) {
   return index_map_loop(list4, fun, 0, toList([]));
 }
-function take_loop(loop$list, loop$n, loop$acc) {
+function drop(loop$list, loop$n) {
   while (true) {
     let list4 = loop$list;
     let n = loop$n;
-    let acc = loop$acc;
     let $ = n <= 0;
     if ($) {
-      return reverse(acc);
+      return list4;
     } else {
       if (list4 instanceof Empty) {
-        return reverse(acc);
+        return list4;
       } else {
-        let first$1 = list4.head;
         let rest$1 = list4.tail;
         loop$list = rest$1;
         loop$n = n - 1;
-        loop$acc = prepend(first$1, acc);
       }
     }
   }
-}
-function take(list4, n) {
-  return take_loop(list4, n, toList([]));
 }
 function append_loop(loop$first, loop$second) {
   while (true) {
@@ -1315,10 +1971,10 @@ function append_loop(loop$first, loop$second) {
     }
   }
 }
-function append(first3, second) {
+function append2(first3, second) {
   return append_loop(reverse(first3), second);
 }
-function fold(loop$list, loop$initial, loop$fun) {
+function fold2(loop$list, loop$initial, loop$fun) {
   while (true) {
     let list4 = loop$list;
     let initial = loop$initial;
@@ -1356,6 +2012,29 @@ function fold_until(loop$list, loop$initial, loop$fun) {
       }
     }
   }
+}
+function zip_loop(loop$one, loop$other, loop$acc) {
+  while (true) {
+    let one = loop$one;
+    let other = loop$other;
+    let acc = loop$acc;
+    if (other instanceof Empty) {
+      return reverse(acc);
+    } else if (one instanceof Empty) {
+      return reverse(acc);
+    } else {
+      let first_other = other.head;
+      let rest_other = other.tail;
+      let first_one = one.head;
+      let rest_one = one.tail;
+      loop$one = rest_one;
+      loop$other = rest_other;
+      loop$acc = prepend([first_one, first_other], acc);
+    }
+  }
+}
+function zip(list4, other) {
+  return zip_loop(list4, other, toList([]));
 }
 function unique_loop(loop$list, loop$seen, loop$acc) {
   while (true) {
@@ -1721,7 +2400,7 @@ function range_loop(loop$start, loop$stop, loop$acc) {
     let start3 = loop$start;
     let stop = loop$stop;
     let acc = loop$acc;
-    let $ = compare2(start3, stop);
+    let $ = compare(start3, stop);
     if ($ instanceof Lt) {
       loop$start = start3;
       loop$stop = stop - 1;
@@ -1738,593 +2417,19 @@ function range_loop(loop$start, loop$stop, loop$acc) {
 function range(start3, stop) {
   return range_loop(start3, stop, toList([]));
 }
-
-// build/dev/javascript/gleam_stdlib/gleam/string.mjs
-function replace(string5, pattern, substitute) {
-  let _pipe = string5;
-  let _pipe$1 = identity(_pipe);
-  let _pipe$2 = string_replace(_pipe$1, pattern, substitute);
-  return identity(_pipe$2);
-}
-function slice(string5, idx, len) {
-  let $ = len < 0;
-  if ($) {
-    return "";
-  } else {
-    let $1 = idx < 0;
-    if ($1) {
-      let translated_idx = string_length(string5) + idx;
-      let $2 = translated_idx < 0;
-      if ($2) {
-        return "";
-      } else {
-        return string_slice(string5, translated_idx, len);
-      }
-    } else {
-      return string_slice(string5, idx, len);
-    }
-  }
-}
-function append2(first3, second) {
-  return first3 + second;
-}
-function concat_loop(loop$strings, loop$accumulator) {
-  while (true) {
-    let strings = loop$strings;
-    let accumulator = loop$accumulator;
-    if (strings instanceof Empty) {
-      return accumulator;
-    } else {
-      let string5 = strings.head;
-      let strings$1 = strings.tail;
-      loop$strings = strings$1;
-      loop$accumulator = accumulator + string5;
-    }
-  }
-}
-function concat2(strings) {
-  return concat_loop(strings, "");
-}
-function repeat_loop(loop$string, loop$times, loop$acc) {
-  while (true) {
-    let string5 = loop$string;
-    let times = loop$times;
-    let acc = loop$acc;
-    let $ = times <= 0;
-    if ($) {
-      return acc;
-    } else {
-      loop$string = string5;
-      loop$times = times - 1;
-      loop$acc = acc + string5;
-    }
-  }
-}
-function repeat(string5, times) {
-  return repeat_loop(string5, times, "");
-}
-function join_loop(loop$strings, loop$separator, loop$accumulator) {
-  while (true) {
-    let strings = loop$strings;
-    let separator = loop$separator;
-    let accumulator = loop$accumulator;
-    if (strings instanceof Empty) {
-      return accumulator;
-    } else {
-      let string5 = strings.head;
-      let strings$1 = strings.tail;
-      loop$strings = strings$1;
-      loop$separator = separator;
-      loop$accumulator = accumulator + separator + string5;
-    }
-  }
-}
-function join(strings, separator) {
-  if (strings instanceof Empty) {
-    return "";
-  } else {
-    let first$1 = strings.head;
-    let rest = strings.tail;
-    return join_loop(rest, separator, first$1);
-  }
-}
-function padding(size2, pad_string) {
-  let pad_string_length = string_length(pad_string);
-  let num_pads = divideInt(size2, pad_string_length);
-  let extra = remainderInt(size2, pad_string_length);
-  return repeat(pad_string, num_pads) + slice(pad_string, 0, extra);
-}
-function pad_end(string5, desired_length, pad_string) {
-  let current_length = string_length(string5);
-  let to_pad_length = desired_length - current_length;
-  let $ = to_pad_length <= 0;
-  if ($) {
-    return string5;
-  } else {
-    return string5 + padding(to_pad_length, pad_string);
-  }
-}
-function first2(string5) {
-  let $ = pop_grapheme(string5);
-  if ($ instanceof Ok) {
-    let first$1 = $[0][0];
-    return new Ok(first$1);
-  } else {
-    return $;
-  }
-}
-
-// build/dev/javascript/gleam_stdlib/gleam/dynamic/decode.mjs
-var DecodeError = class extends CustomType {
-  constructor(expected, found, path) {
-    super();
-    this.expected = expected;
-    this.found = found;
-    this.path = path;
-  }
-};
-var Decoder = class extends CustomType {
-  constructor(function$) {
-    super();
-    this.function = function$;
-  }
-};
-function run(data, decoder) {
-  let $ = decoder.function(data);
-  let maybe_invalid_data;
-  let errors;
-  maybe_invalid_data = $[0];
-  errors = $[1];
-  if (errors instanceof Empty) {
-    return new Ok(maybe_invalid_data);
-  } else {
-    return new Error(errors);
-  }
-}
-function success(data) {
-  return new Decoder((_) => {
-    return [data, toList([])];
-  });
-}
-function map2(decoder, transformer) {
-  return new Decoder(
-    (d) => {
-      let $ = decoder.function(d);
-      let data;
-      let errors;
-      data = $[0];
-      errors = $[1];
-      return [transformer(data), errors];
-    }
-  );
-}
-function run_decoders(loop$data, loop$failure, loop$decoders) {
-  while (true) {
-    let data = loop$data;
-    let failure2 = loop$failure;
-    let decoders = loop$decoders;
-    if (decoders instanceof Empty) {
-      return failure2;
-    } else {
-      let decoder = decoders.head;
-      let decoders$1 = decoders.tail;
-      let $ = decoder.function(data);
-      let layer;
-      let errors;
-      layer = $;
-      errors = $[1];
-      if (errors instanceof Empty) {
-        return layer;
-      } else {
-        loop$data = data;
-        loop$failure = failure2;
-        loop$decoders = decoders$1;
-      }
-    }
-  }
-}
-function one_of(first3, alternatives) {
-  return new Decoder(
-    (dynamic_data) => {
-      let $ = first3.function(dynamic_data);
-      let layer;
-      let errors;
-      layer = $;
-      errors = $[1];
-      if (errors instanceof Empty) {
-        return layer;
-      } else {
-        return run_decoders(dynamic_data, layer, alternatives);
-      }
-    }
-  );
-}
-function decode_error(expected, found) {
-  return toList([
-    new DecodeError(expected, classify_dynamic(found), toList([]))
-  ]);
-}
-function run_dynamic_function(data, name, f) {
-  let $ = f(data);
-  if ($ instanceof Ok) {
-    let data$1 = $[0];
-    return [data$1, toList([])];
-  } else {
-    let zero = $[0];
-    return [
-      zero,
-      toList([new DecodeError(name, classify_dynamic(data), toList([]))])
-    ];
-  }
-}
-function decode_int(data) {
-  return run_dynamic_function(data, "Int", int);
-}
-function failure(zero, expected) {
-  return new Decoder((d) => {
-    return [zero, decode_error(expected, d)];
-  });
-}
-var int2 = /* @__PURE__ */ new Decoder(decode_int);
-function decode_string(data) {
-  return run_dynamic_function(data, "String", string);
-}
-var string2 = /* @__PURE__ */ new Decoder(decode_string);
-function list2(inner) {
-  return new Decoder(
-    (data) => {
-      return list(
-        data,
-        inner.function,
-        (p, k) => {
-          return push_path(p, toList([k]));
-        },
-        0,
-        toList([])
-      );
-    }
-  );
-}
-function push_path(layer, path) {
-  let decoder = one_of(
-    string2,
-    toList([
-      (() => {
-        let _pipe = int2;
-        return map2(_pipe, to_string);
-      })()
-    ])
-  );
-  let path$1 = map(
-    path,
-    (key) => {
-      let key$1 = identity(key);
-      let $ = run(key$1, decoder);
-      if ($ instanceof Ok) {
-        let key$2 = $[0];
-        return key$2;
-      } else {
-        return "<" + classify_dynamic(key$1) + ">";
-      }
-    }
-  );
-  let errors = map(
-    layer[1],
-    (error) => {
-      return new DecodeError(
-        error.expected,
-        error.found,
-        append(path$1, error.path)
-      );
-    }
-  );
-  return [layer[0], errors];
-}
-function index3(loop$path, loop$position, loop$inner, loop$data, loop$handle_miss) {
-  while (true) {
-    let path = loop$path;
-    let position = loop$position;
-    let inner = loop$inner;
-    let data = loop$data;
-    let handle_miss = loop$handle_miss;
-    if (path instanceof Empty) {
-      let _pipe = inner(data);
-      return push_path(_pipe, reverse(position));
-    } else {
-      let key = path.head;
-      let path$1 = path.tail;
-      let $ = index2(data, key);
-      if ($ instanceof Ok) {
-        let $1 = $[0];
-        if ($1 instanceof Some) {
-          let data$1 = $1[0];
-          loop$path = path$1;
-          loop$position = prepend(key, position);
-          loop$inner = inner;
-          loop$data = data$1;
-          loop$handle_miss = handle_miss;
-        } else {
-          return handle_miss(data, prepend(key, position));
-        }
-      } else {
-        let kind = $[0];
-        let $1 = inner(data);
-        let default$;
-        default$ = $1[0];
-        let _pipe = [
-          default$,
-          toList([new DecodeError(kind, classify_dynamic(data), toList([]))])
-        ];
-        return push_path(_pipe, reverse(position));
-      }
-    }
-  }
-}
-function subfield(field_path, field_decoder, next) {
-  return new Decoder(
-    (data) => {
-      let $ = index3(
-        field_path,
-        toList([]),
-        field_decoder.function,
-        data,
-        (data2, position) => {
-          let $12 = field_decoder.function(data2);
-          let default$;
-          default$ = $12[0];
-          let _pipe = [
-            default$,
-            toList([new DecodeError("Field", "Nothing", toList([]))])
-          ];
-          return push_path(_pipe, reverse(position));
-        }
-      );
-      let out;
-      let errors1;
-      out = $[0];
-      errors1 = $[1];
-      let $1 = next(out).function(data);
-      let out$1;
-      let errors2;
-      out$1 = $1[0];
-      errors2 = $1[1];
-      return [out$1, append(errors1, errors2)];
-    }
-  );
-}
-function field(field_name, field_decoder, next) {
-  return subfield(toList([field_name]), field_decoder, next);
-}
-
-// build/dev/javascript/gleam_stdlib/gleam_stdlib.mjs
-var Nil = void 0;
-var NOT_FOUND = {};
-function identity(x) {
-  return x;
-}
-function parse_int(value) {
-  if (/^[-+]?(\d+)$/.test(value)) {
-    return new Ok(parseInt(value));
-  } else {
-    return new Error(Nil);
-  }
-}
-function to_string(term) {
-  return term.toString();
-}
-function string_replace(string5, target2, substitute) {
-  return string5.replaceAll(target2, substitute);
-}
-function string_length(string5) {
-  if (string5 === "") {
-    return 0;
-  }
-  const iterator = graphemes_iterator(string5);
-  if (iterator) {
-    let i = 0;
-    for (const _ of iterator) {
-      i++;
-    }
-    return i;
-  } else {
-    return string5.match(/./gsu).length;
-  }
-}
-function graphemes(string5) {
-  const iterator = graphemes_iterator(string5);
-  if (iterator) {
-    return List.fromArray(Array.from(iterator).map((item) => item.segment));
-  } else {
-    return List.fromArray(string5.match(/./gsu));
-  }
-}
-var segmenter = void 0;
-function graphemes_iterator(string5) {
-  if (globalThis.Intl && Intl.Segmenter) {
-    segmenter ||= new Intl.Segmenter();
-    return segmenter.segment(string5)[Symbol.iterator]();
-  }
-}
-function pop_grapheme(string5) {
-  let first3;
-  const iterator = graphemes_iterator(string5);
-  if (iterator) {
-    first3 = iterator.next().value?.segment;
-  } else {
-    first3 = string5.match(/./su)?.[0];
-  }
-  if (first3) {
-    return new Ok([first3, string5.slice(first3.length)]);
-  } else {
-    return new Error(Nil);
-  }
-}
-function string_slice(string5, idx, len) {
-  if (len <= 0 || idx >= string5.length) {
-    return "";
-  }
-  const iterator = graphemes_iterator(string5);
-  if (iterator) {
-    while (idx-- > 0) {
-      iterator.next();
-    }
-    let result = "";
-    while (len-- > 0) {
-      const v = iterator.next().value;
-      if (v === void 0) {
-        break;
-      }
-      result += v.segment;
-    }
-    return result;
-  } else {
-    return string5.match(/./gsu).slice(idx, idx + len).join("");
-  }
-}
-function contains_string(haystack, needle) {
-  return haystack.indexOf(needle) >= 0;
-}
-function starts_with(haystack, needle) {
-  return haystack.startsWith(needle);
-}
-var unicode_whitespaces = [
-  " ",
-  // Space
-  "	",
-  // Horizontal tab
-  "\n",
-  // Line feed
-  "\v",
-  // Vertical tab
-  "\f",
-  // Form feed
-  "\r",
-  // Carriage return
-  "\x85",
-  // Next line
-  "\u2028",
-  // Line separator
-  "\u2029"
-  // Paragraph separator
-].join("");
-var trim_start_regex = /* @__PURE__ */ new RegExp(
-  `^[${unicode_whitespaces}]*`
-);
-var trim_end_regex = /* @__PURE__ */ new RegExp(`[${unicode_whitespaces}]*$`);
-function new_map() {
-  return Dict.new();
-}
-function map_get(map4, key) {
-  const value = map4.get(key, NOT_FOUND);
-  if (value === NOT_FOUND) {
-    return new Error(Nil);
-  }
-  return new Ok(value);
-}
-function map_insert(key, value, map4) {
-  return map4.set(key, value);
-}
-function classify_dynamic(data) {
-  if (typeof data === "string") {
-    return "String";
-  } else if (typeof data === "boolean") {
-    return "Bool";
-  } else if (data instanceof Result) {
-    return "Result";
-  } else if (data instanceof List) {
-    return "List";
-  } else if (data instanceof BitArray) {
-    return "BitArray";
-  } else if (data instanceof Dict) {
-    return "Dict";
-  } else if (Number.isInteger(data)) {
-    return "Int";
-  } else if (Array.isArray(data)) {
-    return `Array`;
-  } else if (typeof data === "number") {
-    return "Float";
-  } else if (data === null) {
-    return "Nil";
-  } else if (data === void 0) {
-    return "Nil";
-  } else {
-    const type = typeof data;
-    return type.charAt(0).toUpperCase() + type.slice(1);
-  }
-}
-function index2(data, key) {
-  if (data instanceof Dict || data instanceof WeakMap || data instanceof Map) {
-    const token = {};
-    const entry = data.get(key, token);
-    if (entry === token) return new Ok(new None());
-    return new Ok(new Some(entry));
-  }
-  const key_is_int = Number.isInteger(key);
-  if (key_is_int && key >= 0 && key < 8 && data instanceof List) {
-    let i = 0;
-    for (const value of data) {
-      if (i === key) return new Ok(new Some(value));
-      i++;
-    }
-    return new Error("Indexable");
-  }
-  if (key_is_int && Array.isArray(data) || data && typeof data === "object" || data && Object.getPrototypeOf(data) === Object.prototype) {
-    if (key in data) return new Ok(new Some(data[key]));
-    return new Ok(new None());
-  }
-  return new Error(key_is_int ? "Indexable" : "Dict");
-}
-function list(data, decode2, pushPath, index4, emptyList) {
-  if (!(data instanceof List || Array.isArray(data))) {
-    const error = new DecodeError("List", classify_dynamic(data), emptyList);
-    return [emptyList, List.fromArray([error])];
-  }
-  const decoded = [];
-  for (const element8 of data) {
-    const layer = decode2(element8);
-    const [out, errors] = layer;
-    if (errors instanceof NonEmpty) {
-      const [_, errors2] = pushPath(layer, index4.toString());
-      return [emptyList, errors2];
-    }
-    decoded.push(out);
-    index4++;
-  }
-  return [List.fromArray(decoded), emptyList];
-}
-function int(data) {
-  if (Number.isInteger(data)) return new Ok(data);
-  return new Error(0);
-}
-function string(data) {
-  if (typeof data === "string") return new Ok(data);
-  return new Error("");
-}
-
-// build/dev/javascript/gleam_stdlib/gleam/int.mjs
-function compare2(a, b) {
-  let $ = a === b;
-  if ($) {
-    return new Eq();
-  } else {
-    let $1 = a < b;
-    if ($1) {
-      return new Lt();
-    } else {
-      return new Gt();
-    }
-  }
-}
-function max(a, b) {
-  let $ = a > b;
-  if ($) {
-    return a;
-  } else {
-    return b;
-  }
+function window_by_2(list4) {
+  return zip(list4, drop(list4, 1));
 }
 
 // build/dev/javascript/gleam_stdlib/gleam/result.mjs
+function map3(result, fun) {
+  if (result instanceof Ok) {
+    let x = result[0];
+    return new Ok(fun(x));
+  } else {
+    return result;
+  }
+}
 function map_error(result, fun) {
   if (result instanceof Ok) {
     return result;
@@ -2341,11 +2446,12 @@ function try$(result, fun) {
     return result;
   }
 }
-function or(first3, second) {
-  if (first3 instanceof Ok) {
-    return first3;
+function unwrap(result, default$) {
+  if (result instanceof Ok) {
+    let v = result[0];
+    return v;
   } else {
-    return second;
+    return default$;
   }
 }
 function lazy_or(first3, second) {
@@ -2498,6 +2604,9 @@ function to_string2(json2) {
   return json_to_string(json2);
 }
 function string3(input) {
+  return identity3(input);
+}
+function int3(input) {
   return identity3(input);
 }
 function null$() {
@@ -2782,6 +2891,14 @@ function from(effect) {
     return effect(dispatch);
   };
   return new Effect(toList([task]), empty.before_paint, empty.after_paint);
+}
+function before_paint(effect) {
+  let task = (actions) => {
+    let root3 = actions.root();
+    let dispatch = actions.dispatch;
+    return effect(dispatch, root3);
+  };
+  return new Effect(empty.synchronous, toList([task]), empty.after_paint);
 }
 function event2(name, data) {
   let task = (actions) => {
@@ -3148,7 +3265,7 @@ function remove_event(events, path, name) {
   );
 }
 function remove_attributes(handlers, path, attributes) {
-  return fold(
+  return fold2(
     attributes,
     handlers,
     (events, attribute3) => {
@@ -3207,7 +3324,7 @@ function add_event(events, mapper, path, name, handler) {
   );
 }
 function add_attributes(handlers, mapper, path, attributes) {
-  return fold(
+  return fold2(
     attributes,
     handlers,
     (events, attribute3) => {
@@ -3396,9 +3513,6 @@ function div(attrs, children) {
 }
 function span(attrs, children) {
   return element2("span", attrs, children);
-}
-function button(attrs, children) {
-  return element2("button", attrs, children);
 }
 
 // build/dev/javascript/lustre/lustre/vdom/patch.mjs
@@ -5257,7 +5371,7 @@ function listAppend(a, b) {
   } else if (b instanceof Empty) {
     return a;
   } else {
-    return append(a, b);
+    return append2(a, b);
   }
 }
 var copiedStyleSheets = /* @__PURE__ */ new WeakMap();
@@ -5494,10 +5608,10 @@ var make_component = ({ init: init5, update: update6, view: view6, config }, nam
 
 // build/dev/javascript/lustre/lustre/component.mjs
 var Config2 = class extends CustomType {
-  constructor(open_shadow_root, adopt_styles2, delegates_focus, attributes, properties, contexts, is_form_associated, on_form_autofill, on_form_reset, on_form_restore) {
+  constructor(open_shadow_root, adopt_styles, delegates_focus, attributes, properties, contexts, is_form_associated, on_form_autofill, on_form_reset, on_form_restore) {
     super();
     this.open_shadow_root = open_shadow_root;
-    this.adopt_styles = adopt_styles2;
+    this.adopt_styles = adopt_styles;
     this.delegates_focus = delegates_focus;
     this.attributes = attributes;
     this.properties = properties;
@@ -5527,7 +5641,7 @@ function new$6(options) {
     option_none,
     option_none
   );
-  return fold(
+  return fold2(
     options,
     init5,
     (config, option) => {
@@ -5544,24 +5658,6 @@ function on_attribute_change(name, decoder) {
         config.adopt_styles,
         config.delegates_focus,
         attributes,
-        config.properties,
-        config.contexts,
-        config.is_form_associated,
-        config.on_form_autofill,
-        config.on_form_reset,
-        config.on_form_restore
-      );
-    }
-  );
-}
-function adopt_styles(adopt) {
-  return new Option(
-    (config) => {
-      return new Config2(
-        config.open_shadow_root,
-        adopt,
-        config.delegates_focus,
-        config.attributes,
         config.properties,
         config.contexts,
         config.is_form_associated,
@@ -5664,6 +5760,21 @@ function set_timeout(delay, cb) {
 function clear_timeout(id) {
   window.clearTimeout(id);
 }
+function measure_orientation(root3) {
+  const rect = root3?.host?.getBoundingClientRect() || {
+    width: 0,
+    height: 0
+  };
+  return rect.width >= rect.height ? "landscape" : "portrait";
+}
+var observer = null;
+function on_resize(root3, cb) {
+  if (observer) {
+    return;
+  }
+  observer = new ResizeObserver(cb);
+  observer.observe(root3.host);
+}
 
 // build/dev/javascript/split_flap/utils.mjs
 function find_next(loop$l, loop$current) {
@@ -5695,10 +5806,11 @@ function find_next(loop$l, loop$current) {
 // build/dev/javascript/split_flap/components/char.mjs
 var FILEPATH = "src/components/char.gleam";
 var Model = class extends CustomType {
-  constructor(chars, dest, state) {
+  constructor(adjacency_list, current_char, dest_char, state) {
     super();
-    this.chars = chars;
-    this.dest = dest;
+    this.adjacency_list = adjacency_list;
+    this.current_char = current_char;
+    this.dest_char = dest_char;
     this.state = state;
   }
 };
@@ -5724,31 +5836,23 @@ var FlipStarted = class extends CustomType {
 };
 var FlipEnded = class extends CustomType {
 };
+function to_adjacency_list(chars) {
+  let _pipe = first(chars);
+  let _pipe$1 = map3(_pipe, (char) => {
+    return chars + char;
+  });
+  let _pipe$2 = unwrap(_pipe$1, "");
+  let _pipe$3 = graphemes(_pipe$2);
+  let _pipe$4 = window_by_2(_pipe$3);
+  return from_list(_pipe$4);
+}
 function curr_and_next_chars(model) {
-  let $ = (() => {
-    let _pipe = graphemes(model.chars);
-    return take(_pipe, 2);
-  })();
-  if ($ instanceof Empty) {
-    return new Error(void 0);
-  } else {
-    let $1 = $.tail;
-    if ($1 instanceof Empty) {
-      return new Error(void 0);
-    } else {
-      let $2 = $1.tail;
-      if ($2 instanceof Empty) {
-        let a = $.head;
-        let b = $1.head;
-        return new Ok([a, b]);
-      } else {
-        return new Error(void 0);
-      }
-    }
-  }
+  let curr = model.current_char;
+  let next = unwrap(map_get(model.adjacency_list, curr), " ");
+  return new Ok([curr, next]);
 }
 function css(ms) {
-  let _pipe = '\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  .split-flap {\n    /* TODO -webkit-font-smoothing */\n    position: relative;\n    width: 100%;\n    height: 100%;\n    aspect-ratio: 1/1.618; /* golden ratio ;) */\n    font-family: Fragment Mono, math, monospace, Noto Music;\n    font-weight: bold;\n    font-size: 120cqw;\n    border-radius: 5cqw;\n    perspective: 600cqw;\n  }\n\n  .split-flap::selection {\n    background: white;\n    color: black;\n  }\n\n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 3.5cqw;\n    background: rgb(20, 20, 20);\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    z-index: 1;\n    background: rgb(40, 40, 40);\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n    z-index: 0;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw;\n    user-select: text;\n    height: 100%;\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n  }\n\n  @keyframes flip-top {\n    0% {\n      transform: rotateX(0deg);\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n    50%, 100% {\n      transform: rotateX(-90deg);\n      box-shadow: none;\n    }\n    \n  }\n\n  @keyframes flip-bottom {\n    0% {\n      transform: rotateX(90deg);\n      box-shadow: none;\n    }\n    100% {\n      transform: rotateX(0deg);\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n  }\n\n  .flap.flipping-top {\n    pointer-events: none;\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw 5cqw 0 0;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n    animation: <flip_duration>ms ease-in flip-top;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap.flipping-bottom {\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n    animation: <flip_duration>ms ease-in flip-bottom;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n  \n  .flap.top .flap-content {\n    top: 0;\n    height: 100%\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n  .flap.flipping-top .flap-content {\n    top: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
+  let _pipe = '\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  .split-flap {\n    /* TODO -webkit-font-smoothing */\n    position: relative;\n    width: 100%;\n    height: 100%;\n    aspect-ratio: 1/1.618; /* golden ratio ;) */\n    font-family: Fragment Mono, math, monospace, Noto Music;\n    font-weight: bold;\n    font-size: 120cqw;\n    border-radius: 5cqw;\n    perspective: 600cqw;\n  }\n\n  .split-flap::selection {\n    background: white;\n    color: black;\n  }\n\n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 3.5cqw;\n    background: rgb(20, 20, 20);\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    z-index: 1;\n    background: rgb(40, 40, 40);\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n    z-index: 0;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw;\n    user-select: text;\n    height: 100%;\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    opacity: 0;\n  }\n  .flap.bottom.flipping {\n    opacity: 1;\n  }\n\n  @keyframes flip-top {\n    0% {\n      transform: rotateX(0deg);\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n    50%, 100% {\n      transform: rotateX(-90deg);\n      box-shadow: none;\n    }\n    \n  }\n\n  @keyframes flip-bottom {\n    0% {\n      transform: rotateX(90deg);\n      box-shadow: none;\n    }\n    100% {\n      transform: rotateX(0deg);\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n  }\n\n  .flap.flipping-top {\n    pointer-events: none;\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw 5cqw 0 0;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n    animation: <flip_duration>ms ease-in flip-top;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap.flipping-bottom {\n    opacity: 0;\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n  }\n  \n  .flap.flipping-bottom.flipping {\n    opacity: 1;\n    animation: <flip_duration>ms ease-in flip-bottom;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n  }\n  \n  .flap.top .flap-content {\n    top: 0;\n    height: 100%\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n  .flap.flipping-top .flap-content {\n    top: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
   return replace(_pipe, "<flip_duration>", to_string(ms));
 }
 var default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\u25B8()\u{1D122}\u{1D15F}\u{1D13D}|#_!?";
@@ -5788,7 +5892,10 @@ function element4(char, chars, on_click2) {
   );
 }
 function init(_) {
-  return [new Model(default_chars, " ", new Idle()), none2()];
+  return [
+    new Model(to_adjacency_list(default_chars), " ", " ", new Idle()),
+    none2()
+  ];
 }
 var flip_duration_ms = 30;
 function view(model) {
@@ -5803,15 +5910,15 @@ function view(model) {
       "let_assert",
       FILEPATH,
       "components/char",
-      155,
+      180,
       "view",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 3574,
-        end: 3631,
-        pattern_start: 3585,
-        pattern_end: 3602
+        start: 4143,
+        end: 4200,
+        pattern_start: 4154,
+        pattern_end: 4171
       }
     );
   }
@@ -5841,38 +5948,44 @@ function view(model) {
               )
             ])
           ),
-          (() => {
-            let $1 = model.state;
-            if ($1 instanceof Idle) {
-              return none3();
-            } else {
-              return div(
-                toList([class$("flap bottom")]),
-                toList([
-                  span(
-                    toList([class$("flap-content")]),
-                    toList([text3(curr)])
-                  )
-                ])
-              );
-            }
-          })(),
-          (() => {
-            let $1 = model.state;
-            if ($1 instanceof Idle) {
-              return none3();
-            } else {
-              return div(
-                toList([class$("flap flipping-bottom")]),
-                toList([
-                  span(
-                    toList([class$("flap-content")]),
-                    toList([text3(next)])
-                  )
-                ])
-              );
-            }
-          })()
+          div(
+            toList([
+              class$("flap bottom"),
+              (() => {
+                let $1 = model.state;
+                if ($1 instanceof Idle) {
+                  return none();
+                } else {
+                  return class$("flipping");
+                }
+              })()
+            ]),
+            toList([
+              span(
+                toList([class$("flap-content")]),
+                toList([text3(curr)])
+              )
+            ])
+          ),
+          div(
+            toList([
+              class$("flap flipping-bottom"),
+              (() => {
+                let $1 = model.state;
+                if ($1 instanceof Idle) {
+                  return none();
+                } else {
+                  return class$("flipping");
+                }
+              })()
+            ]),
+            toList([
+              span(
+                toList([class$("flap-content")]),
+                toList([text3(next)])
+              )
+            ])
+          )
         ])
       )
     ])
@@ -5882,84 +5995,64 @@ var idle_duration_ms = 20;
 function update2(model, msg) {
   if (msg instanceof LetterAttrChanged) {
     let dest = msg[0];
-    let $ = contains_string(model.chars, dest);
-    if ($) {
+    return [
+      new Model(model.adjacency_list, model.current_char, dest, model.state),
+      from((dispatch) => {
+        return dispatch(new DestinationChanged());
+      })
+    ];
+  } else if (msg instanceof CharsAttrChanged) {
+    let chars = msg[0];
+    return [
+      new Model(
+        to_adjacency_list(chars),
+        model.current_char,
+        model.dest_char,
+        model.state
+      ),
+      from((dispatch) => {
+        return dispatch(new DestinationChanged());
+      })
+    ];
+  } else if (msg instanceof DestinationChanged) {
+    let has_dest = has_key(model.adjacency_list, model.dest_char);
+    let finished = model.current_char === model.dest_char;
+    let $ = model.state;
+    if (has_dest && !finished && $ instanceof Idle) {
       return [
-        new Model(model.chars, dest, model.state),
+        new Model(
+          model.adjacency_list,
+          model.current_char,
+          model.dest_char,
+          new Flipping()
+        ),
         from(
           (dispatch) => {
-            return dispatch(new DestinationChanged());
+            set_timeout(
+              flip_duration_ms + 10,
+              () => {
+                return dispatch(new FlipStarted());
+              }
+            );
+            return void 0;
           }
         )
       ];
     } else {
       return [model, none2()];
     }
-  } else if (msg instanceof CharsAttrChanged) {
-    let chars = msg[0];
-    return [
-      new Model(chars, model.dest, model.state),
-      from((dispatch) => {
-        return dispatch(new DestinationChanged());
-      })
-    ];
-  } else if (msg instanceof DestinationChanged) {
-    let $ = model.state;
-    let $1 = first2(model.chars);
-    if ($1 instanceof Ok && $ instanceof Idle) {
-      let x = $1[0];
-      if (x !== model.dest) {
-        return [
-          new Model(model.chars, model.dest, new Flipping()),
-          from(
-            (dispatch) => {
-              set_timeout(
-                flip_duration_ms + 10,
-                () => {
-                  return dispatch(new FlipStarted());
-                }
-              );
-              return void 0;
-            }
-          )
-        ];
-      } else {
-        return [model, none2()];
-      }
-    } else {
-      return [model, none2()];
-    }
   } else if (msg instanceof FlipStarted) {
-    let $ = pop_grapheme(model.chars);
-    let first3;
-    let rest;
-    if ($ instanceof Ok) {
-      first3 = $[0][0];
-      rest = $[0][1];
-    } else {
-      throw makeError(
-        "let_assert",
-        FILEPATH,
-        "components/char",
-        135,
-        "update",
-        "Pattern match failed, no pattern matched the value.",
-        {
-          value: $,
-          start: 3043,
-          end: 3107,
-          pattern_start: 3054,
-          pattern_end: 3072
-        }
-      );
-    }
-    let next = rest + first3;
+    let next = unwrap(
+      map_get(model.adjacency_list, model.current_char),
+      " "
+    );
     return [
-      new Model(next, model.dest, new Idle()),
+      new Model(model.adjacency_list, next, model.dest_char, new Idle()),
       from(
         (dispatch) => {
+          let jitter = random(20);
           set_timeout(
-            idle_duration_ms,
+            idle_duration_ms + jitter,
             () => {
               return dispatch(new FlipEnded());
             }
@@ -5969,28 +6062,29 @@ function update2(model, msg) {
       )
     ];
   } else if (msg instanceof FlipEnded) {
+    let has_dest = has_key(model.adjacency_list, model.dest_char);
+    let finished = model.current_char === model.dest_char;
     let $ = model.state;
-    let $1 = first2(model.chars);
-    if ($1 instanceof Ok && $ instanceof Idle) {
-      let x = $1[0];
-      if (x !== model.dest) {
-        return [
-          new Model(model.chars, model.dest, new Flipping()),
-          from(
-            (dispatch) => {
-              set_timeout(
-                flip_duration_ms + 10,
-                () => {
-                  return dispatch(new FlipStarted());
-                }
-              );
-              return void 0;
-            }
-          )
-        ];
-      } else {
-        return [model, none2()];
-      }
+    if (has_dest && !finished && $ instanceof Idle) {
+      return [
+        new Model(
+          model.adjacency_list,
+          model.current_char,
+          model.dest_char,
+          new Flipping()
+        ),
+        from(
+          (dispatch) => {
+            set_timeout(
+              flip_duration_ms + 10,
+              () => {
+                return dispatch(new FlipStarted());
+              }
+            );
+            return void 0;
+          }
+        )
+      ];
     } else {
       return [model, none2()];
     }
@@ -6008,7 +6102,7 @@ function register() {
         "letter",
         (val) => {
           return try$(
-            first2(val),
+            first(val),
             (char) => {
               return new Ok(new LetterAttrChanged(char));
             }
@@ -6028,7 +6122,7 @@ function register() {
           );
           let _pipe$3 = unique(_pipe$2);
           let _pipe$4 = join(_pipe$3, "");
-          let _pipe$5 = append2(" ", _pipe$4);
+          let _pipe$5 = append(" ", _pipe$4);
           let _pipe$6 = new CharsAttrChanged(_pipe$5);
           return new Ok(_pipe$6);
         }
@@ -6320,7 +6414,7 @@ function init2(_) {
     none2()
   ];
 }
-var css2 = "\n  :host {\n    display: block;\n  }\n\n  split-flap-char {\n    padding: 0.9cqw 0.3cqw;\n  }\n\n  .display {\n    display: flex;\n    flex-direction: column;\n    gap: 0; \n    width: 100%;\n    height: 100%;\n  }\n\n  .row {\n    display: flex;\n    flex-direction: row;\n    gap: 0rem;\n\n    cursor: default;\n  }\n\n  .row[href] {\n    cursor: pointer;\n  }\n";
+var css2 = "\n  :host {\n    display: block;\n  }\n\n  split-flap-char {\n    padding: 0.9cqw 0.3cqw;\n  }\n\n  .display {\n    display: flex;\n    flex-direction: column;\n    gap: 0; \n    width: 100%;\n    height: 100%;\n  }\n\n  .row {\n    display: flex;\n    flex-direction: row;\n    gap: 0rem;\n    cursor: default;\n  }\n\n  .row[href] {\n    cursor: pointer;\n  }\n";
 function view2(model) {
   let _block;
   let _pipe = model.lines;
@@ -6366,7 +6460,7 @@ function register2() {
               "error " + error_string(error),
               void 0,
               "src/components/display.gleam",
-              82
+              81
             );
             return new Error(void 0);
           }
@@ -6706,13 +6800,13 @@ function scenes(columns) {
   let github = new Link(right2("GITHUB \u25B8"), github_url);
   let email = new Link(right2("EMAIL \u25B8"), mailto);
   let $3 = [
-    center2("          WHAT"),
-    center2("        A     "),
-    center2("   TIME       "),
-    center2("TO            "),
-    center2("   BE         "),
-    center2("      ALIVE   "),
-    center2("            ? ")
+    center2("         WHAT"),
+    center2("       A     "),
+    center2("  TIME       "),
+    center2("TO           "),
+    center2("   BE        "),
+    center2("      ALIVE  "),
+    center2("            !")
   ];
   let what;
   let a;
@@ -6720,14 +6814,14 @@ function scenes(columns) {
   let to;
   let be;
   let alive;
-  let question;
+  let exclaim;
   what = $3[0];
   a = $3[1];
   time = $3[2];
   to = $3[3];
   be = $3[4];
   alive = $3[5];
-  question = $3[6];
+  exclaim = $3[6];
   return toList([
     new Scene(
       "HOME",
@@ -6840,7 +6934,7 @@ function scenes(columns) {
             new Text2(alive),
             new Text2("")
           ]),
-          2e3
+          3e3
         ),
         new Frame(
           toList([
@@ -6850,9 +6944,9 @@ function scenes(columns) {
             new Text2(to),
             new Text2(be),
             new Text2(alive),
-            new Text2(question)
+            new Text2(exclaim)
           ]),
-          4e3
+          4500
         )
       ])
     )
@@ -6861,14 +6955,21 @@ function scenes(columns) {
 
 // build/dev/javascript/split_flap/components/progress_bar.mjs
 var Model3 = class extends CustomType {
-  constructor(progress, cols, auto_play) {
+  constructor(pages, page, cols, auto_play) {
     super();
-    this.progress = progress;
+    this.pages = pages;
+    this.page = page;
     this.cols = cols;
     this.auto_play = auto_play;
   }
 };
-var ProgressAttrChanged = class extends CustomType {
+var PagesAttrChanged = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var PageAttrChanged = class extends CustomType {
   constructor($0) {
     super();
     this[0] = $0;
@@ -6886,27 +6987,33 @@ var AutoPlayAttrChanged = class extends CustomType {
     this[0] = $0;
   }
 };
-var BackClicked = class extends CustomType {
-};
-var ForwardClicked = class extends CustomType {
+var PageClicked = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
 };
 var AutoPlayClicked = class extends CustomType {
 };
-function on_back(msg) {
-  return on("go_back", success(msg));
-}
-function on_forward(msg) {
-  return on("go_forward", success(msg));
+function on_page(handler) {
+  return on(
+    "page_clicked",
+    (() => {
+      let _pipe = at(toList(["detail"]), int2);
+      return map2(_pipe, handler);
+    })()
+  );
 }
 function on_auto_play(msg) {
   return on("auto_play", success(msg));
 }
-function element6(progress, cols, back_msg, forward_msg, auto_play, auto_play_msg) {
+function element6(pages, page, cols, auto_play, page_handler, auto_play_msg) {
   return element2(
     "progress-bar",
     toList([
       part("progress-bar"),
-      attribute2("progress", to_string(progress)),
+      attribute2("pages", to_string(pages)),
+      attribute2("page", to_string(page)),
       attribute2("cols", to_string(cols)),
       attribute2(
         "auto_play",
@@ -6918,113 +7025,132 @@ function element6(progress, cols, back_msg, forward_msg, auto_play, auto_play_ms
           }
         })()
       ),
-      (() => {
-        if (back_msg instanceof Some) {
-          let m = back_msg[0];
-          return on_back(m);
-        } else {
-          return none();
-        }
-      })(),
-      (() => {
-        if (forward_msg instanceof Some) {
-          let m = forward_msg[0];
-          return on_forward(m);
-        } else {
-          return none();
-        }
-      })(),
-      (() => {
-        if (auto_play_msg instanceof Some) {
-          let m = auto_play_msg[0];
-          return on_auto_play(m);
-        } else {
-          return none();
-        }
-      })()
+      on_auto_play(auto_play_msg),
+      on_page(page_handler)
     ]),
     toList([])
   );
 }
 function init3(_) {
-  return [new Model3(0, 2, true), none2()];
+  return [new Model3(0, 0, 0, true), none2()];
 }
 function update4(model, msg) {
-  if (msg instanceof ProgressAttrChanged) {
-    let progress = msg[0];
-    return [new Model3(progress, model.cols, model.auto_play), none2()];
+  if (msg instanceof PagesAttrChanged) {
+    let pages = msg[0];
+    return [
+      new Model3(pages, model.page, model.cols, model.auto_play),
+      none2()
+    ];
+  } else if (msg instanceof PageAttrChanged) {
+    let page = msg[0];
+    return [
+      new Model3(model.pages, page, model.cols, model.auto_play),
+      none2()
+    ];
   } else if (msg instanceof ColsAttrChanged2) {
     let cols = msg[0];
-    return [new Model3(model.progress, cols, model.auto_play), none2()];
+    return [
+      new Model3(model.pages, model.page, cols, model.auto_play),
+      none2()
+    ];
   } else if (msg instanceof AutoPlayAttrChanged) {
     let auto_play = msg[0];
-    return [new Model3(model.progress, model.cols, auto_play), none2()];
-  } else if (msg instanceof BackClicked) {
-    return [model, emit2("go_back", null$())];
-  } else if (msg instanceof ForwardClicked) {
-    return [model, emit2("go_forward", null$())];
+    return [
+      new Model3(model.pages, model.page, model.cols, auto_play),
+      none2()
+    ];
+  } else if (msg instanceof PageClicked) {
+    let page = msg[0];
+    return [model, emit2("page_clicked", int3(page))];
   } else {
     return [model, emit2("auto_play", null$())];
   }
 }
-function progress_button(model) {
-  let len = model.cols - 2;
-  let progress = model.progress;
-  let auto_play = model.auto_play;
-  let empty_char = "\u25AB";
-  let filled_char = "\u25AA";
-  let _block;
-  let _pipe = empty_char;
-  _block = repeat(_pipe, len);
-  let empty3 = _block;
-  let _block$1;
-  let _pipe$1 = filled_char;
-  _block$1 = repeat(
-    _pipe$1,
-    globalThis.Math.trunc(progress * len / 100)
-  );
-  let filled = _block$1;
-  let pct = left(filled, empty3);
-  return button(
-    toList([
-      class$("progress-bar-button"),
-      on_click(new AutoPlayClicked())
-    ]),
-    toList([
-      element5(
-        toList([
-          new Text2(
-            (() => {
-              if (auto_play) {
-                return pct;
-              } else {
-                return center("(PAUSED)", pct);
-              }
-            })()
-          )
-        ]),
-        model.cols - 2,
-        1,
-        new Some("ABCDEFGHIJKLMNOPQRSTUVWXYZ()" + empty_char + filled_char)
-      )
-    ])
-  );
-}
-function css3(cols) {
-  let _pipe = "\n  :host {\n    display: inline-block;\n    width: 100%;\n  }\n\n  split-flap-char {\n    padding: 0.9cqw 0.3cqw;\n  }\n\n  .progress-bar {\n    width: 100%;\n    display: grid;\n    grid-template-columns: 1fr <cols>fr 1fr;\n    gap: 0;\n  }\n\n  .progress-bar-button {\n    width: 100%;\n    height: 100%;\n    background: none;\n    padding: 0;\n    margin: 0;\n    border: none;\n  }\n  \n  split-flap-display::part(row) {\n    cursor: pointer;\n  }\n  ";
-  return replace(_pipe, "<cols>", to_string(cols - 2));
-}
+var css3 = "\n  :host {\n    display: inline-block;\n    width: 100%;\n  }\n\n  .progress-bar {\n    display: flex;\n    flex-direction: row;\n    gap: 0;\n  }\n  \n  split-flap-char {\n    padding: 0.9cqw 0.3cqw;\n  }\n  ";
 function view3(model) {
+  let pages = model.pages;
+  let current_page = model.page;
+  let auto_play = model.auto_play;
+  let empty_dot = "\u25CB";
+  let filled_dot = "\u25CF";
+  let paused = "\u{1D13D}";
+  let empty3 = repeat(" ", model.cols);
+  let _block;
+  let _pipe = range(1, pages);
+  let _pipe$1 = map(
+    _pipe,
+    (idx) => {
+      let $ = idx === current_page;
+      if ($) {
+        if (auto_play) {
+          return filled_dot;
+        } else {
+          return paused;
+        }
+      } else {
+        return empty_dot;
+      }
+    }
+  );
+  _block = join(_pipe$1, " ");
+  let dots = _block;
+  let _block$1;
+  let _pipe$2 = dots;
+  let _pipe$3 = center(_pipe$2, empty3);
+  _block$1 = graphemes(_pipe$3);
+  let chars = _block$1;
+  let first_dot_idx = fold_until(
+    chars,
+    0,
+    (acc, char) => {
+      if (char === "\u25CB") {
+        return new Stop(acc);
+      } else if (char === "\u25CF") {
+        return new Stop(acc);
+      } else {
+        return new Continue(acc + 1);
+      }
+    }
+  );
   return fragment2(
     toList([
-      style2(toList([]), css3(model.cols)),
-      div(
+      style2(toList([]), css3),
+      div2(
         toList([class$("progress-bar")]),
-        toList([
-          element4("\u25C2", new Some("\u25C2"), new Some(new BackClicked())),
-          progress_button(model),
-          element4("\u25B8", new Some("\u25B8"), new Some(new ForwardClicked()))
-        ])
+        index_map(
+          chars,
+          (char, idx) => {
+            let page = 1 + globalThis.Math.trunc((idx - first_dot_idx) / 2);
+            return [
+              "pb-" + to_string(idx),
+              element4(
+                char,
+                (() => {
+                  if (char === "\u25CB") {
+                    return new Some(paused + empty_dot + filled_dot);
+                  } else if (char === "\u25CF") {
+                    return new Some(paused + empty_dot + filled_dot);
+                  } else if (char === "\u{1D13D}") {
+                    return new Some(paused + empty_dot + filled_dot);
+                  } else {
+                    return new None();
+                  }
+                })(),
+                (() => {
+                  if (char === "\u25CB") {
+                    return new Some(new PageClicked(page));
+                  } else if (char === "\u25CF") {
+                    return new Some(new PageClicked(page));
+                  } else if (char === "\u{1D13D}") {
+                    return new Some(new AutoPlayClicked());
+                  } else {
+                    return new None();
+                  }
+                })()
+              )
+            ];
+          }
+        )
       )
     ])
   );
@@ -7036,23 +7162,34 @@ function register3() {
     view3,
     toList([
       on_attribute_change(
-        "progress",
-        (val) => {
-          return try$(
-            parse_int(val),
-            (parsed) => {
-              return new Ok(new ProgressAttrChanged(parsed));
-            }
-          );
-        }
-      ),
-      on_attribute_change(
         "cols",
         (val) => {
           return try$(
             parse_int(val),
             (parsed) => {
-              return new Ok(new ColsAttrChanged2(max(parsed, 2)));
+              return new Ok(new ColsAttrChanged2(parsed));
+            }
+          );
+        }
+      ),
+      on_attribute_change(
+        "pages",
+        (val) => {
+          return try$(
+            parse_int(val),
+            (parsed) => {
+              return new Ok(new PagesAttrChanged(parsed));
+            }
+          );
+        }
+      ),
+      on_attribute_change(
+        "page",
+        (val) => {
+          return try$(
+            parse_int(val),
+            (parsed) => {
+              return new Ok(new PageAttrChanged(parsed));
             }
           );
         }
@@ -7092,15 +7229,19 @@ var Model4 = class extends CustomType {
     this.timeout = timeout;
   }
 };
-var ColumnsAttrChanged = class extends CustomType {
+var Resized = class extends CustomType {
+};
+var ColumnsChanged = class extends CustomType {
   constructor($0) {
     super();
     this[0] = $0;
   }
 };
-var BackClicked2 = class extends CustomType {
-};
-var ForwardClicked2 = class extends CustomType {
+var PageClicked2 = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
 };
 var AutoPlayClicked2 = class extends CustomType {
 };
@@ -7112,25 +7253,69 @@ var TimeoutStarted = class extends CustomType {
 };
 var TimeoutEnded = class extends CustomType {
 };
-function element7(cols) {
-  return element2(
-    "nick-dot-bingo",
-    toList([attribute2("columns", to_string(cols))]),
-    toList([])
+function element7() {
+  return element2("nick-dot-bingo", toList([]), toList([]));
+}
+function get_cols_effect() {
+  return before_paint(
+    (dispatch, root_element) => {
+      let _block;
+      let $ = measure_orientation(root_element);
+      if ($ === "portrait") {
+        _block = 15;
+      } else {
+        _block = 29;
+      }
+      let cols = _block;
+      return dispatch(new ColumnsChanged(cols));
+    }
   );
 }
 function initial_state(scenes2) {
   return try$(
-    first(scenes2),
+    first2(scenes2),
     (first_scene) => {
       return try$(
-        first(first_scene.frames),
+        first2(first_scene.frames),
         (first_frame) => {
           return new Ok(new BingoState(first_scene, first_frame));
         }
       );
     }
   );
+}
+function init4(_) {
+  let cols = 0;
+  let scenes$1 = toList([]);
+  let state = initial_state(scenes$1);
+  return [
+    new Model4(scenes$1, cols, state, true, new None()),
+    before_paint(
+      (dispatch, root_element) => {
+        return on_resize(
+          root_element,
+          () => {
+            return dispatch(new Resized());
+          }
+        );
+      }
+    )
+  ];
+}
+function find_scene(loop$scenes, loop$page) {
+  while (true) {
+    let scenes2 = loop$scenes;
+    let page = loop$page;
+    if (page === 1) {
+      return first2(scenes2);
+    } else if (scenes2 instanceof Empty) {
+      return new Error(void 0);
+    } else {
+      let rest = scenes2.tail;
+      loop$scenes = rest;
+      loop$page = page - 1;
+    }
+  }
 }
 function start_timeout(frame, id) {
   if (id instanceof Some) {
@@ -7149,21 +7334,6 @@ function start_timeout(frame, id) {
     );
   }
 }
-function init4(_) {
-  let scenes$1 = scenes(28);
-  let state = initial_state(scenes$1);
-  return [
-    new Model4(scenes$1, 28, state, true, new None()),
-    (() => {
-      if (state instanceof Ok) {
-        let frame = state[0].frame;
-        return start_timeout(frame, new None());
-      } else {
-        return none2();
-      }
-    })()
-  ];
-}
 function find_next_state(scenes2, current) {
   let $ = find_next(current.scene.frames, current.frame);
   if ($ instanceof Ok) {
@@ -7175,7 +7345,7 @@ function find_next_state(scenes2, current) {
         find_next(scenes2, current.scene),
         (scene) => {
           return try$(
-            first(scene.frames),
+            first2(scene.frames),
             (frame) => {
               return new Ok(new BingoState(scene, frame));
             }
@@ -7189,86 +7359,83 @@ function find_next_state(scenes2, current) {
   }
 }
 function reduce(model, msg) {
-  if (msg instanceof ColumnsAttrChanged) {
+  if (msg instanceof Resized) {
+    return new Ok([model, get_cols_effect()]);
+  } else if (msg instanceof ColumnsChanged) {
     let columns = msg[0];
-    return new Ok(
-      [
-        new Model4(
-          scenes(columns),
-          columns,
-          model.current,
-          model.auto_play,
-          model.timeout
-        ),
-        none2()
-      ]
-    );
-  } else if (msg instanceof BackClicked2) {
-    return try$(
-      model.current,
-      (current) => {
-        let reversed = reverse(model.scenes);
+    return guard(
+      columns === model.columns,
+      new Ok([model, none2()]),
+      () => {
+        let $ = model.timeout;
+        if ($ instanceof Some) {
+          let id = $[0];
+          clear_timeout(id);
+        } else {
+        }
+        let scenes$1 = scenes(columns);
         return try$(
-          or(find_next(reversed, current.scene), first(reversed)),
-          (scene) => {
-            return try$(
-              first(scene.frames),
-              (frame) => {
-                return new Ok(
-                  [
-                    new Model4(
-                      model.scenes,
-                      model.columns,
-                      new Ok(new BingoState(scene, frame)),
-                      false,
-                      model.timeout
-                    ),
-                    start_timeout(frame, model.timeout)
-                  ]
-                );
-              }
+          initial_state(scenes$1),
+          (initial_state2) => {
+            return new Ok(
+              [
+                new Model4(
+                  scenes$1,
+                  columns,
+                  new Ok(initial_state2),
+                  model.auto_play,
+                  new None()
+                ),
+                start_timeout(initial_state2.frame, new None())
+              ]
             );
           }
         );
       }
     );
-  } else if (msg instanceof ForwardClicked2) {
+  } else if (msg instanceof PageClicked2) {
+    let page = msg[0];
     return try$(
-      model.current,
-      (current) => {
+      find_scene(model.scenes, page),
+      (scene) => {
         return try$(
-          or(find_next(model.scenes, current.scene), first(model.scenes)),
-          (scene) => {
-            return try$(
-              first(scene.frames),
-              (frame) => {
-                return new Ok(
-                  [
-                    new Model4(
-                      model.scenes,
-                      model.columns,
-                      new Ok(new BingoState(scene, frame)),
-                      false,
-                      model.timeout
-                    ),
-                    start_timeout(frame, model.timeout)
-                  ]
-                );
+          first2(scene.frames),
+          (frame) => {
+            let next = map3(
+              model.current,
+              (current) => {
+                let $ = !isEqual(current.scene, scene);
+                if ($) {
+                  return new BingoState(scene, frame);
+                } else {
+                  return current;
+                }
               }
+            );
+            return new Ok(
+              [
+                new Model4(
+                  model.scenes,
+                  model.columns,
+                  next,
+                  false,
+                  model.timeout
+                ),
+                start_timeout(frame, model.timeout)
+              ]
             );
           }
         );
       }
     );
   } else if (msg instanceof AutoPlayClicked2) {
-    let next_value = !model.auto_play;
     return new Ok(
       [
         new Model4(
           model.scenes,
           model.columns,
           model.current,
-          next_value,
+          !model.auto_play,
           new None()
         ),
         (() => {
@@ -7347,32 +7514,8 @@ function update5(model, msg) {
     let next = $[0];
     return next;
   } else {
+    echo2("ERROR", void 0, "src/components/bingo.gleam", 90);
     return [model, none2()];
-  }
-}
-function calculate_progress_scenes(model) {
-  let _block;
-  let _pipe = length(model.scenes);
-  _block = max(_pipe, 1);
-  let total_scenes = _block;
-  let $ = model.current;
-  if ($ instanceof Ok) {
-    let scene = $[0].scene;
-    let idx = fold_until(
-      model.scenes,
-      1,
-      (acc, item) => {
-        let $1 = isEqual(item, scene);
-        if ($1) {
-          return new Stop(acc);
-        } else {
-          return new Continue(acc + 1);
-        }
-      }
-    );
-    return divideInt(idx * 100, total_scenes);
-  } else {
-    return 0;
   }
 }
 var css4 = "\n  :host {\n    display: block;\n    container-type: inline-size;\n    height: 100%;\n    width: 100%;\n  }\n\n  .panel {\n    position: relative;\n    width: 100%;\n    height: 100%;\n    min-height: fit-content;\n    background: linear-gradient(\n      250deg,\n      rgb(40, 40, 40) 0%,\n      rgb(50, 50, 50) 25%,\n      rgb(40, 40, 40) 80%\n    );\n    padding: 2cqh 10cqw;\n    /* This is in px on purpose */\n    box-shadow: inset 0px 3px 10px 10px rgba(0, 0, 0, 0.25);\n\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-content: center;\n    overflow: scroll;\n  }\n\n  .matrix {\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-content: center;\n  }\n  \n  @container (aspect-ratio < 1) {\n    .panel {\n      padding: 5cqh 5cqw;\n    }\n  }\n  ";
@@ -7397,12 +7540,30 @@ function view4(model) {
             toList([
               element5(lines, model.columns, 7, new None()),
               element6(
-                calculate_progress_scenes(model),
+                length2(model.scenes),
+                fold_until(
+                  model.scenes,
+                  1,
+                  (acc, s) => {
+                    let $1 = model.current;
+                    if ($1 instanceof Ok) {
+                      let state = $1[0];
+                      if (isEqual(s, state.scene)) {
+                        return new Stop(acc);
+                      } else {
+                        return new Continue(acc + 1);
+                      }
+                    } else {
+                      return new Stop(0);
+                    }
+                  }
+                ),
                 model.columns,
-                new Some(new BackClicked2()),
-                new Some(new ForwardClicked2()),
                 model.auto_play,
-                new Some(new AutoPlayClicked2())
+                (var0) => {
+                  return new PageClicked2(var0);
+                },
+                new AutoPlayClicked2()
               )
             ])
           )
@@ -7412,27 +7573,212 @@ function view4(model) {
   );
 }
 function register4() {
-  let component2 = component(
-    init4,
-    update5,
-    view4,
-    toList([
-      adopt_styles(true),
-      on_attribute_change(
-        "columns",
-        (val) => {
-          return try$(
-            parse_int(val),
-            (cols) => {
-              return new Ok(new ColumnsAttrChanged(cols));
-            }
-          );
-        }
-      )
-    ])
-  );
+  let component2 = component(init4, update5, view4, toList([]));
   return make_component(component2, "nick-dot-bingo");
 }
+function echo2(value, message, file, line) {
+  const grey = "\x1B[90m";
+  const reset_color = "\x1B[39m";
+  const file_line = `${file}:${line}`;
+  const inspector = new Echo$Inspector2();
+  const string_value = inspector.inspect(value);
+  const string_message = message === void 0 ? "" : " " + message;
+  if (globalThis.process?.stderr?.write) {
+    const string5 = `${grey}${file_line}${reset_color}${string_message}
+${string_value}
+`;
+    globalThis.process.stderr.write(string5);
+  } else if (globalThis.Deno) {
+    const string5 = `${grey}${file_line}${reset_color}${string_message}
+${string_value}
+`;
+    globalThis.Deno.stderr.writeSync(new TextEncoder().encode(string5));
+  } else {
+    const string5 = `${file_line}
+${string_value}`;
+    globalThis.console.log(string5);
+  }
+  return value;
+}
+var Echo$Inspector2 = class {
+  #references = /* @__PURE__ */ new Set();
+  #isDict(value) {
+    try {
+      return value instanceof Dict;
+    } catch {
+      return false;
+    }
+  }
+  #float(float2) {
+    const string5 = float2.toString().replace("+", "");
+    if (string5.indexOf(".") >= 0) {
+      return string5;
+    } else {
+      const index4 = string5.indexOf("e");
+      if (index4 >= 0) {
+        return string5.slice(0, index4) + ".0" + string5.slice(index4);
+      } else {
+        return string5 + ".0";
+      }
+    }
+  }
+  inspect(v) {
+    const t = typeof v;
+    if (v === true) return "True";
+    if (v === false) return "False";
+    if (v === null) return "//js(null)";
+    if (v === void 0) return "Nil";
+    if (t === "string") return this.#string(v);
+    if (t === "bigint" || Number.isInteger(v)) return v.toString();
+    if (t === "number") return this.#float(v);
+    if (v instanceof UtfCodepoint) return this.#utfCodepoint(v);
+    if (v instanceof BitArray) return this.#bit_array(v);
+    if (v instanceof RegExp) return `//js(${v})`;
+    if (v instanceof Date) return `//js(Date("${v.toISOString()}"))`;
+    if (v instanceof globalThis.Error) return `//js(${v.toString()})`;
+    if (v instanceof Function) {
+      const args = [];
+      for (const i of Array(v.length).keys())
+        args.push(String.fromCharCode(i + 97));
+      return `//fn(${args.join(", ")}) { ... }`;
+    }
+    if (this.#references.size === this.#references.add(v).size) {
+      return "//js(circular reference)";
+    }
+    let printed;
+    if (Array.isArray(v)) {
+      printed = `#(${v.map((v2) => this.inspect(v2)).join(", ")})`;
+    } else if (v instanceof List) {
+      printed = this.#list(v);
+    } else if (v instanceof CustomType) {
+      printed = this.#customType(v);
+    } else if (this.#isDict(v)) {
+      printed = this.#dict(v);
+    } else if (v instanceof Set) {
+      return `//js(Set(${[...v].map((v2) => this.inspect(v2)).join(", ")}))`;
+    } else {
+      printed = this.#object(v);
+    }
+    this.#references.delete(v);
+    return printed;
+  }
+  #object(v) {
+    const name = Object.getPrototypeOf(v)?.constructor?.name || "Object";
+    const props = [];
+    for (const k of Object.keys(v)) {
+      props.push(`${this.inspect(k)}: ${this.inspect(v[k])}`);
+    }
+    const body = props.length ? " " + props.join(", ") + " " : "";
+    const head = name === "Object" ? "" : name + " ";
+    return `//js(${head}{${body}})`;
+  }
+  #dict(map4) {
+    let body = "dict.from_list([";
+    let first3 = true;
+    let key_value_pairs = [];
+    map4.forEach((value, key) => {
+      key_value_pairs.push([key, value]);
+    });
+    key_value_pairs.sort();
+    key_value_pairs.forEach(([key, value]) => {
+      if (!first3) body = body + ", ";
+      body = body + "#(" + this.inspect(key) + ", " + this.inspect(value) + ")";
+      first3 = false;
+    });
+    return body + "])";
+  }
+  #customType(record) {
+    const props = Object.keys(record).map((label) => {
+      const value = this.inspect(record[label]);
+      return isNaN(parseInt(label)) ? `${label}: ${value}` : value;
+    }).join(", ");
+    return props ? `${record.constructor.name}(${props})` : record.constructor.name;
+  }
+  #list(list4) {
+    if (list4 instanceof Empty) {
+      return "[]";
+    }
+    let char_out = 'charlist.from_string("';
+    let list_out = "[";
+    let current = list4;
+    while (current instanceof NonEmpty) {
+      let element8 = current.head;
+      current = current.tail;
+      if (list_out !== "[") {
+        list_out += ", ";
+      }
+      list_out += this.inspect(element8);
+      if (char_out) {
+        if (Number.isInteger(element8) && element8 >= 32 && element8 <= 126) {
+          char_out += String.fromCharCode(element8);
+        } else {
+          char_out = null;
+        }
+      }
+    }
+    if (char_out) {
+      return char_out + '")';
+    } else {
+      return list_out + "]";
+    }
+  }
+  #string(str) {
+    let new_str = '"';
+    for (let i = 0; i < str.length; i++) {
+      const char = str[i];
+      switch (char) {
+        case "\n":
+          new_str += "\\n";
+          break;
+        case "\r":
+          new_str += "\\r";
+          break;
+        case "	":
+          new_str += "\\t";
+          break;
+        case "\f":
+          new_str += "\\f";
+          break;
+        case "\\":
+          new_str += "\\\\";
+          break;
+        case '"':
+          new_str += '\\"';
+          break;
+        default:
+          if (char < " " || char > "~" && char < "\xA0") {
+            new_str += "\\u{" + char.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0") + "}";
+          } else {
+            new_str += char;
+          }
+      }
+    }
+    new_str += '"';
+    return new_str;
+  }
+  #utfCodepoint(codepoint2) {
+    return `//utfcodepoint(${String.fromCodePoint(codepoint2.value)})`;
+  }
+  #bit_array(bits) {
+    if (bits.bitSize === 0) {
+      return "<<>>";
+    }
+    let acc = "<<";
+    for (let i = 0; i < bits.byteSize - 1; i++) {
+      acc += bits.byteAt(i).toString();
+      acc += ", ";
+    }
+    if (bits.byteSize * 8 === bits.bitSize) {
+      acc += bits.byteAt(bits.byteSize - 1).toString();
+    } else {
+      const trailingBitsCount = bits.bitSize % 8;
+      acc += bits.byteAt(bits.byteSize - 1) >> 8 - trailingBitsCount;
+      acc += `:size(${trailingBitsCount})`;
+    }
+    acc += ">>";
+    return acc;
+  }
+};
 
 // build/dev/javascript/split_flap/components/office.mjs
 var css5 = "\n  :host {\n    --position-x: 50%;\n    --position-y: 60%;\n    --min-height: 55cqw;\n    width: 100%;\n    height: 100%;\n    min-height: var(--min-height);\n    overflow-x: hidden;\n    overflow-y: scroll;\n    position: relative;\n    container-type: inline-size;\n  }\n  \n  .office-void {\n    width: 100%;\n    height: 100%;\n    min-height: var(--min-height);\n    overflow: hidden;\n    position: relative;\n    container-type: size;\n  }\n  \n  .office-void-bg {\n    position: absolute;\n    width: max(100cqw, 100cqh);\n    height: max(100cqw, 100cqh);\n    left: var(--position-x);\n    top: var(--position-y);\n    transform: translate(calc(var(--position-x) * -1), calc(var(--position-y) * -1));\n    background-image: url(./img/bg-3840.webp);\n    background-size: cover;\n    background-position: var(--position-x) var(--position-y);\n  }\n  \n  .split-flap-void {\n    position: absolute;\n    /* background: lime; */\n    /* mix-blend-mode: difference; */\n    /* do not, and I repeat, do not touch this\u2014otherwise the flip-flap will be very very sad and I will cry */\n    top: 28.75%;\n    left: 26.66%;\n    width: 46.66%;\n    height: 23.4%;\n    container-type: size; \n  }\n\n  nick-dot-bingo::part(panel) {\n    background: rgba(50, 50, 50, 0.3);    \n    box-shadow: none;\n  }\n";
@@ -7448,7 +7794,7 @@ function view5(_) {
             toList([
               div(
                 toList([class$("split-flap-void")]),
-                toList([element7(28)])
+                toList([element7()])
               )
             ])
           )
