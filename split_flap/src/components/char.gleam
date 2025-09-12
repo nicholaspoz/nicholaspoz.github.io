@@ -91,7 +91,7 @@ pub fn element(
 }
 
 fn init(_) -> #(Model, effect.Effect(Msg)) {
-  #(Model(default_chars, " ", Idle), effect.none())
+  #(Model(chars: default_chars, dest: " ", state: Idle), effect.none())
 }
 
 fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {

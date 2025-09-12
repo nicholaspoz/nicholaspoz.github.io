@@ -1,4 +1,4 @@
-import gleam/int
+import gleam/bool
 import gleam/list.{Continue, Stop}
 import gleam/option.{type Option, None, Some}
 import gleam/result.{lazy_or, try}
@@ -16,23 +16,12 @@ import components/progress_bar
 import utils.{find_next}
 
 pub fn register() -> Result(Nil, lustre.Error) {
-  let component =
-    lustre.component(init, update, view, [
-      component.adopt_styles(True),
-      component.on_attribute_change("columns", fn(val) {
-        use cols <- try(int.parse(val))
-        Ok(ColumnsAttrChanged(cols))
-      }),
-    ])
+  let component = lustre.component(init, update, view, [])
   lustre.register(component, "nick-dot-bingo")
 }
 
-pub fn element(cols cols: Int) -> Element(msg) {
-  element.element(
-    "nick-dot-bingo",
-    [attribute.attribute("columns", int.to_string(cols))],
-    [],
-  )
+pub fn element() -> Element(msg) {
+  element.element("nick-dot-bingo", [], [])
 }
 
 type BingoState {
@@ -50,7 +39,8 @@ type Model {
 }
 
 type Msg {
-  ColumnsAttrChanged(Int)
+  Resized
+  ColumnsChanged(Int)
   PageClicked(Int)
   AutoPlayClicked
   TimeoutStarted(Int)
@@ -58,16 +48,32 @@ type Msg {
 }
 
 fn init(_) -> #(Model, effect.Effect(Msg)) {
-  let scenes = scenes(28)
+  let cols = 0
+  let scenes = []
   let state = initial_state(scenes)
 
   #(
-    Model(scenes:, columns: 28, current: state, auto_play: True, timeout: None),
-    case state {
-      Ok(BingoState(_, frame)) -> start_timeout(frame, current_timeout: None)
-      Error(_) -> effect.none()
+    Model(
+      scenes:,
+      columns: cols,
+      current: state,
+      auto_play: True,
+      timeout: None,
+    ),
+    {
+      use dispatch, root_element <- effect.before_paint
+      utils.on_resize(root_element, fn() { dispatch(Resized) })
     },
   )
+}
+
+fn get_cols_effect() -> Effect(Msg) {
+  use dispatch, root_element <- effect.before_paint
+  let cols = case utils.measure_orientation(root_element) {
+    "portrait" -> 15
+    _ -> 29
+  }
+  dispatch(ColumnsChanged(cols))
 }
 
 fn initial_state(scenes: List(Scene)) -> Result(BingoState, Nil) {
@@ -79,15 +85,37 @@ fn initial_state(scenes: List(Scene)) -> Result(BingoState, Nil) {
 fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
   case reduce(model, msg) {
     Ok(next) -> next
-    // SOMEBODY should DO something about this!
-    Error(_) -> #(model, effect.none())
+    Error(_) -> {
+      // SOMEBODY should DO SOMETHING about this!
+      echo "ERROR"
+      #(model, effect.none())
+    }
   }
 }
 
 fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
   case msg {
-    ColumnsAttrChanged(columns) -> {
-      Ok(#(Model(..model, scenes: scenes(columns), columns:), effect.none()))
+    Resized -> Ok(#(model, get_cols_effect()))
+
+    ColumnsChanged(columns) -> {
+      use <- bool.guard(columns == model.columns, Ok(#(model, effect.none())))
+
+      case model.timeout {
+        Some(id) -> utils.clear_timeout(id)
+        None -> Nil
+      }
+      let scenes = scenes(columns)
+      use initial_state <- try(initial_state(scenes))
+      Ok(#(
+        Model(
+          ..model,
+          scenes: scenes,
+          columns: columns,
+          current: Ok(initial_state),
+          timeout: None,
+        ),
+        start_timeout(initial_state.frame, None),
+      ))
     }
 
     TimeoutStarted(id) ->
@@ -96,7 +124,7 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
     TimeoutEnded -> {
       use current <- try(model.current)
       use next <- try(find_next_state(model.scenes, current))
-      // even when paused, continue the scene to the end
+      // even when paused, continue the current scene to its last frame
       let continue = { current.scene == next.scene } || model.auto_play
 
       case continue {
@@ -112,16 +140,23 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
     PageClicked(page) -> {
       use scene <- try(find_scene(model.scenes, page))
       use frame <- try(list.first(scene.frames))
+      let next =
+        result.map(model.current, fn(current) {
+          case current.scene != scene {
+            True -> BingoState(scene, frame)
+            False -> current
+          }
+        })
+
       Ok(#(
-        Model(..model, auto_play: False, current: Ok(BingoState(scene, frame))),
+        Model(..model, auto_play: False, current: next),
         start_timeout(frame, model.timeout),
       ))
     }
 
-    AutoPlayClicked -> {
-      let next_value = !model.auto_play
+    AutoPlayClicked ->
       Ok(
-        #(Model(..model, timeout: None, auto_play: next_value), {
+        #(Model(..model, timeout: None, auto_play: !model.auto_play), {
           case model.timeout {
             Some(id) -> utils.clear_timeout(id)
             None -> Nil
@@ -130,14 +165,13 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
           dispatch(TimeoutEnded)
         }),
       )
-    }
   }
 }
 
 fn find_scene(scenes: List(Scene), page: Int) -> Result(Scene, Nil) {
   case scenes, page {
-    [], _ -> Error(Nil)
     _, 1 -> list.first(scenes)
+    [], _ -> Error(Nil)
     [_, ..rest], _ -> find_scene(rest, page - 1)
   }
 }

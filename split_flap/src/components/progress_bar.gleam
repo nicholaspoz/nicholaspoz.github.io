@@ -22,7 +22,7 @@ pub fn register() -> Result(Nil, lustre.Error) {
     lustre.component(init, update, view, [
       component.on_attribute_change("cols", fn(val) {
         use parsed <- result.try(int.parse(val))
-        Ok(ColsAttrChanged(int.max(parsed, 2)))
+        Ok(ColsAttrChanged(parsed))
       }),
 
       component.on_attribute_change("pages", fn(val) {
@@ -94,7 +94,7 @@ type Msg {
 }
 
 fn init(_) -> #(Model, effect.Effect(Msg)) {
-  #(Model(0, 0, 28, True), effect.none())
+  #(Model(pages: 0, page: 0, cols: 0, auto_play: True), effect.none())
 }
 
 fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
@@ -114,39 +114,27 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
 
 fn view(model: Model) -> Element(Msg) {
   let pages = model.pages
-  let page = model.page
+  let current_page = model.page
   let auto_play = model.auto_play
   let empty_dot = "○"
   let filled_dot = "●"
-  let stop = "⏹"
-  let start = "▸"
+  let paused = "𝄽"
+  let empty = string.repeat(" ", model.cols)
 
   let dots =
     list.range(1, pages)
     |> list.map(fn(idx) {
-      case idx == page {
-        True -> filled_dot
-        False -> empty_dot
+      case idx == current_page, auto_play {
+        True, True -> filled_dot
+        True, False -> paused
+        False, _ -> empty_dot
       }
     })
     |> string.join(" ")
 
-  let dots_len = {
-    pages * 2
-  }
-
-  let control =
-    case auto_play {
-      True -> stop
-      False -> start
-    }
-    |> display_fns.right(against: string.repeat(" ", dots_len + 2))
-
-  let empty = string.repeat(" ", model.cols)
   let chars =
-    control
+    dots
     |> display_fns.center(against: empty)
-    |> display_fns.center(dots, against: _)
     |> string.to_graphemes
 
   let first_dot_idx =
@@ -158,25 +146,22 @@ fn view(model: Model) -> Element(Msg) {
     })
 
   element.fragment([
-    html.style([], css(model.cols)),
+    html.style([], css),
     keyed.div(
       [attribute.class("progress-bar")],
       list.index_map(chars, fn(char, idx) {
         let page = 1 + { { idx - first_dot_idx } / 2 }
-        echo ["HEY", int.to_string(idx), char] |> string.join(" ")
-
         #(
           "pb-" <> int.to_string(idx),
           sf_char.element(
             char:,
             char_stack: case char {
-              "○" | "●" -> Some(empty_dot <> filled_dot)
-              "▸" | "⏹" -> Some(start <> stop)
+              "○" | "●" | "𝄽" -> Some(paused <> empty_dot <> filled_dot)
               _ -> None
             },
             on_click: case char {
               "○" | "●" -> Some(PageClicked(page))
-              "▸" | "⏹" -> Some(AutoPlayClicked)
+              "𝄽" -> Some(AutoPlayClicked)
               _ -> None
             },
           ),
@@ -186,8 +171,7 @@ fn view(model: Model) -> Element(Msg) {
   ])
 }
 
-fn css(cols: Int) -> String {
-  "
+const css = "
   :host {
     display: inline-block;
     width: 100%;
@@ -198,9 +182,8 @@ fn css(cols: Int) -> String {
     flex-direction: row;
     gap: 0;
   }
+  
   split-flap-char {
     padding: 0.9cqw 0.3cqw;
   }
   "
-  |> string.replace("<cols>", int.to_string(cols - 2))
-}

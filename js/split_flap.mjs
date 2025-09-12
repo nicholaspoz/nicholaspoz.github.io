@@ -390,24 +390,6 @@ function makeError(variant, file, module, line, fn, message, extra) {
   return error;
 }
 
-// build/dev/javascript/gleam_stdlib/gleam/order.mjs
-var Lt = class extends CustomType {
-};
-var Eq = class extends CustomType {
-};
-var Gt = class extends CustomType {
-};
-
-// build/dev/javascript/gleam_stdlib/gleam/option.mjs
-var Some = class extends CustomType {
-  constructor($0) {
-    super();
-    this[0] = $0;
-  }
-};
-var None = class extends CustomType {
-};
-
 // build/dev/javascript/gleam_stdlib/dict.mjs
 var referenceMap = /* @__PURE__ */ new WeakMap();
 var tempDataView = /* @__PURE__ */ new DataView(
@@ -1112,6 +1094,671 @@ var Dict = class _Dict {
 };
 var unequalDictSymbol = /* @__PURE__ */ Symbol();
 
+// build/dev/javascript/gleam_stdlib/gleam/bool.mjs
+function guard(requirement, consequence, alternative) {
+  if (requirement) {
+    return consequence;
+  } else {
+    return alternative();
+  }
+}
+
+// build/dev/javascript/gleam_stdlib/gleam/option.mjs
+var Some = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var None = class extends CustomType {
+};
+
+// build/dev/javascript/gleam_stdlib/gleam/order.mjs
+var Lt = class extends CustomType {
+};
+var Eq = class extends CustomType {
+};
+var Gt = class extends CustomType {
+};
+
+// build/dev/javascript/gleam_stdlib/gleam/float.mjs
+function negate(x) {
+  return -1 * x;
+}
+function round2(x) {
+  let $ = x >= 0;
+  if ($) {
+    return round(x);
+  } else {
+    return 0 - round(negate(x));
+  }
+}
+
+// build/dev/javascript/gleam_stdlib/gleam/int.mjs
+function compare(a, b) {
+  let $ = a === b;
+  if ($) {
+    return new Eq();
+  } else {
+    let $1 = a < b;
+    if ($1) {
+      return new Lt();
+    } else {
+      return new Gt();
+    }
+  }
+}
+function max(a, b) {
+  let $ = a > b;
+  if ($) {
+    return a;
+  } else {
+    return b;
+  }
+}
+function random(max2) {
+  let _pipe = random_uniform() * identity(max2);
+  let _pipe$1 = floor(_pipe);
+  return round2(_pipe$1);
+}
+
+// build/dev/javascript/gleam_stdlib/gleam/string.mjs
+function replace(string5, pattern, substitute) {
+  let _pipe = string5;
+  let _pipe$1 = identity(_pipe);
+  let _pipe$2 = string_replace(_pipe$1, pattern, substitute);
+  return identity(_pipe$2);
+}
+function slice(string5, idx, len) {
+  let $ = len < 0;
+  if ($) {
+    return "";
+  } else {
+    let $1 = idx < 0;
+    if ($1) {
+      let translated_idx = string_length(string5) + idx;
+      let $2 = translated_idx < 0;
+      if ($2) {
+        return "";
+      } else {
+        return string_slice(string5, translated_idx, len);
+      }
+    } else {
+      return string_slice(string5, idx, len);
+    }
+  }
+}
+function append(first3, second) {
+  return first3 + second;
+}
+function concat_loop(loop$strings, loop$accumulator) {
+  while (true) {
+    let strings = loop$strings;
+    let accumulator = loop$accumulator;
+    if (strings instanceof Empty) {
+      return accumulator;
+    } else {
+      let string5 = strings.head;
+      let strings$1 = strings.tail;
+      loop$strings = strings$1;
+      loop$accumulator = accumulator + string5;
+    }
+  }
+}
+function concat2(strings) {
+  return concat_loop(strings, "");
+}
+function repeat_loop(loop$string, loop$times, loop$acc) {
+  while (true) {
+    let string5 = loop$string;
+    let times = loop$times;
+    let acc = loop$acc;
+    let $ = times <= 0;
+    if ($) {
+      return acc;
+    } else {
+      loop$string = string5;
+      loop$times = times - 1;
+      loop$acc = acc + string5;
+    }
+  }
+}
+function repeat(string5, times) {
+  return repeat_loop(string5, times, "");
+}
+function join_loop(loop$strings, loop$separator, loop$accumulator) {
+  while (true) {
+    let strings = loop$strings;
+    let separator = loop$separator;
+    let accumulator = loop$accumulator;
+    if (strings instanceof Empty) {
+      return accumulator;
+    } else {
+      let string5 = strings.head;
+      let strings$1 = strings.tail;
+      loop$strings = strings$1;
+      loop$separator = separator;
+      loop$accumulator = accumulator + separator + string5;
+    }
+  }
+}
+function join(strings, separator) {
+  if (strings instanceof Empty) {
+    return "";
+  } else {
+    let first$1 = strings.head;
+    let rest = strings.tail;
+    return join_loop(rest, separator, first$1);
+  }
+}
+function padding(size2, pad_string) {
+  let pad_string_length = string_length(pad_string);
+  let num_pads = divideInt(size2, pad_string_length);
+  let extra = remainderInt(size2, pad_string_length);
+  return repeat(pad_string, num_pads) + slice(pad_string, 0, extra);
+}
+function pad_end(string5, desired_length, pad_string) {
+  let current_length = string_length(string5);
+  let to_pad_length = desired_length - current_length;
+  let $ = to_pad_length <= 0;
+  if ($) {
+    return string5;
+  } else {
+    return string5 + padding(to_pad_length, pad_string);
+  }
+}
+function first(string5) {
+  let $ = pop_grapheme(string5);
+  if ($ instanceof Ok) {
+    let first$1 = $[0][0];
+    return new Ok(first$1);
+  } else {
+    return $;
+  }
+}
+
+// build/dev/javascript/gleam_stdlib/gleam/dynamic/decode.mjs
+var DecodeError = class extends CustomType {
+  constructor(expected, found, path) {
+    super();
+    this.expected = expected;
+    this.found = found;
+    this.path = path;
+  }
+};
+var Decoder = class extends CustomType {
+  constructor(function$) {
+    super();
+    this.function = function$;
+  }
+};
+function run(data, decoder) {
+  let $ = decoder.function(data);
+  let maybe_invalid_data;
+  let errors;
+  maybe_invalid_data = $[0];
+  errors = $[1];
+  if (errors instanceof Empty) {
+    return new Ok(maybe_invalid_data);
+  } else {
+    return new Error(errors);
+  }
+}
+function success(data) {
+  return new Decoder((_) => {
+    return [data, toList([])];
+  });
+}
+function map2(decoder, transformer) {
+  return new Decoder(
+    (d) => {
+      let $ = decoder.function(d);
+      let data;
+      let errors;
+      data = $[0];
+      errors = $[1];
+      return [transformer(data), errors];
+    }
+  );
+}
+function run_decoders(loop$data, loop$failure, loop$decoders) {
+  while (true) {
+    let data = loop$data;
+    let failure2 = loop$failure;
+    let decoders = loop$decoders;
+    if (decoders instanceof Empty) {
+      return failure2;
+    } else {
+      let decoder = decoders.head;
+      let decoders$1 = decoders.tail;
+      let $ = decoder.function(data);
+      let layer;
+      let errors;
+      layer = $;
+      errors = $[1];
+      if (errors instanceof Empty) {
+        return layer;
+      } else {
+        loop$data = data;
+        loop$failure = failure2;
+        loop$decoders = decoders$1;
+      }
+    }
+  }
+}
+function one_of(first3, alternatives) {
+  return new Decoder(
+    (dynamic_data) => {
+      let $ = first3.function(dynamic_data);
+      let layer;
+      let errors;
+      layer = $;
+      errors = $[1];
+      if (errors instanceof Empty) {
+        return layer;
+      } else {
+        return run_decoders(dynamic_data, layer, alternatives);
+      }
+    }
+  );
+}
+function decode_error(expected, found) {
+  return toList([
+    new DecodeError(expected, classify_dynamic(found), toList([]))
+  ]);
+}
+function run_dynamic_function(data, name, f) {
+  let $ = f(data);
+  if ($ instanceof Ok) {
+    let data$1 = $[0];
+    return [data$1, toList([])];
+  } else {
+    let zero = $[0];
+    return [
+      zero,
+      toList([new DecodeError(name, classify_dynamic(data), toList([]))])
+    ];
+  }
+}
+function decode_int(data) {
+  return run_dynamic_function(data, "Int", int);
+}
+function failure(zero, expected) {
+  return new Decoder((d) => {
+    return [zero, decode_error(expected, d)];
+  });
+}
+var int2 = /* @__PURE__ */ new Decoder(decode_int);
+function decode_string(data) {
+  return run_dynamic_function(data, "String", string);
+}
+var string2 = /* @__PURE__ */ new Decoder(decode_string);
+function list2(inner) {
+  return new Decoder(
+    (data) => {
+      return list(
+        data,
+        inner.function,
+        (p, k) => {
+          return push_path(p, toList([k]));
+        },
+        0,
+        toList([])
+      );
+    }
+  );
+}
+function push_path(layer, path) {
+  let decoder = one_of(
+    string2,
+    toList([
+      (() => {
+        let _pipe = int2;
+        return map2(_pipe, to_string);
+      })()
+    ])
+  );
+  let path$1 = map(
+    path,
+    (key) => {
+      let key$1 = identity(key);
+      let $ = run(key$1, decoder);
+      if ($ instanceof Ok) {
+        let key$2 = $[0];
+        return key$2;
+      } else {
+        return "<" + classify_dynamic(key$1) + ">";
+      }
+    }
+  );
+  let errors = map(
+    layer[1],
+    (error) => {
+      return new DecodeError(
+        error.expected,
+        error.found,
+        append2(path$1, error.path)
+      );
+    }
+  );
+  return [layer[0], errors];
+}
+function index3(loop$path, loop$position, loop$inner, loop$data, loop$handle_miss) {
+  while (true) {
+    let path = loop$path;
+    let position = loop$position;
+    let inner = loop$inner;
+    let data = loop$data;
+    let handle_miss = loop$handle_miss;
+    if (path instanceof Empty) {
+      let _pipe = inner(data);
+      return push_path(_pipe, reverse(position));
+    } else {
+      let key = path.head;
+      let path$1 = path.tail;
+      let $ = index2(data, key);
+      if ($ instanceof Ok) {
+        let $1 = $[0];
+        if ($1 instanceof Some) {
+          let data$1 = $1[0];
+          loop$path = path$1;
+          loop$position = prepend(key, position);
+          loop$inner = inner;
+          loop$data = data$1;
+          loop$handle_miss = handle_miss;
+        } else {
+          return handle_miss(data, prepend(key, position));
+        }
+      } else {
+        let kind = $[0];
+        let $1 = inner(data);
+        let default$;
+        default$ = $1[0];
+        let _pipe = [
+          default$,
+          toList([new DecodeError(kind, classify_dynamic(data), toList([]))])
+        ];
+        return push_path(_pipe, reverse(position));
+      }
+    }
+  }
+}
+function subfield(field_path, field_decoder, next) {
+  return new Decoder(
+    (data) => {
+      let $ = index3(
+        field_path,
+        toList([]),
+        field_decoder.function,
+        data,
+        (data2, position) => {
+          let $12 = field_decoder.function(data2);
+          let default$;
+          default$ = $12[0];
+          let _pipe = [
+            default$,
+            toList([new DecodeError("Field", "Nothing", toList([]))])
+          ];
+          return push_path(_pipe, reverse(position));
+        }
+      );
+      let out;
+      let errors1;
+      out = $[0];
+      errors1 = $[1];
+      let $1 = next(out).function(data);
+      let out$1;
+      let errors2;
+      out$1 = $1[0];
+      errors2 = $1[1];
+      return [out$1, append2(errors1, errors2)];
+    }
+  );
+}
+function at(path, inner) {
+  return new Decoder(
+    (data) => {
+      return index3(
+        path,
+        toList([]),
+        inner.function,
+        data,
+        (data2, position) => {
+          let $ = inner.function(data2);
+          let default$;
+          default$ = $[0];
+          let _pipe = [
+            default$,
+            toList([new DecodeError("Field", "Nothing", toList([]))])
+          ];
+          return push_path(_pipe, reverse(position));
+        }
+      );
+    }
+  );
+}
+function field(field_name, field_decoder, next) {
+  return subfield(toList([field_name]), field_decoder, next);
+}
+
+// build/dev/javascript/gleam_stdlib/gleam_stdlib.mjs
+var Nil = void 0;
+var NOT_FOUND = {};
+function identity(x) {
+  return x;
+}
+function parse_int(value) {
+  if (/^[-+]?(\d+)$/.test(value)) {
+    return new Ok(parseInt(value));
+  } else {
+    return new Error(Nil);
+  }
+}
+function to_string(term) {
+  return term.toString();
+}
+function string_replace(string5, target2, substitute) {
+  return string5.replaceAll(target2, substitute);
+}
+function string_length(string5) {
+  if (string5 === "") {
+    return 0;
+  }
+  const iterator = graphemes_iterator(string5);
+  if (iterator) {
+    let i = 0;
+    for (const _ of iterator) {
+      i++;
+    }
+    return i;
+  } else {
+    return string5.match(/./gsu).length;
+  }
+}
+function graphemes(string5) {
+  const iterator = graphemes_iterator(string5);
+  if (iterator) {
+    return List.fromArray(Array.from(iterator).map((item) => item.segment));
+  } else {
+    return List.fromArray(string5.match(/./gsu));
+  }
+}
+var segmenter = void 0;
+function graphemes_iterator(string5) {
+  if (globalThis.Intl && Intl.Segmenter) {
+    segmenter ||= new Intl.Segmenter();
+    return segmenter.segment(string5)[Symbol.iterator]();
+  }
+}
+function pop_grapheme(string5) {
+  let first3;
+  const iterator = graphemes_iterator(string5);
+  if (iterator) {
+    first3 = iterator.next().value?.segment;
+  } else {
+    first3 = string5.match(/./su)?.[0];
+  }
+  if (first3) {
+    return new Ok([first3, string5.slice(first3.length)]);
+  } else {
+    return new Error(Nil);
+  }
+}
+function string_slice(string5, idx, len) {
+  if (len <= 0 || idx >= string5.length) {
+    return "";
+  }
+  const iterator = graphemes_iterator(string5);
+  if (iterator) {
+    while (idx-- > 0) {
+      iterator.next();
+    }
+    let result = "";
+    while (len-- > 0) {
+      const v = iterator.next().value;
+      if (v === void 0) {
+        break;
+      }
+      result += v.segment;
+    }
+    return result;
+  } else {
+    return string5.match(/./gsu).slice(idx, idx + len).join("");
+  }
+}
+function contains_string(haystack, needle) {
+  return haystack.indexOf(needle) >= 0;
+}
+function starts_with(haystack, needle) {
+  return haystack.startsWith(needle);
+}
+var unicode_whitespaces = [
+  " ",
+  // Space
+  "	",
+  // Horizontal tab
+  "\n",
+  // Line feed
+  "\v",
+  // Vertical tab
+  "\f",
+  // Form feed
+  "\r",
+  // Carriage return
+  "\x85",
+  // Next line
+  "\u2028",
+  // Line separator
+  "\u2029"
+  // Paragraph separator
+].join("");
+var trim_start_regex = /* @__PURE__ */ new RegExp(
+  `^[${unicode_whitespaces}]*`
+);
+var trim_end_regex = /* @__PURE__ */ new RegExp(`[${unicode_whitespaces}]*$`);
+function floor(float2) {
+  return Math.floor(float2);
+}
+function round(float2) {
+  return Math.round(float2);
+}
+function random_uniform() {
+  const random_uniform_result = Math.random();
+  if (random_uniform_result === 1) {
+    return random_uniform();
+  }
+  return random_uniform_result;
+}
+function new_map() {
+  return Dict.new();
+}
+function map_get(map4, key) {
+  const value = map4.get(key, NOT_FOUND);
+  if (value === NOT_FOUND) {
+    return new Error(Nil);
+  }
+  return new Ok(value);
+}
+function map_insert(key, value, map4) {
+  return map4.set(key, value);
+}
+function classify_dynamic(data) {
+  if (typeof data === "string") {
+    return "String";
+  } else if (typeof data === "boolean") {
+    return "Bool";
+  } else if (data instanceof Result) {
+    return "Result";
+  } else if (data instanceof List) {
+    return "List";
+  } else if (data instanceof BitArray) {
+    return "BitArray";
+  } else if (data instanceof Dict) {
+    return "Dict";
+  } else if (Number.isInteger(data)) {
+    return "Int";
+  } else if (Array.isArray(data)) {
+    return `Array`;
+  } else if (typeof data === "number") {
+    return "Float";
+  } else if (data === null) {
+    return "Nil";
+  } else if (data === void 0) {
+    return "Nil";
+  } else {
+    const type = typeof data;
+    return type.charAt(0).toUpperCase() + type.slice(1);
+  }
+}
+function index2(data, key) {
+  if (data instanceof Dict || data instanceof WeakMap || data instanceof Map) {
+    const token = {};
+    const entry = data.get(key, token);
+    if (entry === token) return new Ok(new None());
+    return new Ok(new Some(entry));
+  }
+  const key_is_int = Number.isInteger(key);
+  if (key_is_int && key >= 0 && key < 8 && data instanceof List) {
+    let i = 0;
+    for (const value of data) {
+      if (i === key) return new Ok(new Some(value));
+      i++;
+    }
+    return new Error("Indexable");
+  }
+  if (key_is_int && Array.isArray(data) || data && typeof data === "object" || data && Object.getPrototypeOf(data) === Object.prototype) {
+    if (key in data) return new Ok(new Some(data[key]));
+    return new Ok(new None());
+  }
+  return new Error(key_is_int ? "Indexable" : "Dict");
+}
+function list(data, decode2, pushPath, index4, emptyList) {
+  if (!(data instanceof List || Array.isArray(data))) {
+    const error = new DecodeError("List", classify_dynamic(data), emptyList);
+    return [emptyList, List.fromArray([error])];
+  }
+  const decoded = [];
+  for (const element8 of data) {
+    const layer = decode2(element8);
+    const [out, errors] = layer;
+    if (errors instanceof NonEmpty) {
+      const [_, errors2] = pushPath(layer, index4.toString());
+      return [emptyList, errors2];
+    }
+    decoded.push(out);
+    index4++;
+  }
+  return [List.fromArray(decoded), emptyList];
+}
+function int(data) {
+  if (Number.isInteger(data)) return new Ok(data);
+  return new Error(0);
+}
+function string(data) {
+  if (typeof data === "string") return new Ok(data);
+  return new Error("");
+}
+
 // build/dev/javascript/gleam_stdlib/gleam/dict.mjs
 function do_has_key(key, dict3) {
   return !isEqual(map_get(dict3, key), new Error(void 0));
@@ -1153,7 +1800,7 @@ function length_loop(loop$list, loop$count) {
     }
   }
 }
-function length(list4) {
+function length2(list4) {
   return length_loop(list4, 0);
 }
 function reverse_and_prepend(loop$prefix, loop$suffix) {
@@ -1173,7 +1820,7 @@ function reverse_and_prepend(loop$prefix, loop$suffix) {
 function reverse(list4) {
   return reverse_and_prepend(list4, toList([]));
 }
-function first(list4) {
+function first2(list4) {
   if (list4 instanceof Empty) {
     return new Error(void 0);
   } else {
@@ -1315,10 +1962,10 @@ function append_loop(loop$first, loop$second) {
     }
   }
 }
-function append(first3, second) {
+function append2(first3, second) {
   return append_loop(reverse(first3), second);
 }
-function fold(loop$list, loop$initial, loop$fun) {
+function fold2(loop$list, loop$initial, loop$fun) {
   while (true) {
     let list4 = loop$list;
     let initial = loop$initial;
@@ -1721,7 +2368,7 @@ function range_loop(loop$start, loop$stop, loop$acc) {
     let start3 = loop$start;
     let stop = loop$stop;
     let acc = loop$acc;
-    let $ = compare2(start3, stop);
+    let $ = compare(start3, stop);
     if ($ instanceof Lt) {
       loop$start = start3;
       loop$stop = stop - 1;
@@ -1739,645 +2386,15 @@ function range(start3, stop) {
   return range_loop(start3, stop, toList([]));
 }
 
-// build/dev/javascript/gleam_stdlib/gleam/string.mjs
-function replace(string5, pattern, substitute) {
-  let _pipe = string5;
-  let _pipe$1 = identity(_pipe);
-  let _pipe$2 = string_replace(_pipe$1, pattern, substitute);
-  return identity(_pipe$2);
-}
-function slice(string5, idx, len) {
-  let $ = len < 0;
-  if ($) {
-    return "";
-  } else {
-    let $1 = idx < 0;
-    if ($1) {
-      let translated_idx = string_length(string5) + idx;
-      let $2 = translated_idx < 0;
-      if ($2) {
-        return "";
-      } else {
-        return string_slice(string5, translated_idx, len);
-      }
-    } else {
-      return string_slice(string5, idx, len);
-    }
-  }
-}
-function append2(first3, second) {
-  return first3 + second;
-}
-function concat_loop(loop$strings, loop$accumulator) {
-  while (true) {
-    let strings = loop$strings;
-    let accumulator = loop$accumulator;
-    if (strings instanceof Empty) {
-      return accumulator;
-    } else {
-      let string5 = strings.head;
-      let strings$1 = strings.tail;
-      loop$strings = strings$1;
-      loop$accumulator = accumulator + string5;
-    }
-  }
-}
-function concat2(strings) {
-  return concat_loop(strings, "");
-}
-function repeat_loop(loop$string, loop$times, loop$acc) {
-  while (true) {
-    let string5 = loop$string;
-    let times = loop$times;
-    let acc = loop$acc;
-    let $ = times <= 0;
-    if ($) {
-      return acc;
-    } else {
-      loop$string = string5;
-      loop$times = times - 1;
-      loop$acc = acc + string5;
-    }
-  }
-}
-function repeat(string5, times) {
-  return repeat_loop(string5, times, "");
-}
-function join_loop(loop$strings, loop$separator, loop$accumulator) {
-  while (true) {
-    let strings = loop$strings;
-    let separator = loop$separator;
-    let accumulator = loop$accumulator;
-    if (strings instanceof Empty) {
-      return accumulator;
-    } else {
-      let string5 = strings.head;
-      let strings$1 = strings.tail;
-      loop$strings = strings$1;
-      loop$separator = separator;
-      loop$accumulator = accumulator + separator + string5;
-    }
-  }
-}
-function join(strings, separator) {
-  if (strings instanceof Empty) {
-    return "";
-  } else {
-    let first$1 = strings.head;
-    let rest = strings.tail;
-    return join_loop(rest, separator, first$1);
-  }
-}
-function padding(size2, pad_string) {
-  let pad_string_length = string_length(pad_string);
-  let num_pads = divideInt(size2, pad_string_length);
-  let extra = remainderInt(size2, pad_string_length);
-  return repeat(pad_string, num_pads) + slice(pad_string, 0, extra);
-}
-function pad_end(string5, desired_length, pad_string) {
-  let current_length = string_length(string5);
-  let to_pad_length = desired_length - current_length;
-  let $ = to_pad_length <= 0;
-  if ($) {
-    return string5;
-  } else {
-    return string5 + padding(to_pad_length, pad_string);
-  }
-}
-function first2(string5) {
-  let $ = pop_grapheme(string5);
-  if ($ instanceof Ok) {
-    let first$1 = $[0][0];
-    return new Ok(first$1);
-  } else {
-    return $;
-  }
-}
-
-// build/dev/javascript/gleam_stdlib/gleam/dynamic/decode.mjs
-var DecodeError = class extends CustomType {
-  constructor(expected, found, path) {
-    super();
-    this.expected = expected;
-    this.found = found;
-    this.path = path;
-  }
-};
-var Decoder = class extends CustomType {
-  constructor(function$) {
-    super();
-    this.function = function$;
-  }
-};
-function run(data, decoder) {
-  let $ = decoder.function(data);
-  let maybe_invalid_data;
-  let errors;
-  maybe_invalid_data = $[0];
-  errors = $[1];
-  if (errors instanceof Empty) {
-    return new Ok(maybe_invalid_data);
-  } else {
-    return new Error(errors);
-  }
-}
-function success(data) {
-  return new Decoder((_) => {
-    return [data, toList([])];
-  });
-}
-function map2(decoder, transformer) {
-  return new Decoder(
-    (d) => {
-      let $ = decoder.function(d);
-      let data;
-      let errors;
-      data = $[0];
-      errors = $[1];
-      return [transformer(data), errors];
-    }
-  );
-}
-function run_decoders(loop$data, loop$failure, loop$decoders) {
-  while (true) {
-    let data = loop$data;
-    let failure2 = loop$failure;
-    let decoders = loop$decoders;
-    if (decoders instanceof Empty) {
-      return failure2;
-    } else {
-      let decoder = decoders.head;
-      let decoders$1 = decoders.tail;
-      let $ = decoder.function(data);
-      let layer;
-      let errors;
-      layer = $;
-      errors = $[1];
-      if (errors instanceof Empty) {
-        return layer;
-      } else {
-        loop$data = data;
-        loop$failure = failure2;
-        loop$decoders = decoders$1;
-      }
-    }
-  }
-}
-function one_of(first3, alternatives) {
-  return new Decoder(
-    (dynamic_data) => {
-      let $ = first3.function(dynamic_data);
-      let layer;
-      let errors;
-      layer = $;
-      errors = $[1];
-      if (errors instanceof Empty) {
-        return layer;
-      } else {
-        return run_decoders(dynamic_data, layer, alternatives);
-      }
-    }
-  );
-}
-function decode_error(expected, found) {
-  return toList([
-    new DecodeError(expected, classify_dynamic(found), toList([]))
-  ]);
-}
-function run_dynamic_function(data, name, f) {
-  let $ = f(data);
-  if ($ instanceof Ok) {
-    let data$1 = $[0];
-    return [data$1, toList([])];
-  } else {
-    let zero = $[0];
-    return [
-      zero,
-      toList([new DecodeError(name, classify_dynamic(data), toList([]))])
-    ];
-  }
-}
-function decode_int(data) {
-  return run_dynamic_function(data, "Int", int);
-}
-function failure(zero, expected) {
-  return new Decoder((d) => {
-    return [zero, decode_error(expected, d)];
-  });
-}
-var int2 = /* @__PURE__ */ new Decoder(decode_int);
-function decode_string(data) {
-  return run_dynamic_function(data, "String", string);
-}
-var string2 = /* @__PURE__ */ new Decoder(decode_string);
-function list2(inner) {
-  return new Decoder(
-    (data) => {
-      return list(
-        data,
-        inner.function,
-        (p, k) => {
-          return push_path(p, toList([k]));
-        },
-        0,
-        toList([])
-      );
-    }
-  );
-}
-function push_path(layer, path) {
-  let decoder = one_of(
-    string2,
-    toList([
-      (() => {
-        let _pipe = int2;
-        return map2(_pipe, to_string);
-      })()
-    ])
-  );
-  let path$1 = map(
-    path,
-    (key) => {
-      let key$1 = identity(key);
-      let $ = run(key$1, decoder);
-      if ($ instanceof Ok) {
-        let key$2 = $[0];
-        return key$2;
-      } else {
-        return "<" + classify_dynamic(key$1) + ">";
-      }
-    }
-  );
-  let errors = map(
-    layer[1],
-    (error) => {
-      return new DecodeError(
-        error.expected,
-        error.found,
-        append(path$1, error.path)
-      );
-    }
-  );
-  return [layer[0], errors];
-}
-function index3(loop$path, loop$position, loop$inner, loop$data, loop$handle_miss) {
-  while (true) {
-    let path = loop$path;
-    let position = loop$position;
-    let inner = loop$inner;
-    let data = loop$data;
-    let handle_miss = loop$handle_miss;
-    if (path instanceof Empty) {
-      let _pipe = inner(data);
-      return push_path(_pipe, reverse(position));
-    } else {
-      let key = path.head;
-      let path$1 = path.tail;
-      let $ = index2(data, key);
-      if ($ instanceof Ok) {
-        let $1 = $[0];
-        if ($1 instanceof Some) {
-          let data$1 = $1[0];
-          loop$path = path$1;
-          loop$position = prepend(key, position);
-          loop$inner = inner;
-          loop$data = data$1;
-          loop$handle_miss = handle_miss;
-        } else {
-          return handle_miss(data, prepend(key, position));
-        }
-      } else {
-        let kind = $[0];
-        let $1 = inner(data);
-        let default$;
-        default$ = $1[0];
-        let _pipe = [
-          default$,
-          toList([new DecodeError(kind, classify_dynamic(data), toList([]))])
-        ];
-        return push_path(_pipe, reverse(position));
-      }
-    }
-  }
-}
-function subfield(field_path, field_decoder, next) {
-  return new Decoder(
-    (data) => {
-      let $ = index3(
-        field_path,
-        toList([]),
-        field_decoder.function,
-        data,
-        (data2, position) => {
-          let $12 = field_decoder.function(data2);
-          let default$;
-          default$ = $12[0];
-          let _pipe = [
-            default$,
-            toList([new DecodeError("Field", "Nothing", toList([]))])
-          ];
-          return push_path(_pipe, reverse(position));
-        }
-      );
-      let out;
-      let errors1;
-      out = $[0];
-      errors1 = $[1];
-      let $1 = next(out).function(data);
-      let out$1;
-      let errors2;
-      out$1 = $1[0];
-      errors2 = $1[1];
-      return [out$1, append(errors1, errors2)];
-    }
-  );
-}
-function at(path, inner) {
-  return new Decoder(
-    (data) => {
-      return index3(
-        path,
-        toList([]),
-        inner.function,
-        data,
-        (data2, position) => {
-          let $ = inner.function(data2);
-          let default$;
-          default$ = $[0];
-          let _pipe = [
-            default$,
-            toList([new DecodeError("Field", "Nothing", toList([]))])
-          ];
-          return push_path(_pipe, reverse(position));
-        }
-      );
-    }
-  );
-}
-function field(field_name, field_decoder, next) {
-  return subfield(toList([field_name]), field_decoder, next);
-}
-
-// build/dev/javascript/gleam_stdlib/gleam_stdlib.mjs
-var Nil = void 0;
-var NOT_FOUND = {};
-function identity(x) {
-  return x;
-}
-function parse_int(value) {
-  if (/^[-+]?(\d+)$/.test(value)) {
-    return new Ok(parseInt(value));
-  } else {
-    return new Error(Nil);
-  }
-}
-function to_string(term) {
-  return term.toString();
-}
-function string_replace(string5, target2, substitute) {
-  return string5.replaceAll(target2, substitute);
-}
-function string_length(string5) {
-  if (string5 === "") {
-    return 0;
-  }
-  const iterator = graphemes_iterator(string5);
-  if (iterator) {
-    let i = 0;
-    for (const _ of iterator) {
-      i++;
-    }
-    return i;
-  } else {
-    return string5.match(/./gsu).length;
-  }
-}
-function graphemes(string5) {
-  const iterator = graphemes_iterator(string5);
-  if (iterator) {
-    return List.fromArray(Array.from(iterator).map((item) => item.segment));
-  } else {
-    return List.fromArray(string5.match(/./gsu));
-  }
-}
-var segmenter = void 0;
-function graphemes_iterator(string5) {
-  if (globalThis.Intl && Intl.Segmenter) {
-    segmenter ||= new Intl.Segmenter();
-    return segmenter.segment(string5)[Symbol.iterator]();
-  }
-}
-function pop_grapheme(string5) {
-  let first3;
-  const iterator = graphemes_iterator(string5);
-  if (iterator) {
-    first3 = iterator.next().value?.segment;
-  } else {
-    first3 = string5.match(/./su)?.[0];
-  }
-  if (first3) {
-    return new Ok([first3, string5.slice(first3.length)]);
-  } else {
-    return new Error(Nil);
-  }
-}
-function string_slice(string5, idx, len) {
-  if (len <= 0 || idx >= string5.length) {
-    return "";
-  }
-  const iterator = graphemes_iterator(string5);
-  if (iterator) {
-    while (idx-- > 0) {
-      iterator.next();
-    }
-    let result = "";
-    while (len-- > 0) {
-      const v = iterator.next().value;
-      if (v === void 0) {
-        break;
-      }
-      result += v.segment;
-    }
-    return result;
-  } else {
-    return string5.match(/./gsu).slice(idx, idx + len).join("");
-  }
-}
-function contains_string(haystack, needle) {
-  return haystack.indexOf(needle) >= 0;
-}
-function starts_with(haystack, needle) {
-  return haystack.startsWith(needle);
-}
-var unicode_whitespaces = [
-  " ",
-  // Space
-  "	",
-  // Horizontal tab
-  "\n",
-  // Line feed
-  "\v",
-  // Vertical tab
-  "\f",
-  // Form feed
-  "\r",
-  // Carriage return
-  "\x85",
-  // Next line
-  "\u2028",
-  // Line separator
-  "\u2029"
-  // Paragraph separator
-].join("");
-var trim_start_regex = /* @__PURE__ */ new RegExp(
-  `^[${unicode_whitespaces}]*`
-);
-var trim_end_regex = /* @__PURE__ */ new RegExp(`[${unicode_whitespaces}]*$`);
-function floor(float2) {
-  return Math.floor(float2);
-}
-function round2(float2) {
-  return Math.round(float2);
-}
-function random_uniform() {
-  const random_uniform_result = Math.random();
-  if (random_uniform_result === 1) {
-    return random_uniform();
-  }
-  return random_uniform_result;
-}
-function new_map() {
-  return Dict.new();
-}
-function map_get(map4, key) {
-  const value = map4.get(key, NOT_FOUND);
-  if (value === NOT_FOUND) {
-    return new Error(Nil);
-  }
-  return new Ok(value);
-}
-function map_insert(key, value, map4) {
-  return map4.set(key, value);
-}
-function classify_dynamic(data) {
-  if (typeof data === "string") {
-    return "String";
-  } else if (typeof data === "boolean") {
-    return "Bool";
-  } else if (data instanceof Result) {
-    return "Result";
-  } else if (data instanceof List) {
-    return "List";
-  } else if (data instanceof BitArray) {
-    return "BitArray";
-  } else if (data instanceof Dict) {
-    return "Dict";
-  } else if (Number.isInteger(data)) {
-    return "Int";
-  } else if (Array.isArray(data)) {
-    return `Array`;
-  } else if (typeof data === "number") {
-    return "Float";
-  } else if (data === null) {
-    return "Nil";
-  } else if (data === void 0) {
-    return "Nil";
-  } else {
-    const type = typeof data;
-    return type.charAt(0).toUpperCase() + type.slice(1);
-  }
-}
-function index2(data, key) {
-  if (data instanceof Dict || data instanceof WeakMap || data instanceof Map) {
-    const token = {};
-    const entry = data.get(key, token);
-    if (entry === token) return new Ok(new None());
-    return new Ok(new Some(entry));
-  }
-  const key_is_int = Number.isInteger(key);
-  if (key_is_int && key >= 0 && key < 8 && data instanceof List) {
-    let i = 0;
-    for (const value of data) {
-      if (i === key) return new Ok(new Some(value));
-      i++;
-    }
-    return new Error("Indexable");
-  }
-  if (key_is_int && Array.isArray(data) || data && typeof data === "object" || data && Object.getPrototypeOf(data) === Object.prototype) {
-    if (key in data) return new Ok(new Some(data[key]));
-    return new Ok(new None());
-  }
-  return new Error(key_is_int ? "Indexable" : "Dict");
-}
-function list(data, decode2, pushPath, index4, emptyList) {
-  if (!(data instanceof List || Array.isArray(data))) {
-    const error = new DecodeError("List", classify_dynamic(data), emptyList);
-    return [emptyList, List.fromArray([error])];
-  }
-  const decoded = [];
-  for (const element8 of data) {
-    const layer = decode2(element8);
-    const [out, errors] = layer;
-    if (errors instanceof NonEmpty) {
-      const [_, errors2] = pushPath(layer, index4.toString());
-      return [emptyList, errors2];
-    }
-    decoded.push(out);
-    index4++;
-  }
-  return [List.fromArray(decoded), emptyList];
-}
-function int(data) {
-  if (Number.isInteger(data)) return new Ok(data);
-  return new Error(0);
-}
-function string(data) {
-  if (typeof data === "string") return new Ok(data);
-  return new Error("");
-}
-
-// build/dev/javascript/gleam_stdlib/gleam/float.mjs
-function negate(x) {
-  return -1 * x;
-}
-function round(x) {
-  let $ = x >= 0;
-  if ($) {
-    return round2(x);
-  } else {
-    return 0 - round2(negate(x));
-  }
-}
-
-// build/dev/javascript/gleam_stdlib/gleam/int.mjs
-function compare2(a, b) {
-  let $ = a === b;
-  if ($) {
-    return new Eq();
-  } else {
-    let $1 = a < b;
-    if ($1) {
-      return new Lt();
-    } else {
-      return new Gt();
-    }
-  }
-}
-function max(a, b) {
-  let $ = a > b;
-  if ($) {
-    return a;
-  } else {
-    return b;
-  }
-}
-function random(max2) {
-  let _pipe = random_uniform() * identity(max2);
-  let _pipe$1 = floor(_pipe);
-  return round(_pipe$1);
-}
-
 // build/dev/javascript/gleam_stdlib/gleam/result.mjs
+function map3(result, fun) {
+  if (result instanceof Ok) {
+    let x = result[0];
+    return new Ok(fun(x));
+  } else {
+    return result;
+  }
+}
 function map_error(result, fun) {
   if (result instanceof Ok) {
     return result;
@@ -2832,6 +2849,14 @@ function from(effect) {
   };
   return new Effect(toList([task]), empty.before_paint, empty.after_paint);
 }
+function before_paint(effect) {
+  let task = (actions) => {
+    let root3 = actions.root();
+    let dispatch = actions.dispatch;
+    return effect(dispatch, root3);
+  };
+  return new Effect(empty.synchronous, toList([task]), empty.after_paint);
+}
 function event2(name, data) {
   let task = (actions) => {
     return actions.emit(name, data);
@@ -3197,7 +3222,7 @@ function remove_event(events, path, name) {
   );
 }
 function remove_attributes(handlers, path, attributes) {
-  return fold(
+  return fold2(
     attributes,
     handlers,
     (events, attribute3) => {
@@ -3256,7 +3281,7 @@ function add_event(events, mapper, path, name, handler) {
   );
 }
 function add_attributes(handlers, mapper, path, attributes) {
-  return fold(
+  return fold2(
     attributes,
     handlers,
     (events, attribute3) => {
@@ -5303,7 +5328,7 @@ function listAppend(a, b) {
   } else if (b instanceof Empty) {
     return a;
   } else {
-    return append(a, b);
+    return append2(a, b);
   }
 }
 var copiedStyleSheets = /* @__PURE__ */ new WeakMap();
@@ -5540,10 +5565,10 @@ var make_component = ({ init: init5, update: update6, view: view6, config }, nam
 
 // build/dev/javascript/lustre/lustre/component.mjs
 var Config2 = class extends CustomType {
-  constructor(open_shadow_root, adopt_styles2, delegates_focus, attributes, properties, contexts, is_form_associated, on_form_autofill, on_form_reset, on_form_restore) {
+  constructor(open_shadow_root, adopt_styles, delegates_focus, attributes, properties, contexts, is_form_associated, on_form_autofill, on_form_reset, on_form_restore) {
     super();
     this.open_shadow_root = open_shadow_root;
-    this.adopt_styles = adopt_styles2;
+    this.adopt_styles = adopt_styles;
     this.delegates_focus = delegates_focus;
     this.attributes = attributes;
     this.properties = properties;
@@ -5573,7 +5598,7 @@ function new$6(options) {
     option_none,
     option_none
   );
-  return fold(
+  return fold2(
     options,
     init5,
     (config, option) => {
@@ -5590,24 +5615,6 @@ function on_attribute_change(name, decoder) {
         config.adopt_styles,
         config.delegates_focus,
         attributes,
-        config.properties,
-        config.contexts,
-        config.is_form_associated,
-        config.on_form_autofill,
-        config.on_form_reset,
-        config.on_form_restore
-      );
-    }
-  );
-}
-function adopt_styles(adopt) {
-  return new Option(
-    (config) => {
-      return new Config2(
-        config.open_shadow_root,
-        adopt,
-        config.delegates_focus,
-        config.attributes,
         config.properties,
         config.contexts,
         config.is_form_associated,
@@ -5709,6 +5716,21 @@ function set_timeout(delay, cb) {
 }
 function clear_timeout(id) {
   window.clearTimeout(id);
+}
+function measure_orientation(root3) {
+  const rect = root3?.host?.getBoundingClientRect() || {
+    width: 0,
+    height: 0
+  };
+  return rect.width >= rect.height ? "landscape" : "portrait";
+}
+var observer = null;
+function on_resize(root3, cb) {
+  if (observer) {
+    return;
+  }
+  observer = new ResizeObserver(cb);
+  observer.observe(root3.host);
 }
 
 // build/dev/javascript/split_flap/utils.mjs
@@ -5854,10 +5876,10 @@ function view(model) {
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 3573,
-        end: 3630,
-        pattern_start: 3584,
-        pattern_end: 3601
+        start: 3593,
+        end: 3650,
+        pattern_start: 3604,
+        pattern_end: 3621
       }
     );
   }
@@ -5950,7 +5972,7 @@ function update2(model, msg) {
     ];
   } else if (msg instanceof DestinationChanged) {
     let $ = model.state;
-    let $1 = first2(model.chars);
+    let $1 = first(model.chars);
     let $2 = contains_string(model.chars, model.dest);
     if ($2 && $1 instanceof Ok && $ instanceof Idle) {
       let x = $1[0];
@@ -5992,10 +6014,10 @@ function update2(model, msg) {
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 2979,
-          end: 3043,
-          pattern_start: 2990,
-          pattern_end: 3008
+          start: 2999,
+          end: 3063,
+          pattern_start: 3010,
+          pattern_end: 3028
         }
       );
     }
@@ -6017,7 +6039,7 @@ function update2(model, msg) {
     ];
   } else if (msg instanceof FlipEnded) {
     let $ = model.state;
-    let $1 = first2(model.chars);
+    let $1 = first(model.chars);
     let $2 = contains_string(model.chars, model.dest);
     if ($2 && $1 instanceof Ok && $ instanceof Idle) {
       let x = $1[0];
@@ -6056,7 +6078,7 @@ function register() {
         "letter",
         (val) => {
           return try$(
-            first2(val),
+            first(val),
             (char) => {
               return new Ok(new LetterAttrChanged(char));
             }
@@ -6076,7 +6098,7 @@ function register() {
           );
           let _pipe$3 = unique(_pipe$2);
           let _pipe$4 = join(_pipe$3, "");
-          let _pipe$5 = append2(" ", _pipe$4);
+          let _pipe$5 = append(" ", _pipe$4);
           let _pipe$6 = new CharsAttrChanged(_pipe$5);
           return new Ok(_pipe$6);
         }
@@ -6414,7 +6436,7 @@ function register2() {
               "error " + error_string(error),
               void 0,
               "src/components/display.gleam",
-              82
+              81
             );
             return new Error(void 0);
           }
@@ -6986,7 +7008,7 @@ function element6(pages, page, cols, auto_play, page_handler, auto_play_msg) {
   );
 }
 function init3(_) {
-  return [new Model3(0, 0, 28, true), none2()];
+  return [new Model3(0, 0, 0, true), none2()];
 }
 function update4(model, msg) {
   if (msg instanceof PagesAttrChanged) {
@@ -7020,26 +7042,27 @@ function update4(model, msg) {
     return [model, emit2("auto_play", null$())];
   }
 }
-function css3(cols) {
-  let _pipe = "\n  :host {\n    display: inline-block;\n    width: 100%;\n  }\n\n  .progress-bar {\n    display: flex;\n    flex-direction: row;\n    gap: 0;\n  }\n  split-flap-char {\n    padding: 0.9cqw 0.3cqw;\n  }\n  ";
-  return replace(_pipe, "<cols>", to_string(cols - 2));
-}
+var css3 = "\n  :host {\n    display: inline-block;\n    width: 100%;\n  }\n\n  .progress-bar {\n    display: flex;\n    flex-direction: row;\n    gap: 0;\n  }\n  \n  split-flap-char {\n    padding: 0.9cqw 0.3cqw;\n  }\n  ";
 function view3(model) {
   let pages = model.pages;
-  let page = model.page;
+  let current_page = model.page;
   let auto_play = model.auto_play;
   let empty_dot = "\u25CB";
   let filled_dot = "\u25CF";
-  let stop = "\u23F9";
-  let start3 = "\u25B8";
+  let paused = "\u{1D13D}";
+  let empty3 = repeat(" ", model.cols);
   let _block;
   let _pipe = range(1, pages);
   let _pipe$1 = map(
     _pipe,
     (idx) => {
-      let $ = idx === page;
+      let $ = idx === current_page;
       if ($) {
-        return filled_dot;
+        if (auto_play) {
+          return filled_dot;
+        } else {
+          return paused;
+        }
       } else {
         return empty_dot;
       }
@@ -7047,28 +7070,11 @@ function view3(model) {
   );
   _block = join(_pipe$1, " ");
   let dots = _block;
-  let dots_len = pages * 2;
   let _block$1;
-  let _block$2;
-  if (auto_play) {
-    _block$2 = stop;
-  } else {
-    _block$2 = start3;
-  }
-  let _pipe$2 = _block$2;
-  _block$1 = right(_pipe$2, repeat(" ", dots_len + 2));
-  let control = _block$1;
-  let empty3 = repeat(" ", model.cols);
-  let _block$3;
-  let _pipe$3 = control;
-  let _pipe$4 = center(_pipe$3, empty3);
-  let _pipe$5 = ((_capture) => {
-    return center(dots, _capture);
-  })(
-    _pipe$4
-  );
-  _block$3 = graphemes(_pipe$5);
-  let chars = _block$3;
+  let _pipe$2 = dots;
+  let _pipe$3 = center(_pipe$2, empty3);
+  _block$1 = graphemes(_pipe$3);
+  let chars = _block$1;
   let first_dot_idx = fold_until(
     chars,
     0,
@@ -7084,42 +7090,34 @@ function view3(model) {
   );
   return fragment2(
     toList([
-      style2(toList([]), css3(model.cols)),
+      style2(toList([]), css3),
       div2(
         toList([class$("progress-bar")]),
         index_map(
           chars,
           (char, idx) => {
-            let page$1 = 1 + globalThis.Math.trunc((idx - first_dot_idx) / 2);
-            let _block$4;
-            let _pipe$6 = toList(["HEY", to_string(idx), char]);
-            _block$4 = join(_pipe$6, " ");
-            echo2(_block$4, void 0, "src/components/progress_bar.gleam", 166);
+            let page = 1 + globalThis.Math.trunc((idx - first_dot_idx) / 2);
             return [
               "pb-" + to_string(idx),
               element4(
                 char,
                 (() => {
                   if (char === "\u25CB") {
-                    return new Some(empty_dot + filled_dot);
+                    return new Some(paused + empty_dot + filled_dot);
                   } else if (char === "\u25CF") {
-                    return new Some(empty_dot + filled_dot);
-                  } else if (char === "\u25B8") {
-                    return new Some(start3 + stop);
-                  } else if (char === "\u23F9") {
-                    return new Some(start3 + stop);
+                    return new Some(paused + empty_dot + filled_dot);
+                  } else if (char === "\u{1D13D}") {
+                    return new Some(paused + empty_dot + filled_dot);
                   } else {
                     return new None();
                   }
                 })(),
                 (() => {
                   if (char === "\u25CB") {
-                    return new Some(new PageClicked(page$1));
+                    return new Some(new PageClicked(page));
                   } else if (char === "\u25CF") {
-                    return new Some(new PageClicked(page$1));
-                  } else if (char === "\u25B8") {
-                    return new Some(new AutoPlayClicked());
-                  } else if (char === "\u23F9") {
+                    return new Some(new PageClicked(page));
+                  } else if (char === "\u{1D13D}") {
                     return new Some(new AutoPlayClicked());
                   } else {
                     return new None();
@@ -7145,7 +7143,7 @@ function register3() {
           return try$(
             parse_int(val),
             (parsed) => {
-              return new Ok(new ColsAttrChanged2(max(parsed, 2)));
+              return new Ok(new ColsAttrChanged2(parsed));
             }
           );
         }
@@ -7187,6 +7185,372 @@ function register3() {
     ])
   );
   return make_component(component2, "progress-bar");
+}
+
+// build/dev/javascript/split_flap/components/bingo.mjs
+var BingoState = class extends CustomType {
+  constructor(scene, frame) {
+    super();
+    this.scene = scene;
+    this.frame = frame;
+  }
+};
+var Model4 = class extends CustomType {
+  constructor(scenes2, columns, current, auto_play, timeout) {
+    super();
+    this.scenes = scenes2;
+    this.columns = columns;
+    this.current = current;
+    this.auto_play = auto_play;
+    this.timeout = timeout;
+  }
+};
+var Resized = class extends CustomType {
+};
+var ColumnsChanged = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var PageClicked2 = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var AutoPlayClicked2 = class extends CustomType {
+};
+var TimeoutStarted = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var TimeoutEnded = class extends CustomType {
+};
+function element7() {
+  return element2("nick-dot-bingo", toList([]), toList([]));
+}
+function get_cols_effect() {
+  return before_paint(
+    (dispatch, root_element) => {
+      let _block;
+      let $ = measure_orientation(root_element);
+      if ($ === "portrait") {
+        _block = 15;
+      } else {
+        _block = 29;
+      }
+      let cols = _block;
+      return dispatch(new ColumnsChanged(cols));
+    }
+  );
+}
+function initial_state(scenes2) {
+  return try$(
+    first2(scenes2),
+    (first_scene) => {
+      return try$(
+        first2(first_scene.frames),
+        (first_frame) => {
+          return new Ok(new BingoState(first_scene, first_frame));
+        }
+      );
+    }
+  );
+}
+function init4(_) {
+  let cols = 0;
+  let scenes$1 = toList([]);
+  let state = initial_state(scenes$1);
+  return [
+    new Model4(scenes$1, cols, state, true, new None()),
+    before_paint(
+      (dispatch, root_element) => {
+        return on_resize(
+          root_element,
+          () => {
+            return dispatch(new Resized());
+          }
+        );
+      }
+    )
+  ];
+}
+function find_scene(loop$scenes, loop$page) {
+  while (true) {
+    let scenes2 = loop$scenes;
+    let page = loop$page;
+    if (page === 1) {
+      return first2(scenes2);
+    } else if (scenes2 instanceof Empty) {
+      return new Error(void 0);
+    } else {
+      let rest = scenes2.tail;
+      loop$scenes = rest;
+      loop$page = page - 1;
+    }
+  }
+}
+function start_timeout(frame, id) {
+  if (id instanceof Some) {
+    return none2();
+  } else {
+    return from(
+      (dispatch) => {
+        let id$1 = set_timeout(
+          frame.ms,
+          () => {
+            return dispatch(new TimeoutEnded());
+          }
+        );
+        return dispatch(new TimeoutStarted(id$1));
+      }
+    );
+  }
+}
+function find_next_state(scenes2, current) {
+  let $ = find_next(current.scene.frames, current.frame);
+  if ($ instanceof Ok) {
+    let frame = $[0];
+    return new Ok(new BingoState(current.scene, frame));
+  } else {
+    return lazy_or(
+      try$(
+        find_next(scenes2, current.scene),
+        (scene) => {
+          return try$(
+            first2(scene.frames),
+            (frame) => {
+              return new Ok(new BingoState(scene, frame));
+            }
+          );
+        }
+      ),
+      () => {
+        return initial_state(scenes2);
+      }
+    );
+  }
+}
+function reduce(model, msg) {
+  if (msg instanceof Resized) {
+    return new Ok([model, get_cols_effect()]);
+  } else if (msg instanceof ColumnsChanged) {
+    let columns = msg[0];
+    return guard(
+      columns === model.columns,
+      new Ok([model, none2()]),
+      () => {
+        let $ = model.timeout;
+        if ($ instanceof Some) {
+          let id = $[0];
+          clear_timeout(id);
+        } else {
+        }
+        let scenes$1 = scenes(columns);
+        return try$(
+          initial_state(scenes$1),
+          (initial_state2) => {
+            return new Ok(
+              [
+                new Model4(
+                  scenes$1,
+                  columns,
+                  new Ok(initial_state2),
+                  model.auto_play,
+                  new None()
+                ),
+                start_timeout(initial_state2.frame, new None())
+              ]
+            );
+          }
+        );
+      }
+    );
+  } else if (msg instanceof PageClicked2) {
+    let page = msg[0];
+    return try$(
+      find_scene(model.scenes, page),
+      (scene) => {
+        return try$(
+          first2(scene.frames),
+          (frame) => {
+            let next = map3(
+              model.current,
+              (current) => {
+                let $ = !isEqual(current.scene, scene);
+                if ($) {
+                  return new BingoState(scene, frame);
+                } else {
+                  return current;
+                }
+              }
+            );
+            return new Ok(
+              [
+                new Model4(
+                  model.scenes,
+                  model.columns,
+                  next,
+                  false,
+                  model.timeout
+                ),
+                start_timeout(frame, model.timeout)
+              ]
+            );
+          }
+        );
+      }
+    );
+  } else if (msg instanceof AutoPlayClicked2) {
+    return new Ok(
+      [
+        new Model4(
+          model.scenes,
+          model.columns,
+          model.current,
+          !model.auto_play,
+          new None()
+        ),
+        (() => {
+          let $ = model.timeout;
+          if ($ instanceof Some) {
+            let id = $[0];
+            clear_timeout(id);
+          } else {
+          }
+          return from(
+            (dispatch) => {
+              return dispatch(new TimeoutEnded());
+            }
+          );
+        })()
+      ]
+    );
+  } else if (msg instanceof TimeoutStarted) {
+    let id = msg[0];
+    return new Ok(
+      [
+        new Model4(
+          model.scenes,
+          model.columns,
+          model.current,
+          model.auto_play,
+          new Some(id)
+        ),
+        none2()
+      ]
+    );
+  } else {
+    return try$(
+      model.current,
+      (current) => {
+        return try$(
+          find_next_state(model.scenes, current),
+          (next) => {
+            let continue$ = isEqual(current.scene, next.scene) || model.auto_play;
+            if (continue$) {
+              return new Ok(
+                [
+                  new Model4(
+                    model.scenes,
+                    model.columns,
+                    new Ok(next),
+                    model.auto_play,
+                    new None()
+                  ),
+                  start_timeout(next.frame, new None())
+                ]
+              );
+            } else {
+              return new Ok(
+                [
+                  new Model4(
+                    model.scenes,
+                    model.columns,
+                    model.current,
+                    model.auto_play,
+                    new None()
+                  ),
+                  none2()
+                ]
+              );
+            }
+          }
+        );
+      }
+    );
+  }
+}
+function update5(model, msg) {
+  let $ = reduce(model, msg);
+  if ($ instanceof Ok) {
+    let next = $[0];
+    return next;
+  } else {
+    echo2("ERROR", void 0, "src/components/bingo.gleam", 90);
+    return [model, none2()];
+  }
+}
+var css4 = "\n  :host {\n    display: block;\n    container-type: inline-size;\n    height: 100%;\n    width: 100%;\n  }\n\n  .panel {\n    position: relative;\n    width: 100%;\n    height: 100%;\n    min-height: fit-content;\n    background: linear-gradient(\n      250deg,\n      rgb(40, 40, 40) 0%,\n      rgb(50, 50, 50) 25%,\n      rgb(40, 40, 40) 80%\n    );\n    padding: 2cqh 10cqw;\n    /* This is in px on purpose */\n    box-shadow: inset 0px 3px 10px 10px rgba(0, 0, 0, 0.25);\n\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-content: center;\n    overflow: scroll;\n  }\n\n  .matrix {\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-content: center;\n  }\n  \n  @container (aspect-ratio < 1) {\n    .panel {\n      padding: 5cqh 5cqw;\n    }\n  }\n  ";
+function view4(model) {
+  let _block;
+  let $ = model.current;
+  if ($ instanceof Ok) {
+    let frame = $[0].frame;
+    _block = frame.lines;
+  } else {
+    _block = toList([]);
+  }
+  let lines = _block;
+  return fragment2(
+    toList([
+      style2(toList([]), css4),
+      div(
+        toList([class$("panel"), part("panel")]),
+        toList([
+          div(
+            toList([class$("matrix"), part("matrix")]),
+            toList([
+              element5(lines, model.columns, 7, new None()),
+              element6(
+                length2(model.scenes),
+                fold_until(
+                  model.scenes,
+                  1,
+                  (acc, s) => {
+                    let $1 = model.current;
+                    if ($1 instanceof Ok) {
+                      let state = $1[0];
+                      if (isEqual(s, state.scene)) {
+                        return new Stop(acc);
+                      } else {
+                        return new Continue(acc + 1);
+                      }
+                    } else {
+                      return new Stop(0);
+                    }
+                  }
+                ),
+                model.columns,
+                model.auto_play,
+                (var0) => {
+                  return new PageClicked2(var0);
+                },
+                new AutoPlayClicked2()
+              )
+            ])
+          )
+        ])
+      )
+    ])
+  );
+}
+function register4() {
+  let component2 = component(init4, update5, view4, toList([]));
+  return make_component(component2, "nick-dot-bingo");
 }
 function echo2(value, message, file, line) {
   const grey = "\x1B[90m";
@@ -7392,343 +7756,6 @@ var Echo$Inspector2 = class {
   }
 };
 
-// build/dev/javascript/split_flap/components/bingo.mjs
-var BingoState = class extends CustomType {
-  constructor(scene, frame) {
-    super();
-    this.scene = scene;
-    this.frame = frame;
-  }
-};
-var Model4 = class extends CustomType {
-  constructor(scenes2, columns, current, auto_play, timeout) {
-    super();
-    this.scenes = scenes2;
-    this.columns = columns;
-    this.current = current;
-    this.auto_play = auto_play;
-    this.timeout = timeout;
-  }
-};
-var ColumnsAttrChanged = class extends CustomType {
-  constructor($0) {
-    super();
-    this[0] = $0;
-  }
-};
-var PageClicked2 = class extends CustomType {
-  constructor($0) {
-    super();
-    this[0] = $0;
-  }
-};
-var AutoPlayClicked2 = class extends CustomType {
-};
-var TimeoutStarted = class extends CustomType {
-  constructor($0) {
-    super();
-    this[0] = $0;
-  }
-};
-var TimeoutEnded = class extends CustomType {
-};
-function element7(cols) {
-  return element2(
-    "nick-dot-bingo",
-    toList([attribute2("columns", to_string(cols))]),
-    toList([])
-  );
-}
-function initial_state(scenes2) {
-  return try$(
-    first(scenes2),
-    (first_scene) => {
-      return try$(
-        first(first_scene.frames),
-        (first_frame) => {
-          return new Ok(new BingoState(first_scene, first_frame));
-        }
-      );
-    }
-  );
-}
-function find_scene(loop$scenes, loop$page) {
-  while (true) {
-    let scenes2 = loop$scenes;
-    let page = loop$page;
-    if (scenes2 instanceof Empty) {
-      return new Error(void 0);
-    } else if (page === 1) {
-      return first(scenes2);
-    } else {
-      let rest = scenes2.tail;
-      loop$scenes = rest;
-      loop$page = page - 1;
-    }
-  }
-}
-function start_timeout(frame, id) {
-  if (id instanceof Some) {
-    return none2();
-  } else {
-    return from(
-      (dispatch) => {
-        let id$1 = set_timeout(
-          frame.ms,
-          () => {
-            return dispatch(new TimeoutEnded());
-          }
-        );
-        return dispatch(new TimeoutStarted(id$1));
-      }
-    );
-  }
-}
-function init4(_) {
-  let scenes$1 = scenes(28);
-  let state = initial_state(scenes$1);
-  return [
-    new Model4(scenes$1, 28, state, true, new None()),
-    (() => {
-      if (state instanceof Ok) {
-        let frame = state[0].frame;
-        return start_timeout(frame, new None());
-      } else {
-        return none2();
-      }
-    })()
-  ];
-}
-function find_next_state(scenes2, current) {
-  let $ = find_next(current.scene.frames, current.frame);
-  if ($ instanceof Ok) {
-    let frame = $[0];
-    return new Ok(new BingoState(current.scene, frame));
-  } else {
-    return lazy_or(
-      try$(
-        find_next(scenes2, current.scene),
-        (scene) => {
-          return try$(
-            first(scene.frames),
-            (frame) => {
-              return new Ok(new BingoState(scene, frame));
-            }
-          );
-        }
-      ),
-      () => {
-        return initial_state(scenes2);
-      }
-    );
-  }
-}
-function reduce(model, msg) {
-  if (msg instanceof ColumnsAttrChanged) {
-    let columns = msg[0];
-    return new Ok(
-      [
-        new Model4(
-          scenes(columns),
-          columns,
-          model.current,
-          model.auto_play,
-          model.timeout
-        ),
-        none2()
-      ]
-    );
-  } else if (msg instanceof PageClicked2) {
-    let page = msg[0];
-    return try$(
-      find_scene(model.scenes, page),
-      (scene) => {
-        return try$(
-          first(scene.frames),
-          (frame) => {
-            return new Ok(
-              [
-                new Model4(
-                  model.scenes,
-                  model.columns,
-                  new Ok(new BingoState(scene, frame)),
-                  false,
-                  model.timeout
-                ),
-                start_timeout(frame, model.timeout)
-              ]
-            );
-          }
-        );
-      }
-    );
-  } else if (msg instanceof AutoPlayClicked2) {
-    let next_value = !model.auto_play;
-    return new Ok(
-      [
-        new Model4(
-          model.scenes,
-          model.columns,
-          model.current,
-          next_value,
-          new None()
-        ),
-        (() => {
-          let $ = model.timeout;
-          if ($ instanceof Some) {
-            let id = $[0];
-            clear_timeout(id);
-          } else {
-          }
-          return from(
-            (dispatch) => {
-              return dispatch(new TimeoutEnded());
-            }
-          );
-        })()
-      ]
-    );
-  } else if (msg instanceof TimeoutStarted) {
-    let id = msg[0];
-    return new Ok(
-      [
-        new Model4(
-          model.scenes,
-          model.columns,
-          model.current,
-          model.auto_play,
-          new Some(id)
-        ),
-        none2()
-      ]
-    );
-  } else {
-    return try$(
-      model.current,
-      (current) => {
-        return try$(
-          find_next_state(model.scenes, current),
-          (next) => {
-            let continue$ = isEqual(current.scene, next.scene) || model.auto_play;
-            if (continue$) {
-              return new Ok(
-                [
-                  new Model4(
-                    model.scenes,
-                    model.columns,
-                    new Ok(next),
-                    model.auto_play,
-                    new None()
-                  ),
-                  start_timeout(next.frame, new None())
-                ]
-              );
-            } else {
-              return new Ok(
-                [
-                  new Model4(
-                    model.scenes,
-                    model.columns,
-                    model.current,
-                    model.auto_play,
-                    new None()
-                  ),
-                  none2()
-                ]
-              );
-            }
-          }
-        );
-      }
-    );
-  }
-}
-function update5(model, msg) {
-  let $ = reduce(model, msg);
-  if ($ instanceof Ok) {
-    let next = $[0];
-    return next;
-  } else {
-    return [model, none2()];
-  }
-}
-var css4 = "\n  :host {\n    display: block;\n    container-type: inline-size;\n    height: 100%;\n    width: 100%;\n  }\n\n  .panel {\n    position: relative;\n    width: 100%;\n    height: 100%;\n    min-height: fit-content;\n    background: linear-gradient(\n      250deg,\n      rgb(40, 40, 40) 0%,\n      rgb(50, 50, 50) 25%,\n      rgb(40, 40, 40) 80%\n    );\n    padding: 2cqh 10cqw;\n    /* This is in px on purpose */\n    box-shadow: inset 0px 3px 10px 10px rgba(0, 0, 0, 0.25);\n\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-content: center;\n    overflow: scroll;\n  }\n\n  .matrix {\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-content: center;\n  }\n  \n  @container (aspect-ratio < 1) {\n    .panel {\n      padding: 5cqh 5cqw;\n    }\n  }\n  ";
-function view4(model) {
-  let _block;
-  let $ = model.current;
-  if ($ instanceof Ok) {
-    let frame = $[0].frame;
-    _block = frame.lines;
-  } else {
-    _block = toList([]);
-  }
-  let lines = _block;
-  return fragment2(
-    toList([
-      style2(toList([]), css4),
-      div(
-        toList([class$("panel"), part("panel")]),
-        toList([
-          div(
-            toList([class$("matrix"), part("matrix")]),
-            toList([
-              element5(lines, model.columns, 7, new None()),
-              element6(
-                length(model.scenes),
-                fold_until(
-                  model.scenes,
-                  1,
-                  (acc, s) => {
-                    let $1 = model.current;
-                    if ($1 instanceof Ok) {
-                      let state = $1[0];
-                      if (isEqual(s, state.scene)) {
-                        return new Stop(acc);
-                      } else {
-                        return new Continue(acc + 1);
-                      }
-                    } else {
-                      return new Stop(0);
-                    }
-                  }
-                ),
-                model.columns,
-                model.auto_play,
-                (var0) => {
-                  return new PageClicked2(var0);
-                },
-                new AutoPlayClicked2()
-              )
-            ])
-          )
-        ])
-      )
-    ])
-  );
-}
-function register4() {
-  let component2 = component(
-    init4,
-    update5,
-    view4,
-    toList([
-      adopt_styles(true),
-      on_attribute_change(
-        "columns",
-        (val) => {
-          return try$(
-            parse_int(val),
-            (cols) => {
-              return new Ok(new ColumnsAttrChanged(cols));
-            }
-          );
-        }
-      )
-    ])
-  );
-  return make_component(component2, "nick-dot-bingo");
-}
-
 // build/dev/javascript/split_flap/components/office.mjs
 var css5 = "\n  :host {\n    --position-x: 50%;\n    --position-y: 60%;\n    --min-height: 55cqw;\n    width: 100%;\n    height: 100%;\n    min-height: var(--min-height);\n    overflow-x: hidden;\n    overflow-y: scroll;\n    position: relative;\n    container-type: inline-size;\n  }\n  \n  .office-void {\n    width: 100%;\n    height: 100%;\n    min-height: var(--min-height);\n    overflow: hidden;\n    position: relative;\n    container-type: size;\n  }\n  \n  .office-void-bg {\n    position: absolute;\n    width: max(100cqw, 100cqh);\n    height: max(100cqw, 100cqh);\n    left: var(--position-x);\n    top: var(--position-y);\n    transform: translate(calc(var(--position-x) * -1), calc(var(--position-y) * -1));\n    background-image: url(./img/bg-3840.webp);\n    background-size: cover;\n    background-position: var(--position-x) var(--position-y);\n  }\n  \n  .split-flap-void {\n    position: absolute;\n    /* background: lime; */\n    /* mix-blend-mode: difference; */\n    /* do not, and I repeat, do not touch this\u2014otherwise the flip-flap will be very very sad and I will cry */\n    top: 28.75%;\n    left: 26.66%;\n    width: 46.66%;\n    height: 23.4%;\n    container-type: size; \n  }\n\n  nick-dot-bingo::part(panel) {\n    background: rgba(50, 50, 50, 0.3);    \n    box-shadow: none;\n  }\n";
 function view5(_) {
@@ -7743,7 +7770,7 @@ function view5(_) {
             toList([
               div(
                 toList([class$("split-flap-void")]),
-                toList([element7(28)])
+                toList([element7()])
               )
             ])
           )
