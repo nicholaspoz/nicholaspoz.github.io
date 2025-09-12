@@ -17,9 +17,9 @@ import utils
 // NOTE: you need to have a music font installed to see this unicode
 pub const default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶()𝄢𝅘𝅥𝄽|#_!?"
 
-const flip_duration_ms = 40
+const flip_duration_ms = 30
 
-const idle_duration_ms = 17
+const idle_duration_ms = 15
 
 type Model {
   // Model(chars: String, dest: String, state: State)
@@ -177,7 +177,7 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
         result.unwrap(dict.get(model.adjacency_list, model.current_char), " ")
       #(Model(..model, current_char: next, state: Idle), {
         use dispatch <- effect.from
-        let jitter = int.random(20)
+        let jitter = int.random(15)
         utils.set_timeout(idle_duration_ms + jitter, fn() {
           dispatch(FlipEnded)
         })
@@ -348,12 +348,10 @@ fn css(flip_duration ms: Int) -> String {
 
   @keyframes flip-bottom {
     0% {
-      transform: rotateX(90deg);
-      box-shadow: none;
+      transform: rotateX(80deg);      
     }
     100% {
       transform: rotateX(0deg);
-      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);
     }
   }
 
@@ -378,6 +376,7 @@ fn css(flip_duration ms: Int) -> String {
     border-radius: 0 0 5cqw 5cqw;
     z-index: 10;
     background: rgb(40, 40, 40);
+    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.1), 0cqw -3cqw 2cqw 2cqw rgba(0, 0, 0, 0.1);
   }
   
   .flap.flipping-bottom.flipping {
