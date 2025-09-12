@@ -134,7 +134,7 @@ fn view(model: Model) -> Element(Msg) {
     |> string.join(" ")
 
   let dots = case auto_play {
-    True -> "𝄃 " <> dots <> " 𝄂"
+    True -> "( " <> dots <> " )"
     False -> forward_repeat <> " " <> dots <> " " <> backward_repeat
   }
 
@@ -163,13 +163,13 @@ fn view(model: Model) -> Element(Msg) {
             char:,
             char_stack: case char {
               "○" | "●" -> Some(empty_dot <> filled_dot)
-              "𝄆" | "𝄃" | "𝄂" -> Some("𝄃" <> "𝄂" <> forward_repeat)
+              "𝄆" | "(" | ")" -> Some("(" <> ")" <> forward_repeat)
               "𝄇" -> Some(backward_repeat)
               _ -> None
             },
             on_click: case char {
               "○" | "●" -> Some(PageClicked(page))
-              "𝄆" | "𝄇" | "𝄃" | "𝄂" -> Some(AutoPlayClicked)
+              "𝄆" | "𝄇" | "(" | ")" -> Some(AutoPlayClicked)
               _ -> None
             },
           ),

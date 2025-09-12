@@ -7093,7 +7093,7 @@ function view3(model) {
   let dots = _block;
   let _block$1;
   if (auto_play) {
-    _block$1 = "\u{1D103} " + dots + " \u{1D102}";
+    _block$1 = "( " + dots + " )";
   } else {
     _block$1 = forward_repeat + " " + dots + " " + backward_repeat;
   }
@@ -7135,11 +7135,11 @@ function view3(model) {
                   } else if (char === "\u25CF") {
                     return new Some(empty_dot + filled_dot);
                   } else if (char === "\u{1D106}") {
-                    return new Some("\u{1D103}\u{1D102}" + forward_repeat);
-                  } else if (char === "\u{1D103}") {
-                    return new Some("\u{1D103}\u{1D102}" + forward_repeat);
-                  } else if (char === "\u{1D102}") {
-                    return new Some("\u{1D103}\u{1D102}" + forward_repeat);
+                    return new Some("()" + forward_repeat);
+                  } else if (char === "(") {
+                    return new Some("()" + forward_repeat);
+                  } else if (char === ")") {
+                    return new Some("()" + forward_repeat);
                   } else if (char === "\u{1D107}") {
                     return new Some(backward_repeat);
                   } else {
@@ -7155,9 +7155,9 @@ function view3(model) {
                     return new Some(new AutoPlayClicked());
                   } else if (char === "\u{1D107}") {
                     return new Some(new AutoPlayClicked());
-                  } else if (char === "\u{1D103}") {
+                  } else if (char === "(") {
                     return new Some(new AutoPlayClicked());
-                  } else if (char === "\u{1D102}") {
+                  } else if (char === ")") {
                     return new Some(new AutoPlayClicked());
                   } else {
                     return new None();
