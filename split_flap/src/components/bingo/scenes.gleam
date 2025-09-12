@@ -41,13 +41,13 @@ pub fn scenes(columns: Int) -> List(Scene) {
   let email = Link(text: right("EMAIL ▸"), url: mailto)
 
   let #(what, a, time, to, be, alive, exclaim) = #(
-    center("          WHAT"),
-    center("        A     "),
-    center("   TIME       "),
-    center("TO            "),
-    center("   BE         "),
-    center("      ALIVE   "),
-    center("            ! "),
+    center("         WHAT"),
+    center("       A     "),
+    center("  TIME       "),
+    center("TO           "),
+    center("   BE        "),
+    center("      ALIVE  "),
+    center("            !"),
   )
 
   [

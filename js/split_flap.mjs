@@ -6776,13 +6776,13 @@ function scenes(columns) {
   let github = new Link(right2("GITHUB \u25B8"), github_url);
   let email = new Link(right2("EMAIL \u25B8"), mailto);
   let $3 = [
-    center2("          WHAT"),
-    center2("        A     "),
-    center2("   TIME       "),
-    center2("TO            "),
-    center2("   BE         "),
-    center2("      ALIVE   "),
-    center2("            ! ")
+    center2("         WHAT"),
+    center2("       A     "),
+    center2("  TIME       "),
+    center2("TO           "),
+    center2("   BE        "),
+    center2("      ALIVE  "),
+    center2("            !")
   ];
   let what;
   let a;
