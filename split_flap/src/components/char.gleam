@@ -104,20 +104,19 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
     }
 
     LetterAttrChanged(dest) -> {
-      case { string.contains(model.chars, dest) } {
-        True -> {
-          #(Model(..model, dest:), {
-            use dispatch <- effect.from
-            dispatch(DestinationChanged)
-          })
-        }
-        False -> #(model, effect.none())
-      }
+      #(Model(..model, dest:), {
+        use dispatch <- effect.from
+        dispatch(DestinationChanged)
+      })
     }
 
     DestinationChanged | FlipEnded -> {
-      case model.state, string.first(model.chars) {
-        Idle, Ok(x) if x != model.dest -> {
+      case
+        model.state,
+        string.first(model.chars),
+        string.contains(model.chars, model.dest)
+      {
+        Idle, Ok(x), True if x != model.dest -> {
           #(Model(..model, state: Flipping), {
             use dispatch <- effect.from
             utils.set_timeout(flip_duration_ms + 10, fn() {
@@ -127,7 +126,7 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
           })
         }
 
-        _, _ -> #(model, effect.none())
+        _, _, _ -> #(model, effect.none())
       }
     }
 
@@ -136,7 +135,10 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
       let next = rest <> first
       #(Model(..model, chars: next, state: Idle), {
         use dispatch <- effect.from
-        utils.set_timeout(idle_duration_ms, fn() { dispatch(FlipEnded) })
+        let jitter = int.random(20)
+        utils.set_timeout(idle_duration_ms + jitter, fn() {
+          dispatch(FlipEnded)
+        })
         Nil
       })
     }
@@ -169,22 +171,46 @@ fn view(model: Model) -> Element(Msg) {
       ]),
 
       // BOTTOM FLAP
-      case model.state {
-        Idle -> element.none()
-        _ ->
-          html.div([attribute.class("flap bottom")], [
-            html.span([attribute.class("flap-content")], [html.text(curr)]),
-          ])
-      },
+      html.div(
+        [
+          attribute.class("flap bottom"),
+          case model.state {
+            Idle -> attribute.none()
+            _ -> attribute.class("flipping")
+          },
+        ],
+        [
+          html.span([attribute.class("flap-content")], [html.text(curr)]),
+        ],
+      ),
 
+      // case model.state {
+      //   Idle -> element.none()
+      //   _ ->
+      //     html.div([attribute.class("flap bottom")], [
+      //       html.span([attribute.class("flap-content")], [html.text(curr)]),
+      //     ])
+      // },
       // FLIPPING BOTTOM
-      case model.state {
-        Idle -> element.none()
-        Flipping ->
-          html.div([attribute.class("flap flipping-bottom")], [
-            html.span([attribute.class("flap-content")], [html.text(next)]),
-          ])
-      },
+      html.div(
+        [
+          attribute.class("flap flipping-bottom"),
+          case model.state {
+            Idle -> attribute.none()
+            _ -> attribute.class("flipping")
+          },
+        ],
+        [
+          html.span([attribute.class("flap-content")], [html.text(next)]),
+        ],
+      ),
+      // case model.state {
+    //   Idle -> element.none()
+    //   Flipping ->
+    //     html.div([attribute.class("flap flipping-bottom"), ], [
+    //       html.span([attribute.class("flap-content")], [html.text(next)]),
+    //     ])
+    // },
     ]),
   ])
 }
@@ -272,6 +298,10 @@ fn css(flip_duration ms: Int) -> String {
     bottom: 0;
     transform-origin: top;
     border-radius: 0 0 5cqw 5cqw;
+    opacity: 0;
+  }
+  .flap.bottom.flipping {
+    opacity: 1;
   }
 
   @keyframes flip-top {
@@ -311,16 +341,20 @@ fn css(flip_duration ms: Int) -> String {
   }
 
   .flap.flipping-bottom {
+    opacity: 0;
     pointer-events: none;
     bottom: 0;
     transform-origin: top;
     border-radius: 0 0 5cqw 5cqw;
     z-index: 10;
     background: rgb(40, 40, 40);
+  }
+  
+  .flap.flipping-bottom.flipping {
+    opacity: 1;
     animation: <flip_duration>ms ease-in flip-bottom;
     animation-iteration-count: 1;
     animation-fill-mode: forwards;
-    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);
   }
   
   .flap.top .flap-content {

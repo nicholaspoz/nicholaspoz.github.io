@@ -542,21 +542,21 @@ function bitcount(x) {
 function index(bitmap, bit) {
   return bitcount(bitmap & bit - 1);
 }
-function cloneAndSet(arr, at, val) {
+function cloneAndSet(arr, at2, val) {
   const len = arr.length;
   const out = new Array(len);
   for (let i = 0; i < len; ++i) {
     out[i] = arr[i];
   }
-  out[at] = val;
+  out[at2] = val;
   return out;
 }
-function spliceIn(arr, at, val) {
+function spliceIn(arr, at2, val) {
   const len = arr.length;
   const out = new Array(len + 1);
   let i = 0;
   let g = 0;
-  while (i < at) {
+  while (i < at2) {
     out[g++] = arr[i++];
   }
   out[g++] = val;
@@ -565,12 +565,12 @@ function spliceIn(arr, at, val) {
   }
   return out;
 }
-function spliceOut(arr, at) {
+function spliceOut(arr, at2) {
   const len = arr.length;
   const out = new Array(len - 1);
   let i = 0;
   let g = 0;
-  while (i < at) {
+  while (i < at2) {
     out[g++] = arr[i++];
   }
   ++i;
@@ -2092,6 +2092,28 @@ function subfield(field_path, field_decoder, next) {
     }
   );
 }
+function at(path, inner) {
+  return new Decoder(
+    (data) => {
+      return index3(
+        path,
+        toList([]),
+        inner.function,
+        data,
+        (data2, position) => {
+          let $ = inner.function(data2);
+          let default$;
+          default$ = $[0];
+          let _pipe = [
+            default$,
+            toList([new DecodeError("Field", "Nothing", toList([]))])
+          ];
+          return push_path(_pipe, reverse(position));
+        }
+      );
+    }
+  );
+}
 function field(field_name, field_decoder, next) {
   return subfield(toList([field_name]), field_decoder, next);
 }
@@ -2211,6 +2233,19 @@ var trim_start_regex = /* @__PURE__ */ new RegExp(
   `^[${unicode_whitespaces}]*`
 );
 var trim_end_regex = /* @__PURE__ */ new RegExp(`[${unicode_whitespaces}]*$`);
+function floor(float2) {
+  return Math.floor(float2);
+}
+function round2(float2) {
+  return Math.round(float2);
+}
+function random_uniform() {
+  const random_uniform_result = Math.random();
+  if (random_uniform_result === 1) {
+    return random_uniform();
+  }
+  return random_uniform_result;
+}
 function new_map() {
   return Dict.new();
 }
@@ -2301,6 +2336,19 @@ function string(data) {
   return new Error("");
 }
 
+// build/dev/javascript/gleam_stdlib/gleam/float.mjs
+function negate(x) {
+  return -1 * x;
+}
+function round(x) {
+  let $ = x >= 0;
+  if ($) {
+    return round2(x);
+  } else {
+    return 0 - round2(negate(x));
+  }
+}
+
 // build/dev/javascript/gleam_stdlib/gleam/int.mjs
 function compare2(a, b) {
   let $ = a === b;
@@ -2323,6 +2371,11 @@ function max(a, b) {
     return b;
   }
 }
+function random(max2) {
+  let _pipe = random_uniform() * identity(max2);
+  let _pipe$1 = floor(_pipe);
+  return round(_pipe$1);
+}
 
 // build/dev/javascript/gleam_stdlib/gleam/result.mjs
 function map_error(result, fun) {
@@ -2339,13 +2392,6 @@ function try$(result, fun) {
     return fun(x);
   } else {
     return result;
-  }
-}
-function or(first3, second) {
-  if (first3 instanceof Ok) {
-    return first3;
-  } else {
-    return second;
   }
 }
 function lazy_or(first3, second) {
@@ -2498,6 +2544,9 @@ function to_string2(json2) {
   return json_to_string(json2);
 }
 function string3(input) {
+  return identity3(input);
+}
+function int3(input) {
   return identity3(input);
 }
 function null$() {
@@ -3396,9 +3445,6 @@ function div(attrs, children) {
 }
 function span(attrs, children) {
   return element2("span", attrs, children);
-}
-function button(attrs, children) {
-  return element2("button", attrs, children);
 }
 
 // build/dev/javascript/lustre/lustre/vdom/patch.mjs
@@ -5748,7 +5794,7 @@ function curr_and_next_chars(model) {
   }
 }
 function css(ms) {
-  let _pipe = '\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  .split-flap {\n    /* TODO -webkit-font-smoothing */\n    position: relative;\n    width: 100%;\n    height: 100%;\n    aspect-ratio: 1/1.618; /* golden ratio ;) */\n    font-family: Fragment Mono, math, monospace, Noto Music;\n    font-weight: bold;\n    font-size: 120cqw;\n    border-radius: 5cqw;\n    perspective: 600cqw;\n  }\n\n  .split-flap::selection {\n    background: white;\n    color: black;\n  }\n\n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 3.5cqw;\n    background: rgb(20, 20, 20);\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    z-index: 1;\n    background: rgb(40, 40, 40);\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n    z-index: 0;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw;\n    user-select: text;\n    height: 100%;\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n  }\n\n  @keyframes flip-top {\n    0% {\n      transform: rotateX(0deg);\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n    50%, 100% {\n      transform: rotateX(-90deg);\n      box-shadow: none;\n    }\n    \n  }\n\n  @keyframes flip-bottom {\n    0% {\n      transform: rotateX(90deg);\n      box-shadow: none;\n    }\n    100% {\n      transform: rotateX(0deg);\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n  }\n\n  .flap.flipping-top {\n    pointer-events: none;\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw 5cqw 0 0;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n    animation: <flip_duration>ms ease-in flip-top;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap.flipping-bottom {\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n    animation: <flip_duration>ms ease-in flip-bottom;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n  \n  .flap.top .flap-content {\n    top: 0;\n    height: 100%\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n  .flap.flipping-top .flap-content {\n    top: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
+  let _pipe = '\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  .split-flap {\n    /* TODO -webkit-font-smoothing */\n    position: relative;\n    width: 100%;\n    height: 100%;\n    aspect-ratio: 1/1.618; /* golden ratio ;) */\n    font-family: Fragment Mono, math, monospace, Noto Music;\n    font-weight: bold;\n    font-size: 120cqw;\n    border-radius: 5cqw;\n    perspective: 600cqw;\n  }\n\n  .split-flap::selection {\n    background: white;\n    color: black;\n  }\n\n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 3.5cqw;\n    background: rgb(20, 20, 20);\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    z-index: 1;\n    background: rgb(40, 40, 40);\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n    z-index: 0;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw;\n    user-select: text;\n    height: 100%;\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    opacity: 0;\n  }\n  .flap.bottom.flipping {\n    opacity: 1;\n  }\n\n  @keyframes flip-top {\n    0% {\n      transform: rotateX(0deg);\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n    50%, 100% {\n      transform: rotateX(-90deg);\n      box-shadow: none;\n    }\n    \n  }\n\n  @keyframes flip-bottom {\n    0% {\n      transform: rotateX(90deg);\n      box-shadow: none;\n    }\n    100% {\n      transform: rotateX(0deg);\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n  }\n\n  .flap.flipping-top {\n    pointer-events: none;\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw 5cqw 0 0;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n    animation: <flip_duration>ms ease-in flip-top;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap.flipping-bottom {\n    opacity: 0;\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n  }\n  \n  .flap.flipping-bottom.flipping {\n    opacity: 1;\n    animation: <flip_duration>ms ease-in flip-bottom;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n  }\n  \n  .flap.top .flap-content {\n    top: 0;\n    height: 100%\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n  .flap.flipping-top .flap-content {\n    top: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
   return replace(_pipe, "<flip_duration>", to_string(ms));
 }
 var default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\u25B8()\u{1D122}\u{1D15F}\u{1D13D}|#_!?";
@@ -5803,15 +5849,15 @@ function view(model) {
       "let_assert",
       FILEPATH,
       "components/char",
-      155,
+      157,
       "view",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 3574,
-        end: 3631,
-        pattern_start: 3585,
-        pattern_end: 3602
+        start: 3573,
+        end: 3630,
+        pattern_start: 3584,
+        pattern_end: 3601
       }
     );
   }
@@ -5841,38 +5887,44 @@ function view(model) {
               )
             ])
           ),
-          (() => {
-            let $1 = model.state;
-            if ($1 instanceof Idle) {
-              return none3();
-            } else {
-              return div(
-                toList([class$("flap bottom")]),
-                toList([
-                  span(
-                    toList([class$("flap-content")]),
-                    toList([text3(curr)])
-                  )
-                ])
-              );
-            }
-          })(),
-          (() => {
-            let $1 = model.state;
-            if ($1 instanceof Idle) {
-              return none3();
-            } else {
-              return div(
-                toList([class$("flap flipping-bottom")]),
-                toList([
-                  span(
-                    toList([class$("flap-content")]),
-                    toList([text3(next)])
-                  )
-                ])
-              );
-            }
-          })()
+          div(
+            toList([
+              class$("flap bottom"),
+              (() => {
+                let $1 = model.state;
+                if ($1 instanceof Idle) {
+                  return none();
+                } else {
+                  return class$("flipping");
+                }
+              })()
+            ]),
+            toList([
+              span(
+                toList([class$("flap-content")]),
+                toList([text3(curr)])
+              )
+            ])
+          ),
+          div(
+            toList([
+              class$("flap flipping-bottom"),
+              (() => {
+                let $1 = model.state;
+                if ($1 instanceof Idle) {
+                  return none();
+                } else {
+                  return class$("flipping");
+                }
+              })()
+            ]),
+            toList([
+              span(
+                toList([class$("flap-content")]),
+                toList([text3(next)])
+              )
+            ])
+          )
         ])
       )
     ])
@@ -5882,19 +5934,12 @@ var idle_duration_ms = 20;
 function update2(model, msg) {
   if (msg instanceof LetterAttrChanged) {
     let dest = msg[0];
-    let $ = contains_string(model.chars, dest);
-    if ($) {
-      return [
-        new Model(model.chars, dest, model.state),
-        from(
-          (dispatch) => {
-            return dispatch(new DestinationChanged());
-          }
-        )
-      ];
-    } else {
-      return [model, none2()];
-    }
+    return [
+      new Model(model.chars, dest, model.state),
+      from((dispatch) => {
+        return dispatch(new DestinationChanged());
+      })
+    ];
   } else if (msg instanceof CharsAttrChanged) {
     let chars = msg[0];
     return [
@@ -5906,7 +5951,8 @@ function update2(model, msg) {
   } else if (msg instanceof DestinationChanged) {
     let $ = model.state;
     let $1 = first2(model.chars);
-    if ($1 instanceof Ok && $ instanceof Idle) {
+    let $2 = contains_string(model.chars, model.dest);
+    if ($2 && $1 instanceof Ok && $ instanceof Idle) {
       let x = $1[0];
       if (x !== model.dest) {
         return [
@@ -5941,15 +5987,15 @@ function update2(model, msg) {
         "let_assert",
         FILEPATH,
         "components/char",
-        135,
+        134,
         "update",
         "Pattern match failed, no pattern matched the value.",
         {
           value: $,
-          start: 3043,
-          end: 3107,
-          pattern_start: 3054,
-          pattern_end: 3072
+          start: 2979,
+          end: 3043,
+          pattern_start: 2990,
+          pattern_end: 3008
         }
       );
     }
@@ -5958,8 +6004,9 @@ function update2(model, msg) {
       new Model(next, model.dest, new Idle()),
       from(
         (dispatch) => {
+          let jitter = random(20);
           set_timeout(
-            idle_duration_ms,
+            idle_duration_ms + jitter,
             () => {
               return dispatch(new FlipEnded());
             }
@@ -5971,7 +6018,8 @@ function update2(model, msg) {
   } else if (msg instanceof FlipEnded) {
     let $ = model.state;
     let $1 = first2(model.chars);
-    if ($1 instanceof Ok && $ instanceof Idle) {
+    let $2 = contains_string(model.chars, model.dest);
+    if ($2 && $1 instanceof Ok && $ instanceof Idle) {
       let x = $1[0];
       if (x !== model.dest) {
         return [
@@ -6320,7 +6368,7 @@ function init2(_) {
     none2()
   ];
 }
-var css2 = "\n  :host {\n    display: block;\n  }\n\n  split-flap-char {\n    padding: 0.9cqw 0.3cqw;\n  }\n\n  .display {\n    display: flex;\n    flex-direction: column;\n    gap: 0; \n    width: 100%;\n    height: 100%;\n  }\n\n  .row {\n    display: flex;\n    flex-direction: row;\n    gap: 0rem;\n\n    cursor: default;\n  }\n\n  .row[href] {\n    cursor: pointer;\n  }\n";
+var css2 = "\n  :host {\n    display: block;\n  }\n\n  split-flap-char {\n    padding: 0.9cqw 0.3cqw;\n  }\n\n  .display {\n    display: flex;\n    flex-direction: column;\n    gap: 0; \n    width: 100%;\n    height: 100%;\n  }\n\n  .row {\n    display: flex;\n    flex-direction: row;\n    gap: 0rem;\n    cursor: default;\n  }\n\n  .row[href] {\n    cursor: pointer;\n  }\n";
 function view2(model) {
   let _block;
   let _pipe = model.lines;
@@ -6712,7 +6760,7 @@ function scenes(columns) {
     center2("TO            "),
     center2("   BE         "),
     center2("      ALIVE   "),
-    center2("            ? ")
+    center2("            ! ")
   ];
   let what;
   let a;
@@ -6720,14 +6768,14 @@ function scenes(columns) {
   let to;
   let be;
   let alive;
-  let question;
+  let exclaim;
   what = $3[0];
   a = $3[1];
   time = $3[2];
   to = $3[3];
   be = $3[4];
   alive = $3[5];
-  question = $3[6];
+  exclaim = $3[6];
   return toList([
     new Scene(
       "HOME",
@@ -6840,7 +6888,7 @@ function scenes(columns) {
             new Text2(alive),
             new Text2("")
           ]),
-          2e3
+          3e3
         ),
         new Frame(
           toList([
@@ -6850,9 +6898,9 @@ function scenes(columns) {
             new Text2(to),
             new Text2(be),
             new Text2(alive),
-            new Text2(question)
+            new Text2(exclaim)
           ]),
-          4e3
+          4500
         )
       ])
     )
@@ -6861,14 +6909,21 @@ function scenes(columns) {
 
 // build/dev/javascript/split_flap/components/progress_bar.mjs
 var Model3 = class extends CustomType {
-  constructor(progress, cols, auto_play) {
+  constructor(pages, page, cols, auto_play) {
     super();
-    this.progress = progress;
+    this.pages = pages;
+    this.page = page;
     this.cols = cols;
     this.auto_play = auto_play;
   }
 };
-var ProgressAttrChanged = class extends CustomType {
+var PagesAttrChanged = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var PageAttrChanged = class extends CustomType {
   constructor($0) {
     super();
     this[0] = $0;
@@ -6886,27 +6941,33 @@ var AutoPlayAttrChanged = class extends CustomType {
     this[0] = $0;
   }
 };
-var BackClicked = class extends CustomType {
-};
-var ForwardClicked = class extends CustomType {
+var PageClicked = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
 };
 var AutoPlayClicked = class extends CustomType {
 };
-function on_back(msg) {
-  return on("go_back", success(msg));
-}
-function on_forward(msg) {
-  return on("go_forward", success(msg));
+function on_page(handler) {
+  return on(
+    "page_clicked",
+    (() => {
+      let _pipe = at(toList(["detail"]), int2);
+      return map2(_pipe, handler);
+    })()
+  );
 }
 function on_auto_play(msg) {
   return on("auto_play", success(msg));
 }
-function element6(progress, cols, back_msg, forward_msg, auto_play, auto_play_msg) {
+function element6(pages, page, cols, auto_play, page_handler, auto_play_msg) {
   return element2(
     "progress-bar",
     toList([
       part("progress-bar"),
-      attribute2("progress", to_string(progress)),
+      attribute2("pages", to_string(pages)),
+      attribute2("page", to_string(page)),
       attribute2("cols", to_string(cols)),
       attribute2(
         "auto_play",
@@ -6918,113 +6979,156 @@ function element6(progress, cols, back_msg, forward_msg, auto_play, auto_play_ms
           }
         })()
       ),
-      (() => {
-        if (back_msg instanceof Some) {
-          let m = back_msg[0];
-          return on_back(m);
-        } else {
-          return none();
-        }
-      })(),
-      (() => {
-        if (forward_msg instanceof Some) {
-          let m = forward_msg[0];
-          return on_forward(m);
-        } else {
-          return none();
-        }
-      })(),
-      (() => {
-        if (auto_play_msg instanceof Some) {
-          let m = auto_play_msg[0];
-          return on_auto_play(m);
-        } else {
-          return none();
-        }
-      })()
+      on_auto_play(auto_play_msg),
+      on_page(page_handler)
     ]),
     toList([])
   );
 }
 function init3(_) {
-  return [new Model3(0, 2, true), none2()];
+  return [new Model3(0, 0, 28, true), none2()];
 }
 function update4(model, msg) {
-  if (msg instanceof ProgressAttrChanged) {
-    let progress = msg[0];
-    return [new Model3(progress, model.cols, model.auto_play), none2()];
+  if (msg instanceof PagesAttrChanged) {
+    let pages = msg[0];
+    return [
+      new Model3(pages, model.page, model.cols, model.auto_play),
+      none2()
+    ];
+  } else if (msg instanceof PageAttrChanged) {
+    let page = msg[0];
+    return [
+      new Model3(model.pages, page, model.cols, model.auto_play),
+      none2()
+    ];
   } else if (msg instanceof ColsAttrChanged2) {
     let cols = msg[0];
-    return [new Model3(model.progress, cols, model.auto_play), none2()];
+    return [
+      new Model3(model.pages, model.page, cols, model.auto_play),
+      none2()
+    ];
   } else if (msg instanceof AutoPlayAttrChanged) {
     let auto_play = msg[0];
-    return [new Model3(model.progress, model.cols, auto_play), none2()];
-  } else if (msg instanceof BackClicked) {
-    return [model, emit2("go_back", null$())];
-  } else if (msg instanceof ForwardClicked) {
-    return [model, emit2("go_forward", null$())];
+    return [
+      new Model3(model.pages, model.page, model.cols, auto_play),
+      none2()
+    ];
+  } else if (msg instanceof PageClicked) {
+    let page = msg[0];
+    return [model, emit2("page_clicked", int3(page))];
   } else {
     return [model, emit2("auto_play", null$())];
   }
 }
-function progress_button(model) {
-  let len = model.cols - 2;
-  let progress = model.progress;
-  let auto_play = model.auto_play;
-  let empty_char = "\u25AB";
-  let filled_char = "\u25AA";
-  let _block;
-  let _pipe = empty_char;
-  _block = repeat(_pipe, len);
-  let empty3 = _block;
-  let _block$1;
-  let _pipe$1 = filled_char;
-  _block$1 = repeat(
-    _pipe$1,
-    globalThis.Math.trunc(progress * len / 100)
-  );
-  let filled = _block$1;
-  let pct = left(filled, empty3);
-  return button(
-    toList([
-      class$("progress-bar-button"),
-      on_click(new AutoPlayClicked())
-    ]),
-    toList([
-      element5(
-        toList([
-          new Text2(
-            (() => {
-              if (auto_play) {
-                return pct;
-              } else {
-                return center("(PAUSED)", pct);
-              }
-            })()
-          )
-        ]),
-        model.cols - 2,
-        1,
-        new Some("ABCDEFGHIJKLMNOPQRSTUVWXYZ()" + empty_char + filled_char)
-      )
-    ])
-  );
-}
 function css3(cols) {
-  let _pipe = "\n  :host {\n    display: inline-block;\n    width: 100%;\n  }\n\n  split-flap-char {\n    padding: 0.9cqw 0.3cqw;\n  }\n\n  .progress-bar {\n    width: 100%;\n    display: grid;\n    grid-template-columns: 1fr <cols>fr 1fr;\n    gap: 0;\n  }\n\n  .progress-bar-button {\n    width: 100%;\n    height: 100%;\n    background: none;\n    padding: 0;\n    margin: 0;\n    border: none;\n  }\n  \n  split-flap-display::part(row) {\n    cursor: pointer;\n  }\n  ";
+  let _pipe = "\n  :host {\n    display: inline-block;\n    width: 100%;\n  }\n\n  .progress-bar {\n    display: flex;\n    flex-direction: row;\n    gap: 0;\n  }\n  split-flap-char {\n    padding: 0.9cqw 0.3cqw;\n  }\n  ";
   return replace(_pipe, "<cols>", to_string(cols - 2));
 }
 function view3(model) {
+  let pages = model.pages;
+  let page = model.page;
+  let auto_play = model.auto_play;
+  let empty_dot = "\u25CB";
+  let filled_dot = "\u25CF";
+  let stop = "\u23F9";
+  let start3 = "\u25B8";
+  let _block;
+  let _pipe = range(1, pages);
+  let _pipe$1 = map(
+    _pipe,
+    (idx) => {
+      let $ = idx === page;
+      if ($) {
+        return filled_dot;
+      } else {
+        return empty_dot;
+      }
+    }
+  );
+  _block = join(_pipe$1, " ");
+  let dots = _block;
+  let dots_len = pages * 2;
+  let _block$1;
+  let _block$2;
+  if (auto_play) {
+    _block$2 = stop;
+  } else {
+    _block$2 = start3;
+  }
+  let _pipe$2 = _block$2;
+  _block$1 = right(_pipe$2, repeat(" ", dots_len + 2));
+  let control = _block$1;
+  let empty3 = repeat(" ", model.cols);
+  let _block$3;
+  let _pipe$3 = control;
+  let _pipe$4 = center(_pipe$3, empty3);
+  let _pipe$5 = ((_capture) => {
+    return center(dots, _capture);
+  })(
+    _pipe$4
+  );
+  _block$3 = graphemes(_pipe$5);
+  let chars = _block$3;
+  let first_dot_idx = fold_until(
+    chars,
+    0,
+    (acc, char) => {
+      if (char === "\u25CB") {
+        return new Stop(acc);
+      } else if (char === "\u25CF") {
+        return new Stop(acc);
+      } else {
+        return new Continue(acc + 1);
+      }
+    }
+  );
   return fragment2(
     toList([
       style2(toList([]), css3(model.cols)),
-      div(
+      div2(
         toList([class$("progress-bar")]),
-        toList([
-          element4("\u25C2", new Some("\u25C2"), new Some(new BackClicked())),
-          progress_button(model),
-          element4("\u25B8", new Some("\u25B8"), new Some(new ForwardClicked()))
-        ])
+        index_map(
+          chars,
+          (char, idx) => {
+            let page$1 = 1 + globalThis.Math.trunc((idx - first_dot_idx) / 2);
+            let _block$4;
+            let _pipe$6 = toList(["HEY", to_string(idx), char]);
+            _block$4 = join(_pipe$6, " ");
+            echo2(_block$4, void 0, "src/components/progress_bar.gleam", 166);
+            return [
+              "pb-" + to_string(idx),
+              element4(
+                char,
+                (() => {
+                  if (char === "\u25CB") {
+                    return new Some(empty_dot + filled_dot);
+                  } else if (char === "\u25CF") {
+                    return new Some(empty_dot + filled_dot);
+                  } else if (char === "\u25B8") {
+                    return new Some(start3 + stop);
+                  } else if (char === "\u23F9") {
+                    return new Some(start3 + stop);
+                  } else {
+                    return new None();
+                  }
+                })(),
+                (() => {
+                  if (char === "\u25CB") {
+                    return new Some(new PageClicked(page$1));
+                  } else if (char === "\u25CF") {
+                    return new Some(new PageClicked(page$1));
+                  } else if (char === "\u25B8") {
+                    return new Some(new AutoPlayClicked());
+                  } else if (char === "\u23F9") {
+                    return new Some(new AutoPlayClicked());
+                  } else {
+                    return new None();
+                  }
+                })()
+              )
+            ];
+          }
+        )
       )
     ])
   );
@@ -7036,23 +7140,34 @@ function register3() {
     view3,
     toList([
       on_attribute_change(
-        "progress",
-        (val) => {
-          return try$(
-            parse_int(val),
-            (parsed) => {
-              return new Ok(new ProgressAttrChanged(parsed));
-            }
-          );
-        }
-      ),
-      on_attribute_change(
         "cols",
         (val) => {
           return try$(
             parse_int(val),
             (parsed) => {
               return new Ok(new ColsAttrChanged2(max(parsed, 2)));
+            }
+          );
+        }
+      ),
+      on_attribute_change(
+        "pages",
+        (val) => {
+          return try$(
+            parse_int(val),
+            (parsed) => {
+              return new Ok(new PagesAttrChanged(parsed));
+            }
+          );
+        }
+      ),
+      on_attribute_change(
+        "page",
+        (val) => {
+          return try$(
+            parse_int(val),
+            (parsed) => {
+              return new Ok(new PageAttrChanged(parsed));
             }
           );
         }
@@ -7073,6 +7188,209 @@ function register3() {
   );
   return make_component(component2, "progress-bar");
 }
+function echo2(value, message, file, line) {
+  const grey = "\x1B[90m";
+  const reset_color = "\x1B[39m";
+  const file_line = `${file}:${line}`;
+  const inspector = new Echo$Inspector2();
+  const string_value = inspector.inspect(value);
+  const string_message = message === void 0 ? "" : " " + message;
+  if (globalThis.process?.stderr?.write) {
+    const string5 = `${grey}${file_line}${reset_color}${string_message}
+${string_value}
+`;
+    globalThis.process.stderr.write(string5);
+  } else if (globalThis.Deno) {
+    const string5 = `${grey}${file_line}${reset_color}${string_message}
+${string_value}
+`;
+    globalThis.Deno.stderr.writeSync(new TextEncoder().encode(string5));
+  } else {
+    const string5 = `${file_line}
+${string_value}`;
+    globalThis.console.log(string5);
+  }
+  return value;
+}
+var Echo$Inspector2 = class {
+  #references = /* @__PURE__ */ new Set();
+  #isDict(value) {
+    try {
+      return value instanceof Dict;
+    } catch {
+      return false;
+    }
+  }
+  #float(float2) {
+    const string5 = float2.toString().replace("+", "");
+    if (string5.indexOf(".") >= 0) {
+      return string5;
+    } else {
+      const index4 = string5.indexOf("e");
+      if (index4 >= 0) {
+        return string5.slice(0, index4) + ".0" + string5.slice(index4);
+      } else {
+        return string5 + ".0";
+      }
+    }
+  }
+  inspect(v) {
+    const t = typeof v;
+    if (v === true) return "True";
+    if (v === false) return "False";
+    if (v === null) return "//js(null)";
+    if (v === void 0) return "Nil";
+    if (t === "string") return this.#string(v);
+    if (t === "bigint" || Number.isInteger(v)) return v.toString();
+    if (t === "number") return this.#float(v);
+    if (v instanceof UtfCodepoint) return this.#utfCodepoint(v);
+    if (v instanceof BitArray) return this.#bit_array(v);
+    if (v instanceof RegExp) return `//js(${v})`;
+    if (v instanceof Date) return `//js(Date("${v.toISOString()}"))`;
+    if (v instanceof globalThis.Error) return `//js(${v.toString()})`;
+    if (v instanceof Function) {
+      const args = [];
+      for (const i of Array(v.length).keys())
+        args.push(String.fromCharCode(i + 97));
+      return `//fn(${args.join(", ")}) { ... }`;
+    }
+    if (this.#references.size === this.#references.add(v).size) {
+      return "//js(circular reference)";
+    }
+    let printed;
+    if (Array.isArray(v)) {
+      printed = `#(${v.map((v2) => this.inspect(v2)).join(", ")})`;
+    } else if (v instanceof List) {
+      printed = this.#list(v);
+    } else if (v instanceof CustomType) {
+      printed = this.#customType(v);
+    } else if (this.#isDict(v)) {
+      printed = this.#dict(v);
+    } else if (v instanceof Set) {
+      return `//js(Set(${[...v].map((v2) => this.inspect(v2)).join(", ")}))`;
+    } else {
+      printed = this.#object(v);
+    }
+    this.#references.delete(v);
+    return printed;
+  }
+  #object(v) {
+    const name = Object.getPrototypeOf(v)?.constructor?.name || "Object";
+    const props = [];
+    for (const k of Object.keys(v)) {
+      props.push(`${this.inspect(k)}: ${this.inspect(v[k])}`);
+    }
+    const body = props.length ? " " + props.join(", ") + " " : "";
+    const head = name === "Object" ? "" : name + " ";
+    return `//js(${head}{${body}})`;
+  }
+  #dict(map4) {
+    let body = "dict.from_list([";
+    let first3 = true;
+    let key_value_pairs = [];
+    map4.forEach((value, key) => {
+      key_value_pairs.push([key, value]);
+    });
+    key_value_pairs.sort();
+    key_value_pairs.forEach(([key, value]) => {
+      if (!first3) body = body + ", ";
+      body = body + "#(" + this.inspect(key) + ", " + this.inspect(value) + ")";
+      first3 = false;
+    });
+    return body + "])";
+  }
+  #customType(record) {
+    const props = Object.keys(record).map((label) => {
+      const value = this.inspect(record[label]);
+      return isNaN(parseInt(label)) ? `${label}: ${value}` : value;
+    }).join(", ");
+    return props ? `${record.constructor.name}(${props})` : record.constructor.name;
+  }
+  #list(list4) {
+    if (list4 instanceof Empty) {
+      return "[]";
+    }
+    let char_out = 'charlist.from_string("';
+    let list_out = "[";
+    let current = list4;
+    while (current instanceof NonEmpty) {
+      let element8 = current.head;
+      current = current.tail;
+      if (list_out !== "[") {
+        list_out += ", ";
+      }
+      list_out += this.inspect(element8);
+      if (char_out) {
+        if (Number.isInteger(element8) && element8 >= 32 && element8 <= 126) {
+          char_out += String.fromCharCode(element8);
+        } else {
+          char_out = null;
+        }
+      }
+    }
+    if (char_out) {
+      return char_out + '")';
+    } else {
+      return list_out + "]";
+    }
+  }
+  #string(str) {
+    let new_str = '"';
+    for (let i = 0; i < str.length; i++) {
+      const char = str[i];
+      switch (char) {
+        case "\n":
+          new_str += "\\n";
+          break;
+        case "\r":
+          new_str += "\\r";
+          break;
+        case "	":
+          new_str += "\\t";
+          break;
+        case "\f":
+          new_str += "\\f";
+          break;
+        case "\\":
+          new_str += "\\\\";
+          break;
+        case '"':
+          new_str += '\\"';
+          break;
+        default:
+          if (char < " " || char > "~" && char < "\xA0") {
+            new_str += "\\u{" + char.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0") + "}";
+          } else {
+            new_str += char;
+          }
+      }
+    }
+    new_str += '"';
+    return new_str;
+  }
+  #utfCodepoint(codepoint2) {
+    return `//utfcodepoint(${String.fromCodePoint(codepoint2.value)})`;
+  }
+  #bit_array(bits) {
+    if (bits.bitSize === 0) {
+      return "<<>>";
+    }
+    let acc = "<<";
+    for (let i = 0; i < bits.byteSize - 1; i++) {
+      acc += bits.byteAt(i).toString();
+      acc += ", ";
+    }
+    if (bits.byteSize * 8 === bits.bitSize) {
+      acc += bits.byteAt(bits.byteSize - 1).toString();
+    } else {
+      const trailingBitsCount = bits.bitSize % 8;
+      acc += bits.byteAt(bits.byteSize - 1) >> 8 - trailingBitsCount;
+      acc += `:size(${trailingBitsCount})`;
+    }
+    acc += ">>";
+    return acc;
+  }
+};
 
 // build/dev/javascript/split_flap/components/bingo.mjs
 var BingoState = class extends CustomType {
@@ -7098,9 +7416,11 @@ var ColumnsAttrChanged = class extends CustomType {
     this[0] = $0;
   }
 };
-var BackClicked2 = class extends CustomType {
-};
-var ForwardClicked2 = class extends CustomType {
+var PageClicked2 = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
 };
 var AutoPlayClicked2 = class extends CustomType {
 };
@@ -7131,6 +7451,21 @@ function initial_state(scenes2) {
       );
     }
   );
+}
+function find_scene(loop$scenes, loop$page) {
+  while (true) {
+    let scenes2 = loop$scenes;
+    let page = loop$page;
+    if (scenes2 instanceof Empty) {
+      return new Error(void 0);
+    } else if (page === 1) {
+      return first(scenes2);
+    } else {
+      let rest = scenes2.tail;
+      loop$scenes = rest;
+      loop$page = page - 1;
+    }
+  }
 }
 function start_timeout(frame, id) {
   if (id instanceof Some) {
@@ -7203,58 +7538,25 @@ function reduce(model, msg) {
         none2()
       ]
     );
-  } else if (msg instanceof BackClicked2) {
+  } else if (msg instanceof PageClicked2) {
+    let page = msg[0];
     return try$(
-      model.current,
-      (current) => {
-        let reversed = reverse(model.scenes);
+      find_scene(model.scenes, page),
+      (scene) => {
         return try$(
-          or(find_next(reversed, current.scene), first(reversed)),
-          (scene) => {
-            return try$(
-              first(scene.frames),
-              (frame) => {
-                return new Ok(
-                  [
-                    new Model4(
-                      model.scenes,
-                      model.columns,
-                      new Ok(new BingoState(scene, frame)),
-                      false,
-                      model.timeout
-                    ),
-                    start_timeout(frame, model.timeout)
-                  ]
-                );
-              }
-            );
-          }
-        );
-      }
-    );
-  } else if (msg instanceof ForwardClicked2) {
-    return try$(
-      model.current,
-      (current) => {
-        return try$(
-          or(find_next(model.scenes, current.scene), first(model.scenes)),
-          (scene) => {
-            return try$(
-              first(scene.frames),
-              (frame) => {
-                return new Ok(
-                  [
-                    new Model4(
-                      model.scenes,
-                      model.columns,
-                      new Ok(new BingoState(scene, frame)),
-                      false,
-                      model.timeout
-                    ),
-                    start_timeout(frame, model.timeout)
-                  ]
-                );
-              }
+          first(scene.frames),
+          (frame) => {
+            return new Ok(
+              [
+                new Model4(
+                  model.scenes,
+                  model.columns,
+                  new Ok(new BingoState(scene, frame)),
+                  false,
+                  model.timeout
+                ),
+                start_timeout(frame, model.timeout)
+              ]
             );
           }
         );
@@ -7350,31 +7652,6 @@ function update5(model, msg) {
     return [model, none2()];
   }
 }
-function calculate_progress_scenes(model) {
-  let _block;
-  let _pipe = length(model.scenes);
-  _block = max(_pipe, 1);
-  let total_scenes = _block;
-  let $ = model.current;
-  if ($ instanceof Ok) {
-    let scene = $[0].scene;
-    let idx = fold_until(
-      model.scenes,
-      1,
-      (acc, item) => {
-        let $1 = isEqual(item, scene);
-        if ($1) {
-          return new Stop(acc);
-        } else {
-          return new Continue(acc + 1);
-        }
-      }
-    );
-    return divideInt(idx * 100, total_scenes);
-  } else {
-    return 0;
-  }
-}
 var css4 = "\n  :host {\n    display: block;\n    container-type: inline-size;\n    height: 100%;\n    width: 100%;\n  }\n\n  .panel {\n    position: relative;\n    width: 100%;\n    height: 100%;\n    min-height: fit-content;\n    background: linear-gradient(\n      250deg,\n      rgb(40, 40, 40) 0%,\n      rgb(50, 50, 50) 25%,\n      rgb(40, 40, 40) 80%\n    );\n    padding: 2cqh 10cqw;\n    /* This is in px on purpose */\n    box-shadow: inset 0px 3px 10px 10px rgba(0, 0, 0, 0.25);\n\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-content: center;\n    overflow: scroll;\n  }\n\n  .matrix {\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-content: center;\n  }\n  \n  @container (aspect-ratio < 1) {\n    .panel {\n      padding: 5cqh 5cqw;\n    }\n  }\n  ";
 function view4(model) {
   let _block;
@@ -7397,12 +7674,30 @@ function view4(model) {
             toList([
               element5(lines, model.columns, 7, new None()),
               element6(
-                calculate_progress_scenes(model),
+                length(model.scenes),
+                fold_until(
+                  model.scenes,
+                  1,
+                  (acc, s) => {
+                    let $1 = model.current;
+                    if ($1 instanceof Ok) {
+                      let state = $1[0];
+                      if (isEqual(s, state.scene)) {
+                        return new Stop(acc);
+                      } else {
+                        return new Continue(acc + 1);
+                      }
+                    } else {
+                      return new Stop(0);
+                    }
+                  }
+                ),
                 model.columns,
-                new Some(new BackClicked2()),
-                new Some(new ForwardClicked2()),
                 model.auto_play,
-                new Some(new AutoPlayClicked2())
+                (var0) => {
+                  return new PageClicked2(var0);
+                },
+                new AutoPlayClicked2()
               )
             ])
           )

@@ -274,7 +274,6 @@ const css = "
     display: flex;
     flex-direction: row;
     gap: 0rem;
-
     cursor: default;
   }
 

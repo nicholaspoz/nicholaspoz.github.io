@@ -1,8 +1,8 @@
-import components/display_fns
 import gleam/dynamic/decode
 import gleam/int
 import gleam/json
-import gleam/option.{type Option, None, Some}
+import gleam/list.{Continue, Stop}
+import gleam/option.{None, Some}
 import gleam/result
 import gleam/string
 import lustre
@@ -11,24 +11,29 @@ import lustre/component
 import lustre/effect
 import lustre/element.{type Element}
 import lustre/element/html
+import lustre/element/keyed
 import lustre/event
 
 import components/char as sf_char
-import components/display as sf_display
+import components/display_fns
 
 pub fn register() -> Result(Nil, lustre.Error) {
   let component =
     lustre.component(init, update, view, [
-      component.on_attribute_change("progress", fn(val) {
-        use parsed <- result.try(int.parse(val))
-        Ok(ProgressAttrChanged(parsed))
-      }),
-
       component.on_attribute_change("cols", fn(val) {
         use parsed <- result.try(int.parse(val))
         Ok(ColsAttrChanged(int.max(parsed, 2)))
       }),
 
+      component.on_attribute_change("pages", fn(val) {
+        use parsed <- result.try(int.parse(val))
+        Ok(PagesAttrChanged(parsed))
+      }),
+
+      component.on_attribute_change("page", fn(val) {
+        use parsed <- result.try(int.parse(val))
+        Ok(PageAttrChanged(parsed))
+      }),
       component.on_attribute_change("auto_play", fn(val) {
         case val {
           "true" | "1" -> Ok(AutoPlayAttrChanged(True))
@@ -40,46 +45,35 @@ pub fn register() -> Result(Nil, lustre.Error) {
 }
 
 pub fn element(
-  progress progress: Int,
+  pages pages: Int,
+  page page: Int,
   cols cols: Int,
-  on_back back_msg: Option(msg),
-  on_forward forward_msg: Option(msg),
   auto_play auto_play: Bool,
-  on_auto_play auto_play_msg: Option(msg),
+  on_page page_handler: fn(Int) -> msg,
+  on_auto_play auto_play_msg: msg,
 ) -> Element(msg) {
   element.element(
     "progress-bar",
     [
       component.part("progress-bar"),
-      attribute.attribute("progress", int.to_string(progress)),
+      attribute.attribute("pages", int.to_string(pages)),
+      attribute.attribute("page", int.to_string(page)),
       attribute.attribute("cols", int.to_string(cols)),
       attribute.attribute("auto_play", case auto_play {
         True -> "true"
         False -> "false"
       }),
-      case back_msg {
-        Some(m) -> on_back(m)
-        None -> attribute.none()
-      },
-      case forward_msg {
-        Some(m) -> on_forward(m)
-        None -> attribute.none()
-      },
-      case auto_play_msg {
-        Some(m) -> on_auto_play(m)
-        None -> attribute.none()
-      },
+      on_auto_play(auto_play_msg),
+      on_page(page_handler),
     ],
     [],
   )
 }
 
-pub fn on_back(msg: msg) -> Attribute(msg) {
-  event.on("go_back", decode.success(msg))
-}
-
-pub fn on_forward(msg: msg) -> Attribute(msg) {
-  event.on("go_forward", decode.success(msg))
+pub fn on_page(handler: fn(Int) -> msg) -> Attribute(msg) {
+  event.on("page_clicked", {
+    decode.at(["detail"], decode.int) |> decode.map(handler)
+  })
 }
 
 pub fn on_auto_play(msg: msg) -> Attribute(msg) {
@@ -87,81 +81,109 @@ pub fn on_auto_play(msg: msg) -> Attribute(msg) {
 }
 
 type Model {
-  Model(progress: Int, cols: Int, auto_play: Bool)
+  Model(pages: Int, page: Int, cols: Int, auto_play: Bool)
 }
 
 type Msg {
-  ProgressAttrChanged(Int)
+  PagesAttrChanged(Int)
+  PageAttrChanged(Int)
   ColsAttrChanged(Int)
   AutoPlayAttrChanged(Bool)
-  BackClicked
-  ForwardClicked
+  PageClicked(Int)
   AutoPlayClicked
 }
 
 fn init(_) -> #(Model, effect.Effect(Msg)) {
-  #(Model(0, 2, True), effect.none())
+  #(Model(0, 0, 28, True), effect.none())
 }
 
 fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
   case msg {
     ColsAttrChanged(cols) -> #(Model(..model, cols:), effect.none())
-    ProgressAttrChanged(progress) -> #(Model(..model, progress:), effect.none())
+    PagesAttrChanged(pages) -> #(Model(..model, pages:), effect.none())
+    PageAttrChanged(page) -> #(Model(..model, page:), effect.none())
     AutoPlayAttrChanged(auto_play) -> #(
       Model(..model, auto_play:),
       effect.none(),
     )
 
-    BackClicked -> #(model, event.emit("go_back", json.null()))
-    ForwardClicked -> #(model, event.emit("go_forward", json.null()))
+    PageClicked(page) -> #(model, event.emit("page_clicked", json.int(page)))
     AutoPlayClicked -> #(model, event.emit("auto_play", json.null()))
   }
 }
 
 fn view(model: Model) -> Element(Msg) {
+  let pages = model.pages
+  let page = model.page
+  let auto_play = model.auto_play
+  let empty_dot = "○"
+  let filled_dot = "●"
+  let stop = "⏹"
+  let start = "▸"
+
+  let dots =
+    list.range(1, pages)
+    |> list.map(fn(idx) {
+      case idx == page {
+        True -> filled_dot
+        False -> empty_dot
+      }
+    })
+    |> string.join(" ")
+
+  let dots_len = {
+    pages * 2
+  }
+
+  let control =
+    case auto_play {
+      True -> stop
+      False -> start
+    }
+    |> display_fns.right(against: string.repeat(" ", dots_len + 2))
+
+  let empty = string.repeat(" ", model.cols)
+  let chars =
+    control
+    |> display_fns.center(against: empty)
+    |> display_fns.center(dots, against: _)
+    |> string.to_graphemes
+
+  let first_dot_idx =
+    list.fold_until(chars, 0, fn(acc, char) {
+      case char {
+        "○" | "●" -> Stop(acc)
+        _ -> Continue(acc + 1)
+      }
+    })
+
   element.fragment([
     html.style([], css(model.cols)),
-    html.div([attribute.class("progress-bar")], [
-      sf_char.element("◂", Some("◂"), on_click: Some(BackClicked)),
+    keyed.div(
+      [attribute.class("progress-bar")],
+      list.index_map(chars, fn(char, idx) {
+        let page = 1 + { { idx - first_dot_idx } / 2 }
+        echo ["HEY", int.to_string(idx), char] |> string.join(" ")
 
-      progress_button(model),
-
-      sf_char.element("▸", Some("▸"), on_click: Some(ForwardClicked)),
-    ]),
+        #(
+          "pb-" <> int.to_string(idx),
+          sf_char.element(
+            char:,
+            char_stack: case char {
+              "○" | "●" -> Some(empty_dot <> filled_dot)
+              "▸" | "⏹" -> Some(start <> stop)
+              _ -> None
+            },
+            on_click: case char {
+              "○" | "●" -> Some(PageClicked(page))
+              "▸" | "⏹" -> Some(AutoPlayClicked)
+              _ -> None
+            },
+          ),
+        )
+      }),
+    ),
   ])
-}
-
-fn progress_button(model: Model) -> Element(Msg) {
-  let len = model.cols - 2
-  let progress = model.progress
-  let auto_play = model.auto_play
-  let empty_char = "▫"
-  let filled_char = "▪"
-  let empty = empty_char |> string.repeat(len)
-  let filled = filled_char |> string.repeat(progress * len / 100)
-  let pct = display_fns.left(filled, against: empty)
-
-  html.button(
-    [
-      attribute.class("progress-bar-button"),
-      event.on_click(AutoPlayClicked),
-    ],
-    [
-      sf_display.element(
-        [
-          sf_display.Text(text: {
-            case auto_play {
-              True -> pct
-              False -> display_fns.center("(PAUSED)", against: pct)
-            }
-          }),
-        ],
-        cols: model.cols - 2,
-        rows: 1,
-        chars: Some("ABCDEFGHIJKLMNOPQRSTUVWXYZ()" <> empty_char <> filled_char),
-      ),
-    ],
-  )
 }
 
 fn css(cols: Int) -> String {
@@ -171,28 +193,13 @@ fn css(cols: Int) -> String {
     width: 100%;
   }
 
-  split-flap-char {
-    padding: 0.9cqw 0.3cqw;
-  }
-
   .progress-bar {
-    width: 100%;
-    display: grid;
-    grid-template-columns: 1fr <cols>fr 1fr;
+    display: flex;
+    flex-direction: row;
     gap: 0;
   }
-
-  .progress-bar-button {
-    width: 100%;
-    height: 100%;
-    background: none;
-    padding: 0;
-    margin: 0;
-    border: none;
-  }
-  
-  split-flap-display::part(row) {
-    cursor: pointer;
+  split-flap-char {
+    padding: 0.9cqw 0.3cqw;
   }
   "
   |> string.replace("<cols>", int.to_string(cols - 2))

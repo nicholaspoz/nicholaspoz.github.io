@@ -1,7 +1,7 @@
 import gleam/int
 import gleam/list.{Continue, Stop}
 import gleam/option.{type Option, None, Some}
-import gleam/result.{lazy_or, or, try}
+import gleam/result.{lazy_or, try}
 import lustre
 import lustre/attribute
 import lustre/component
@@ -51,8 +51,7 @@ type Model {
 
 type Msg {
   ColumnsAttrChanged(Int)
-  BackClicked
-  ForwardClicked
+  PageClicked(Int)
   AutoPlayClicked
   TimeoutStarted(Int)
   TimeoutEnded
@@ -80,7 +79,7 @@ fn initial_state(scenes: List(Scene)) -> Result(BingoState, Nil) {
 fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
   case reduce(model, msg) {
     Ok(next) -> next
-    // somebody should DO something about this
+    // SOMEBODY should DO something about this!
     Error(_) -> #(model, effect.none())
   }
 }
@@ -110,29 +109,9 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
       }
     }
 
-    BackClicked -> {
-      use current <- try(model.current)
-      let reversed = list.reverse(model.scenes)
-      use scene <- try(or(
-        find_next(reversed, current.scene),
-        list.first(reversed),
-      ))
+    PageClicked(page) -> {
+      use scene <- try(find_scene(model.scenes, page))
       use frame <- try(list.first(scene.frames))
-
-      Ok(#(
-        Model(..model, auto_play: False, current: Ok(BingoState(scene, frame))),
-        start_timeout(frame, model.timeout),
-      ))
-    }
-
-    ForwardClicked -> {
-      use current <- try(model.current)
-      use scene <- try(or(
-        find_next(model.scenes, current.scene),
-        list.first(model.scenes),
-      ))
-      use frame <- try(list.first(scene.frames))
-
       Ok(#(
         Model(..model, auto_play: False, current: Ok(BingoState(scene, frame))),
         start_timeout(frame, model.timeout),
@@ -152,6 +131,14 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
         }),
       )
     }
+  }
+}
+
+fn find_scene(scenes: List(Scene), page: Int) -> Result(Scene, Nil) {
+  case scenes, page {
+    [], _ -> Error(Nil)
+    _, 1 -> list.first(scenes)
+    [_, ..rest], _ -> find_scene(rest, page - 1)
   }
 }
 
@@ -204,35 +191,24 @@ fn view(model: Model) -> Element(Msg) {
         display.element(lines, cols: model.columns, rows: 7, chars: None),
 
         progress_bar.element(
-          progress: calculate_progress_scenes(model),
+          pages: list.length(model.scenes),
+          page: list.fold_until(model.scenes, 1, fn(acc, s) {
+            case model.current {
+              Ok(state) if s == state.scene -> {
+                Stop(acc)
+              }
+              Ok(_) -> Continue(acc + 1)
+              Error(_) -> Stop(0)
+            }
+          }),
           cols: model.columns,
-          on_back: Some(BackClicked),
-          on_forward: Some(ForwardClicked),
           auto_play: model.auto_play,
-          on_auto_play: Some(AutoPlayClicked),
+          on_auto_play: AutoPlayClicked,
+          on_page: PageClicked,
         ),
       ]),
     ]),
   ])
-}
-
-fn calculate_progress_scenes(model: Model) -> Int {
-  let total_scenes = list.length(model.scenes) |> int.max(1)
-  case model.current {
-    Ok(BingoState(scene, _)) -> {
-      // Start at 1 for nonempty progress indicator
-      let idx =
-        list.fold_until(model.scenes, 1, fn(acc, item) {
-          case item == scene {
-            True -> Stop(acc)
-            False -> Continue(acc + 1)
-          }
-        })
-
-      idx * 100 / total_scenes
-    }
-    Error(_) -> 0
-  }
 }
 
 const css = "
