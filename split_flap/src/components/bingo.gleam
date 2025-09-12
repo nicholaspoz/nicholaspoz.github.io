@@ -99,7 +99,6 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
 
     ColumnsChanged(columns) -> {
       use <- bool.guard(columns == model.columns, Ok(#(model, effect.none())))
-
       case model.timeout {
         Some(id) -> utils.clear_timeout(id)
         None -> Nil

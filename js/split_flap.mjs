@@ -1626,9 +1626,6 @@ function string_slice(string5, idx, len) {
     return string5.match(/./gsu).slice(idx, idx + len).join("");
   }
 }
-function contains_string(haystack, needle) {
-  return haystack.indexOf(needle) >= 0;
-}
 function starts_with(haystack, needle) {
   return haystack.startsWith(needle);
 }
@@ -1768,6 +1765,24 @@ function has_key(dict3, key) {
 }
 function insert(dict3, key, value) {
   return map_insert(key, value, dict3);
+}
+function from_list_loop(loop$list, loop$initial) {
+  while (true) {
+    let list4 = loop$list;
+    let initial = loop$initial;
+    if (list4 instanceof Empty) {
+      return initial;
+    } else {
+      let rest = list4.tail;
+      let key = list4.head[0];
+      let value = list4.head[1];
+      loop$list = rest;
+      loop$initial = insert(initial, key, value);
+    }
+  }
+}
+function from_list(list4) {
+  return from_list_loop(list4, new_map());
 }
 
 // build/dev/javascript/gleam_stdlib/gleam/list.mjs
@@ -1924,29 +1939,23 @@ function index_map_loop(loop$list, loop$fun, loop$index, loop$acc) {
 function index_map(list4, fun) {
   return index_map_loop(list4, fun, 0, toList([]));
 }
-function take_loop(loop$list, loop$n, loop$acc) {
+function drop(loop$list, loop$n) {
   while (true) {
     let list4 = loop$list;
     let n = loop$n;
-    let acc = loop$acc;
     let $ = n <= 0;
     if ($) {
-      return reverse(acc);
+      return list4;
     } else {
       if (list4 instanceof Empty) {
-        return reverse(acc);
+        return list4;
       } else {
-        let first$1 = list4.head;
         let rest$1 = list4.tail;
         loop$list = rest$1;
         loop$n = n - 1;
-        loop$acc = prepend(first$1, acc);
       }
     }
   }
-}
-function take(list4, n) {
-  return take_loop(list4, n, toList([]));
 }
 function append_loop(loop$first, loop$second) {
   while (true) {
@@ -2003,6 +2012,29 @@ function fold_until(loop$list, loop$initial, loop$fun) {
       }
     }
   }
+}
+function zip_loop(loop$one, loop$other, loop$acc) {
+  while (true) {
+    let one = loop$one;
+    let other = loop$other;
+    let acc = loop$acc;
+    if (other instanceof Empty) {
+      return reverse(acc);
+    } else if (one instanceof Empty) {
+      return reverse(acc);
+    } else {
+      let first_other = other.head;
+      let rest_other = other.tail;
+      let first_one = one.head;
+      let rest_one = one.tail;
+      loop$one = rest_one;
+      loop$other = rest_other;
+      loop$acc = prepend([first_one, first_other], acc);
+    }
+  }
+}
+function zip(list4, other) {
+  return zip_loop(list4, other, toList([]));
 }
 function unique_loop(loop$list, loop$seen, loop$acc) {
   while (true) {
@@ -2385,6 +2417,9 @@ function range_loop(loop$start, loop$stop, loop$acc) {
 function range(start3, stop) {
   return range_loop(start3, stop, toList([]));
 }
+function window_by_2(list4) {
+  return zip(list4, drop(list4, 1));
+}
 
 // build/dev/javascript/gleam_stdlib/gleam/result.mjs
 function map3(result, fun) {
@@ -2409,6 +2444,14 @@ function try$(result, fun) {
     return fun(x);
   } else {
     return result;
+  }
+}
+function unwrap(result, default$) {
+  if (result instanceof Ok) {
+    let v = result[0];
+    return v;
+  } else {
+    return default$;
   }
 }
 function lazy_or(first3, second) {
@@ -5763,10 +5806,11 @@ function find_next(loop$l, loop$current) {
 // build/dev/javascript/split_flap/components/char.mjs
 var FILEPATH = "src/components/char.gleam";
 var Model = class extends CustomType {
-  constructor(chars, dest, state) {
+  constructor(adjacency_list, current_char, dest_char, state) {
     super();
-    this.chars = chars;
-    this.dest = dest;
+    this.adjacency_list = adjacency_list;
+    this.current_char = current_char;
+    this.dest_char = dest_char;
     this.state = state;
   }
 };
@@ -5792,28 +5836,20 @@ var FlipStarted = class extends CustomType {
 };
 var FlipEnded = class extends CustomType {
 };
+function to_adjacency_list(chars) {
+  let _pipe = first(chars);
+  let _pipe$1 = map3(_pipe, (char) => {
+    return chars + char;
+  });
+  let _pipe$2 = unwrap(_pipe$1, "");
+  let _pipe$3 = graphemes(_pipe$2);
+  let _pipe$4 = window_by_2(_pipe$3);
+  return from_list(_pipe$4);
+}
 function curr_and_next_chars(model) {
-  let $ = (() => {
-    let _pipe = graphemes(model.chars);
-    return take(_pipe, 2);
-  })();
-  if ($ instanceof Empty) {
-    return new Error(void 0);
-  } else {
-    let $1 = $.tail;
-    if ($1 instanceof Empty) {
-      return new Error(void 0);
-    } else {
-      let $2 = $1.tail;
-      if ($2 instanceof Empty) {
-        let a = $.head;
-        let b = $1.head;
-        return new Ok([a, b]);
-      } else {
-        return new Error(void 0);
-      }
-    }
-  }
+  let curr = model.current_char;
+  let next = unwrap(map_get(model.adjacency_list, curr), " ");
+  return new Ok([curr, next]);
 }
 function css(ms) {
   let _pipe = '\n  :host {\n    display: inline-block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  .split-flap {\n    /* TODO -webkit-font-smoothing */\n    position: relative;\n    width: 100%;\n    height: 100%;\n    aspect-ratio: 1/1.618; /* golden ratio ;) */\n    font-family: Fragment Mono, math, monospace, Noto Music;\n    font-weight: bold;\n    font-size: 120cqw;\n    border-radius: 5cqw;\n    perspective: 600cqw;\n  }\n\n  .split-flap::selection {\n    background: white;\n    color: black;\n  }\n\n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 3.5cqw;\n    background: rgb(20, 20, 20);\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    z-index: 1;\n    background: rgb(40, 40, 40);\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n    z-index: 0;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw;\n    user-select: text;\n    height: 100%;\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    opacity: 0;\n  }\n  .flap.bottom.flipping {\n    opacity: 1;\n  }\n\n  @keyframes flip-top {\n    0% {\n      transform: rotateX(0deg);\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n    50%, 100% {\n      transform: rotateX(-90deg);\n      box-shadow: none;\n    }\n    \n  }\n\n  @keyframes flip-bottom {\n    0% {\n      transform: rotateX(90deg);\n      box-shadow: none;\n    }\n    100% {\n      transform: rotateX(0deg);\n      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    }\n  }\n\n  .flap.flipping-top {\n    pointer-events: none;\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw 5cqw 0 0;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n    animation: <flip_duration>ms ease-in flip-top;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n  }\n\n  .flap.flipping-bottom {\n    opacity: 0;\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    z-index: 10;\n    background: rgb(40, 40, 40);\n  }\n  \n  .flap.flipping-bottom.flipping {\n    opacity: 1;\n    animation: <flip_duration>ms ease-in flip-bottom;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n  }\n  \n  .flap.top .flap-content {\n    top: 0;\n    height: 100%\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n  .flap.flipping-top .flap-content {\n    top: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
@@ -5856,7 +5892,10 @@ function element4(char, chars, on_click2) {
   );
 }
 function init(_) {
-  return [new Model(default_chars, " ", new Idle()), none2()];
+  return [
+    new Model(to_adjacency_list(default_chars), " ", " ", new Idle()),
+    none2()
+  ];
 }
 var flip_duration_ms = 30;
 function view(model) {
@@ -5871,15 +5910,15 @@ function view(model) {
       "let_assert",
       FILEPATH,
       "components/char",
-      157,
+      180,
       "view",
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 3593,
-        end: 3650,
-        pattern_start: 3604,
-        pattern_end: 3621
+        start: 4143,
+        end: 4200,
+        pattern_start: 4154,
+        pattern_end: 4171
       }
     );
   }
@@ -5957,7 +5996,7 @@ function update2(model, msg) {
   if (msg instanceof LetterAttrChanged) {
     let dest = msg[0];
     return [
-      new Model(model.chars, dest, model.state),
+      new Model(model.adjacency_list, model.current_char, dest, model.state),
       from((dispatch) => {
         return dispatch(new DestinationChanged());
       })
@@ -5965,65 +6004,50 @@ function update2(model, msg) {
   } else if (msg instanceof CharsAttrChanged) {
     let chars = msg[0];
     return [
-      new Model(chars, model.dest, model.state),
+      new Model(
+        to_adjacency_list(chars),
+        model.current_char,
+        model.dest_char,
+        model.state
+      ),
       from((dispatch) => {
         return dispatch(new DestinationChanged());
       })
     ];
   } else if (msg instanceof DestinationChanged) {
+    let has_dest = has_key(model.adjacency_list, model.dest_char);
+    let finished = model.current_char === model.dest_char;
     let $ = model.state;
-    let $1 = first(model.chars);
-    let $2 = contains_string(model.chars, model.dest);
-    if ($2 && $1 instanceof Ok && $ instanceof Idle) {
-      let x = $1[0];
-      if (x !== model.dest) {
-        return [
-          new Model(model.chars, model.dest, new Flipping()),
-          from(
-            (dispatch) => {
-              set_timeout(
-                flip_duration_ms + 10,
-                () => {
-                  return dispatch(new FlipStarted());
-                }
-              );
-              return void 0;
-            }
-          )
-        ];
-      } else {
-        return [model, none2()];
-      }
+    if (has_dest && !finished && $ instanceof Idle) {
+      return [
+        new Model(
+          model.adjacency_list,
+          model.current_char,
+          model.dest_char,
+          new Flipping()
+        ),
+        from(
+          (dispatch) => {
+            set_timeout(
+              flip_duration_ms + 10,
+              () => {
+                return dispatch(new FlipStarted());
+              }
+            );
+            return void 0;
+          }
+        )
+      ];
     } else {
       return [model, none2()];
     }
   } else if (msg instanceof FlipStarted) {
-    let $ = pop_grapheme(model.chars);
-    let first3;
-    let rest;
-    if ($ instanceof Ok) {
-      first3 = $[0][0];
-      rest = $[0][1];
-    } else {
-      throw makeError(
-        "let_assert",
-        FILEPATH,
-        "components/char",
-        134,
-        "update",
-        "Pattern match failed, no pattern matched the value.",
-        {
-          value: $,
-          start: 2999,
-          end: 3063,
-          pattern_start: 3010,
-          pattern_end: 3028
-        }
-      );
-    }
-    let next = rest + first3;
+    let next = unwrap(
+      map_get(model.adjacency_list, model.current_char),
+      " "
+    );
     return [
-      new Model(next, model.dest, new Idle()),
+      new Model(model.adjacency_list, next, model.dest_char, new Idle()),
       from(
         (dispatch) => {
           let jitter = random(20);
@@ -6038,29 +6062,29 @@ function update2(model, msg) {
       )
     ];
   } else if (msg instanceof FlipEnded) {
+    let has_dest = has_key(model.adjacency_list, model.dest_char);
+    let finished = model.current_char === model.dest_char;
     let $ = model.state;
-    let $1 = first(model.chars);
-    let $2 = contains_string(model.chars, model.dest);
-    if ($2 && $1 instanceof Ok && $ instanceof Idle) {
-      let x = $1[0];
-      if (x !== model.dest) {
-        return [
-          new Model(model.chars, model.dest, new Flipping()),
-          from(
-            (dispatch) => {
-              set_timeout(
-                flip_duration_ms + 10,
-                () => {
-                  return dispatch(new FlipStarted());
-                }
-              );
-              return void 0;
-            }
-          )
-        ];
-      } else {
-        return [model, none2()];
-      }
+    if (has_dest && !finished && $ instanceof Idle) {
+      return [
+        new Model(
+          model.adjacency_list,
+          model.current_char,
+          model.dest_char,
+          new Flipping()
+        ),
+        from(
+          (dispatch) => {
+            set_timeout(
+              flip_duration_ms + 10,
+              () => {
+                return dispatch(new FlipStarted());
+              }
+            );
+            return void 0;
+          }
+        )
+      ];
     } else {
       return [model, none2()];
     }
