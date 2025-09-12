@@ -5884,7 +5884,7 @@ function element4(char, chars, on_click2) {
         if (on_click2 instanceof Some) {
           return style("cursor", "pointer");
         } else {
-          return none();
+          return style("cursor", "default");
         }
       })()
     ]),
@@ -5915,10 +5915,10 @@ function view(model) {
       "Pattern match failed, no pattern matched the value.",
       {
         value: $,
-        start: 4143,
-        end: 4200,
-        pattern_start: 4154,
-        pattern_end: 4171
+        start: 4163,
+        end: 4220,
+        pattern_start: 4174,
+        pattern_end: 4191
       }
     );
   }
@@ -7073,7 +7073,8 @@ function view3(model) {
   let auto_play = model.auto_play;
   let empty_dot = "\u25CB";
   let filled_dot = "\u25CF";
-  let paused = "\u{1D13D}";
+  let forward_repeat = "\u{1D106}";
+  let backward_repeat = "\u{1D107}";
   let empty3 = repeat(" ", model.cols);
   let _block;
   let _pipe = range(1, pages);
@@ -7082,11 +7083,7 @@ function view3(model) {
     (idx) => {
       let $ = idx === current_page;
       if ($) {
-        if (auto_play) {
-          return filled_dot;
-        } else {
-          return paused;
-        }
+        return filled_dot;
       } else {
         return empty_dot;
       }
@@ -7095,10 +7092,17 @@ function view3(model) {
   _block = join(_pipe$1, " ");
   let dots = _block;
   let _block$1;
-  let _pipe$2 = dots;
+  if (auto_play) {
+    _block$1 = "\u{1D103} " + dots + " \u{1D102}";
+  } else {
+    _block$1 = forward_repeat + " " + dots + " " + backward_repeat;
+  }
+  let dots$1 = _block$1;
+  let _block$2;
+  let _pipe$2 = dots$1;
   let _pipe$3 = center(_pipe$2, empty3);
-  _block$1 = graphemes(_pipe$3);
-  let chars = _block$1;
+  _block$2 = graphemes(_pipe$3);
+  let chars = _block$2;
   let first_dot_idx = fold_until(
     chars,
     0,
@@ -7127,11 +7131,17 @@ function view3(model) {
                 char,
                 (() => {
                   if (char === "\u25CB") {
-                    return new Some(paused + empty_dot + filled_dot);
+                    return new Some(empty_dot + filled_dot);
                   } else if (char === "\u25CF") {
-                    return new Some(paused + empty_dot + filled_dot);
-                  } else if (char === "\u{1D13D}") {
-                    return new Some(paused + empty_dot + filled_dot);
+                    return new Some(empty_dot + filled_dot);
+                  } else if (char === "\u{1D106}") {
+                    return new Some("\u{1D103}\u{1D102}" + forward_repeat);
+                  } else if (char === "\u{1D103}") {
+                    return new Some("\u{1D103}\u{1D102}" + forward_repeat);
+                  } else if (char === "\u{1D102}") {
+                    return new Some("\u{1D103}\u{1D102}" + forward_repeat);
+                  } else if (char === "\u{1D107}") {
+                    return new Some(backward_repeat);
                   } else {
                     return new None();
                   }
@@ -7141,7 +7151,13 @@ function view3(model) {
                     return new Some(new PageClicked(page));
                   } else if (char === "\u25CF") {
                     return new Some(new PageClicked(page));
-                  } else if (char === "\u{1D13D}") {
+                  } else if (char === "\u{1D106}") {
+                    return new Some(new AutoPlayClicked());
+                  } else if (char === "\u{1D107}") {
+                    return new Some(new AutoPlayClicked());
+                  } else if (char === "\u{1D103}") {
+                    return new Some(new AutoPlayClicked());
+                  } else if (char === "\u{1D102}") {
                     return new Some(new AutoPlayClicked());
                   } else {
                     return new None();

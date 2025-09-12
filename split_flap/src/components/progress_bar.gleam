@@ -118,19 +118,25 @@ fn view(model: Model) -> Element(Msg) {
   let auto_play = model.auto_play
   let empty_dot = "○"
   let filled_dot = "●"
-  let paused = "𝄽"
+  // let paused = "𝄽"
+  let forward_repeat = "𝄆"
+  let backward_repeat = "𝄇"
   let empty = string.repeat(" ", model.cols)
 
   let dots =
     list.range(1, pages)
     |> list.map(fn(idx) {
-      case idx == current_page, auto_play {
-        True, True -> filled_dot
-        True, False -> paused
-        False, _ -> empty_dot
+      case idx == current_page {
+        True -> filled_dot
+        False -> empty_dot
       }
     })
     |> string.join(" ")
+
+  let dots = case auto_play {
+    True -> "𝄃 " <> dots <> " 𝄂"
+    False -> forward_repeat <> " " <> dots <> " " <> backward_repeat
+  }
 
   let chars =
     dots
@@ -156,12 +162,14 @@ fn view(model: Model) -> Element(Msg) {
           sf_char.element(
             char:,
             char_stack: case char {
-              "○" | "●" | "𝄽" -> Some(paused <> empty_dot <> filled_dot)
+              "○" | "●" -> Some(empty_dot <> filled_dot)
+              "𝄆" | "𝄃" | "𝄂" -> Some("𝄃" <> "𝄂" <> forward_repeat)
+              "𝄇" -> Some(backward_repeat)
               _ -> None
             },
             on_click: case char {
               "○" | "●" -> Some(PageClicked(page))
-              "𝄽" -> Some(AutoPlayClicked)
+              "𝄆" | "𝄇" | "𝄃" | "𝄂" -> Some(AutoPlayClicked)
               _ -> None
             },
           ),

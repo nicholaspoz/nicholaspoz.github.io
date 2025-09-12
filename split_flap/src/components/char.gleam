@@ -99,7 +99,7 @@ pub fn element(
 
       case on_click {
         Some(_) -> attribute.style("cursor", "pointer")
-        None -> attribute.none()
+        None -> attribute.style("cursor", "default")
       },
     ],
     [],
