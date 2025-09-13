@@ -1,6 +1,7 @@
 import gleam/dict
 import gleam/dynamic/decode
 import gleam/int
+import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/result
@@ -12,6 +13,8 @@ import lustre/effect
 import lustre/element.{type Element}
 import lustre/element/html
 import lustre/event
+import prng/random
+import prng/seed
 
 // NOTE: you need to have a music font installed to see this unicode
 pub const default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶()𝄢𝅘𝅥𝄽#!"
@@ -27,18 +30,22 @@ type Model {
     state: State,
     flip_duration_ms: Int,
     jitter: Int,
+    char_id: String,
   )
 }
 
 type State {
   Idle
-  Flipping
+  NeedsAnimation(String)
+  // Target character to animate to
+  Animating(String)
+  // Currently animating to this character
 }
 
 type Msg {
   LetterAttrChanged(String)
   CharsAttrChanged(String)
-  DestinationChanged
+  AnimationStarted
   BottomAnimationEnded
   FlipEnded
 }
@@ -55,6 +62,7 @@ fn to_adjacency_list(chars: String) -> dict.Dict(String, String) {
 pub fn register() -> Result(Nil, lustre.Error) {
   let component =
     lustre.component(init, update, view, [
+      component.open_shadow_root(True),
       component.on_attribute_change("letter", fn(val) {
         use char <- result.try(string.first(val))
         Ok(LetterAttrChanged(char))
@@ -106,6 +114,14 @@ pub fn element(
 }
 
 fn init(_) -> #(Model, effect.Effect(Msg)) {
+  let char_id =
+    "char-"
+    <> {
+      let #(str, _) = random.step(random.string(), seed.random())
+      str
+    }
+  echo "char_id: " <> char_id
+
   #(
     Model(
       adjacency_list: to_adjacency_list(default_chars),
@@ -114,6 +130,7 @@ fn init(_) -> #(Model, effect.Effect(Msg)) {
       state: Idle,
       flip_duration_ms: flip_duration_ms,
       jitter: int.random(25),
+      char_id: char_id,
     ),
     effect.none(),
   )
@@ -123,36 +140,59 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
   case msg {
     CharsAttrChanged(chars) -> {
       #(Model(..model, state: Idle, adjacency_list: to_adjacency_list(chars)), {
-        use dispatch, _ <- effect.after_paint
-        dispatch(DestinationChanged)
+        use dispatch <- effect.from
+        dispatch(LetterAttrChanged(model.dest_char))
       })
     }
 
     LetterAttrChanged(dest) -> {
-      #(Model(..model, state: Idle, dest_char: dest), {
-        use dispatch, _ <- effect.after_paint
-        dispatch(DestinationChanged)
-      })
-    }
-
-    DestinationChanged | FlipEnded -> {
-      let finished = model.current_char == model.dest_char
-
-      case model.state, finished {
-        Idle, False -> #(Model(..model, state: Flipping), effect.none())
-        _, _ -> #(model, effect.none())
+      case model.current_char == dest {
+        True -> #(model, effect.none())
+        False -> {
+          #(
+            Model(..model, dest_char: dest, state: NeedsAnimation(dest)),
+            event.emit("animation-needed", json.string(model.char_id)),
+          )
+        }
       }
     }
 
-    BottomAnimationEnded -> {
+    AnimationStarted -> {
+      // AnimationManager told us to start animating
       let next =
-        dict.get(model.adjacency_list, model.current_char)
-        |> result.unwrap(" ")
+        dict.get(model.adjacency_list, model.current_char) |> result.unwrap(" ")
+      #(
+        Model(..model, current_char: next, state: Animating(model.dest_char)),
+        effect.none(),
+      )
+    }
 
-      #(Model(..model, state: Idle, current_char: next), {
-        use dispatch, _ <- effect.after_paint
-        dispatch(FlipEnded)
-      })
+    BottomAnimationEnded -> {
+      // CSS animation finished
+      case model.state {
+        Animating(target) -> {
+          case model.current_char == target {
+            True -> {
+              // Reached destination
+              #(Model(..model, state: Idle), {
+                event.emit("animation-complete", json.string(model.char_id))
+              })
+            }
+            False -> {
+              // Need to continue animating
+              #(Model(..model, state: NeedsAnimation(target)), {
+                event.emit("animation-needed", json.string(model.char_id))
+              })
+            }
+          }
+        }
+        _ -> #(model, effect.none())
+      }
+    }
+
+    FlipEnded -> {
+      // Legacy - might not be needed anymore
+      #(model, effect.none())
     }
   }
 }
@@ -167,45 +207,59 @@ fn view(model: Model) -> Element(Msg) {
   element.fragment([
     html.style([], css(model.flip_duration_ms + model.jitter)),
 
-    html.div([attribute.class("split-flap")], [
-      // TOP FLAP (always visible)
-      html.div([attribute.class("flap top")], [
-        html.span([attribute.class("flap-content")], [
-          html.text(case model.state {
-            Idle -> curr
-            _ -> next
-          }),
+    html.div(
+      [
+        attribute.class("split-flap"),
+        attribute.attribute("data-char-id", model.char_id),
+        attribute.attribute("data-animation-state", case model.state {
+          Idle -> "idle"
+          NeedsAnimation(_) -> "needs-animation"
+          Animating(_) -> "animating"
+        }),
+        // Listen for events from AnimationManager
+        event.on("animation-start", decode.success(AnimationStarted)),
+      ],
+      [
+        // TOP FLAP (always visible)
+        html.div([attribute.class("flap top")], [
+          html.span([attribute.class("flap-content")], [
+            html.text(case model.state {
+              Idle -> curr
+              _ -> next
+            }),
+          ]),
         ]),
-      ]),
 
-      // BOTTOM FLAP
-      case model.state {
-        Idle -> element.none()
-        Flipping ->
-          html.div(
-            [
-              attribute.class("flap bottom"),
-            ],
-            [
-              html.span([attribute.class("flap-content")], [html.text(curr)]),
-            ],
-          )
-      },
+        // BOTTOM FLAP
+        case model.state {
+          Idle -> element.none()
+          Animating(_) ->
+            html.div(
+              [
+                attribute.class("flap bottom"),
+              ],
+              [
+                html.span([attribute.class("flap-content")], [html.text(curr)]),
+              ],
+            )
+          NeedsAnimation(_) -> element.none()
+        },
 
-      // FLIPPING BOTTOM
-      html.div(
-        [
-          attribute.class("flap flipping-bottom"),
-          case model.state {
-            Idle -> attribute.none()
-            _ -> attribute.class("flipping")
-          },
-          // Listen for animation end events
-          event.on("animationend", decode.success(BottomAnimationEnded)),
-        ],
-        [html.span([attribute.class("flap-content")], [html.text(next)])],
-      ),
-    ]),
+        // FLIPPING BOTTOM (only during animation)
+        case model.state {
+          Animating(_) ->
+            html.div(
+              [
+                attribute.class("flap flipping-bottom animate-now"),
+                // Listen for animation end events
+                event.on("animationend", decode.success(BottomAnimationEnded)),
+              ],
+              [html.span([attribute.class("flap-content")], [html.text(next)])],
+            )
+          _ -> element.none()
+        },
+      ],
+    ),
   ])
 }
 
@@ -320,7 +374,7 @@ fn css(flip_duration ms: Int) -> String {
     transform: translateZ(0);
   }
   
-  .flap.flipping-bottom.flipping {
+  .flap.flipping-bottom.animate-now {
     opacity: 1;
     animation: <flip_duration>ms ease-in flip-bottom;
     animation-fill-mode: forwards;

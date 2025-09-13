@@ -80,7 +80,27 @@ The Gleam code compiles to JavaScript modules that register custom web elements:
 - **Analytics**: Google Analytics integration
 - **Mobile**: Responsive design with safe area insets
 
+## Performance Considerations
+
+The split-flap component can have performance issues with large character matrices due to many concurrent CSS animations. See `PERFORMANCE_NOTES.md` for detailed investigation.
+
+**Known Issues:**
+- Lustre components share state across all instances (single `init()` call)
+- Event targeting in shadow DOM doesn't work as expected for coordination
+- Many concurrent animations cause high CPU usage
+
+**Current Best Practices:**
+- Use CSS performance optimizations: `will-change`, remove `box-shadow` during animation
+- Consider animation limits when displaying large character matrices
+- Test performance with realistic data loads
+
+**Debug Commands:**
+- `debugAnimations()` - Check animation manager status (if RAF system is active)
+- `setAnimationLimit(N)` - Limit concurrent animations
+- Browser DevTools → Performance tab for animation profiling
+
 When working with this codebase:
 - Changes to the interactive component require rebuilding the Gleam code
 - Static HTML/CSS changes take effect immediately  
 - The main entry points are the two HTML files in the root directory
+- Performance testing should include large character matrices (50+ characters)

@@ -16,7 +16,10 @@ import components/progress_bar
 import utils.{find_next}
 
 pub fn register() -> Result(Nil, lustre.Error) {
-  let component = lustre.component(init, update, view, [])
+  let component =
+    lustre.component(init, update, view, [
+      component.open_shadow_root(True),
+    ])
   lustre.register(component, "nick-dot-bingo")
 }
 

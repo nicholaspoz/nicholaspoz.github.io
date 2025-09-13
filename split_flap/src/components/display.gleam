@@ -73,6 +73,7 @@ type Msg {
 pub fn register() -> Result(Nil, lustre.Error) {
   let component =
     lustre.component(init, update, view, [
+      component.open_shadow_root(True),
       component.on_attribute_change("lines", fn(val) {
         let lines = json.parse(val, using: decode.list(of: content_decoder()))
         case lines {
