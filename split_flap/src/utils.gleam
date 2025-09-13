@@ -23,6 +23,11 @@ pub fn on_resize(_root: decode.Dynamic, _cb: fn() -> Nil) -> Nil {
   Nil
 }
 
+@external(javascript, "./split_flap.ffi.mjs", "wtf")
+pub fn wtf(thing: decode.Dynamic) -> Nil {
+  Nil
+}
+
 /// Find the item in the list directly after the `current` item.
 /// Will return `Error(Nil)` if the `current` item is the last item, 
 /// or if it is not found in the list.

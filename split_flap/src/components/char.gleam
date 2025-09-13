@@ -1,4 +1,5 @@
 import gleam/dict
+import gleam/dynamic/decode
 import gleam/int
 import gleam/list
 import gleam/option.{type Option, None, Some}
@@ -12,14 +13,10 @@ import lustre/element.{type Element}
 import lustre/element/html
 import lustre/event
 
-import utils
-
 // NOTE: you need to have a music font installed to see this unicode
 pub const default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶()𝄢𝅘𝅥𝄽#!"
 
 const flip_duration_ms = 30
-
-const idle_duration_ms = 15
 
 type Model {
   // Model(chars: String, dest: String, state: State)
@@ -29,6 +26,7 @@ type Model {
     dest_char: String,
     state: State,
     flip_duration_ms: Int,
+    jitter: Int,
   )
 }
 
@@ -40,11 +38,9 @@ type State {
 type Msg {
   LetterAttrChanged(String)
   CharsAttrChanged(String)
-  FlipDurationAttrChanged(Int)
   DestinationChanged
-  FlipStarted
+  BottomAnimationEnded
   FlipEnded
-  Clicked
 }
 
 fn to_adjacency_list(chars: String) -> dict.Dict(String, String) {
@@ -74,11 +70,6 @@ pub fn register() -> Result(Nil, lustre.Error) {
         |> CharsAttrChanged
         |> Ok
       }),
-
-      component.on_attribute_change("flip_duration", fn(val) {
-        use parsed <- result.try(int.parse(val))
-        Ok(FlipDurationAttrChanged(parsed))
-      }),
     ])
 
   lustre.register(component, "split-flap-char")
@@ -88,7 +79,7 @@ pub fn element(
   char char: String,
   char_stack chars: Option(String),
   on_click on_click: Option(msg),
-  flip_duration flip_duration_ms: Option(Int),
+  flip_duration _flip_duration_ms: Option(Int),
 ) -> Element(msg) {
   element.element(
     "split-flap-char",
@@ -99,12 +90,6 @@ pub fn element(
         Some(stack) -> stack
         None -> default_chars
       }),
-
-      case flip_duration_ms {
-        Some(flip_duration_ms) ->
-          attribute.attribute("flip_duration", int.to_string(flip_duration_ms))
-        None -> attribute.none()
-      },
 
       case on_click {
         Some(on_click) -> event.on_click(on_click)
@@ -128,6 +113,7 @@ fn init(_) -> #(Model, effect.Effect(Msg)) {
       current_char: " ",
       state: Idle,
       flip_duration_ms: flip_duration_ms,
+      jitter: int.random(25),
     ),
     effect.none(),
   )
@@ -136,57 +122,37 @@ fn init(_) -> #(Model, effect.Effect(Msg)) {
 fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
   case msg {
     CharsAttrChanged(chars) -> {
-      #(Model(..model, adjacency_list: to_adjacency_list(chars)), {
-        use dispatch <- effect.from
+      #(Model(..model, state: Idle, adjacency_list: to_adjacency_list(chars)), {
+        use dispatch, _ <- effect.after_paint
         dispatch(DestinationChanged)
       })
     }
 
     LetterAttrChanged(dest) -> {
-      #(Model(..model, dest_char: dest), {
-        use dispatch <- effect.from
+      #(Model(..model, state: Idle, dest_char: dest), {
+        use dispatch, _ <- effect.after_paint
         dispatch(DestinationChanged)
       })
     }
 
-    FlipDurationAttrChanged(flip_duration_ms) -> {
-      #(Model(..model, flip_duration_ms: flip_duration_ms), effect.none())
-    }
-
     DestinationChanged | FlipEnded -> {
-      let has_dest = dict.has_key(model.adjacency_list, model.dest_char)
       let finished = model.current_char == model.dest_char
 
-      case model.state, finished, has_dest {
-        Idle, False, True -> {
-          #(Model(..model, state: Flipping), {
-            use dispatch <- effect.from
-            utils.set_timeout(model.flip_duration_ms + 20, fn() {
-              dispatch(FlipStarted)
-            })
-            Nil
-          })
-        }
-
-        _, _, _ -> #(model, effect.none())
+      case model.state, finished {
+        Idle, False -> #(Model(..model, state: Flipping), effect.none())
+        _, _ -> #(model, effect.none())
       }
     }
 
-    FlipStarted -> {
+    BottomAnimationEnded -> {
       let next =
-        result.unwrap(dict.get(model.adjacency_list, model.current_char), " ")
-      #(Model(..model, current_char: next, state: Idle), {
-        use dispatch <- effect.from
-        let jitter = int.random(15)
-        utils.set_timeout(idle_duration_ms + jitter, fn() {
-          dispatch(FlipEnded)
-        })
-        Nil
-      })
-    }
+        dict.get(model.adjacency_list, model.current_char)
+        |> result.unwrap(" ")
 
-    Clicked -> {
-      #(model, effect.none())
+      #(Model(..model, state: Idle, current_char: next), {
+        use dispatch, _ <- effect.after_paint
+        dispatch(FlipEnded)
+      })
     }
   }
 }
@@ -199,7 +165,7 @@ fn view(model: Model) -> Element(Msg) {
   let assert Ok(#(curr, next)) = curr_and_next_chars(model)
 
   element.fragment([
-    html.style([], css(model.flip_duration_ms)),
+    html.style([], css(model.flip_duration_ms + model.jitter)),
 
     html.div([attribute.class("split-flap")], [
       // TOP FLAP (always visible)
@@ -227,22 +193,18 @@ fn view(model: Model) -> Element(Msg) {
       },
 
       // FLIPPING BOTTOM
-      case model.state {
-        Idle -> element.none()
-        Flipping ->
-          html.div(
-            [
-              attribute.class("flap flipping-bottom"),
-              case model.state {
-                Idle -> attribute.none()
-                _ -> attribute.class("flipping")
-              },
-            ],
-            [
-              html.span([attribute.class("flap-content")], [html.text(next)]),
-            ],
-          )
-      },
+      html.div(
+        [
+          attribute.class("flap flipping-bottom"),
+          case model.state {
+            Idle -> attribute.none()
+            _ -> attribute.class("flipping")
+          },
+          // Listen for animation end events
+          event.on("animationend", decode.success(BottomAnimationEnded)),
+        ],
+        [html.span([attribute.class("flap-content")], [html.text(next)])],
+      ),
     ]),
   ])
 }
@@ -330,20 +292,9 @@ fn css(flip_duration ms: Int) -> String {
     border-radius: 0 0 5cqw 5cqw;
     opacity: 0;
   }
+  
   .flap.bottom.flipping {
     opacity: 1;
-  }
-
-  @keyframes flip-top {
-    0% {
-      transform: rotateX(0deg);
-      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);
-    }
-    50%, 100% {
-      transform: rotateX(-90deg);
-      box-shadow: none;
-    }
-    
   }
 
   @keyframes flip-bottom {
@@ -355,19 +306,6 @@ fn css(flip_duration ms: Int) -> String {
     }
   }
 
-  .flap.flipping-top {
-    pointer-events: none;
-    top: 0;
-    transform-origin: bottom;
-    border-radius: 5cqw 5cqw 0 0;
-    z-index: 10;
-    background: rgb(40, 40, 40);
-    animation: <flip_duration>ms ease-in flip-top;
-    animation-iteration-count: 1;
-    animation-fill-mode: forwards;
-    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);
-  }
-
   .flap.flipping-bottom {
     opacity: 0;
     pointer-events: none;
@@ -376,13 +314,15 @@ fn css(flip_duration ms: Int) -> String {
     border-radius: 0 0 5cqw 5cqw;
     z-index: 10;
     background: rgb(40, 40, 40);
-    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.1), 0cqw -3cqw 2cqw 2cqw rgba(0, 0, 0, 0.1);
+    box-shadow: none;
+    border-radius: 0;
+    will-change: transform;
+    transform: translateZ(0);
   }
   
   .flap.flipping-bottom.flipping {
     opacity: 1;
     animation: <flip_duration>ms ease-in flip-bottom;
-    animation-iteration-count: 1;
     animation-fill-mode: forwards;
   }
   
@@ -393,10 +333,6 @@ fn css(flip_duration ms: Int) -> String {
 
   .flap.bottom .flap-content {
     bottom: 0;
-  }
-
-  .flap.flipping-top .flap-content {
-    top: 0;
   }
 
   .flap.flipping-bottom .flap-content {

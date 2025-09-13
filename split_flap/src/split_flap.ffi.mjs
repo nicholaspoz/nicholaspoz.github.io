@@ -22,3 +22,7 @@ export function on_resize(root, cb) {
   observer = new ResizeObserver(cb);
   observer.observe(root.host);
 }
+
+export function wtf(thing) {
+  console.log(thing);
+}
