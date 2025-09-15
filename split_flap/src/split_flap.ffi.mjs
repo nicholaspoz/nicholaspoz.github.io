@@ -11,7 +11,8 @@ export function measure_orientation(root) {
     width: 0,
     height: 0,
   };
-  return rect.width >= rect.height ? "landscape" : "portrait";
+  const wide = rect.width / rect.height > 1;
+  return wide ? "landscape" : "portrait";
 }
 
 let observer = null;

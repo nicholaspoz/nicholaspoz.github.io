@@ -3505,8 +3505,8 @@ function unsafe_raw_html(namespace, tag, attributes, inner_html) {
 function text3(content) {
   return text2(content);
 }
-function style2(attrs, css6) {
-  return unsafe_raw_html("", "style", attrs, css6);
+function style2(attrs, css5) {
+  return unsafe_raw_html("", "style", attrs, css5);
 }
 function div(attrs, children) {
   return element2("div", attrs, children);
@@ -5205,10 +5205,10 @@ var virtualiseAttribute = (attr) => {
 // build/dev/javascript/lustre/lustre/runtime/client/runtime.ffi.mjs
 var is_browser = () => !!document();
 var Runtime = class {
-  constructor(root3, [model, effects], view6, update6) {
+  constructor(root3, [model, effects], view5, update6) {
     this.root = root3;
     this.#model = model;
-    this.#view = view6;
+    this.#view = view5;
     this.#update = update6;
     this.root.addEventListener("context-request", (event4) => {
       if (!(event4.context && event4.callback)) return;
@@ -5444,7 +5444,7 @@ var SystemRequestedShutdown = class extends CustomType {
 };
 
 // build/dev/javascript/lustre/lustre/runtime/client/component.ffi.mjs
-var make_component = ({ init: init5, update: update6, view: view6, config }, name) => {
+var make_component = ({ init: init5, update: update6, view: view5, config }, name) => {
   if (!is_browser()) return new Error(new NotABrowser());
   if (!name.includes("-")) return new Error(new BadComponentName(name));
   if (customElements.get(name)) {
@@ -5485,7 +5485,7 @@ var make_component = ({ init: init5, update: update6, view: view6, config }, nam
       this.#runtime = new Runtime(
         this.#shadowRoot,
         [model, effects],
-        view6,
+        view5,
         update6
       );
     }
@@ -5674,11 +5674,11 @@ function part(name) {
 
 // build/dev/javascript/lustre/lustre.mjs
 var App = class extends CustomType {
-  constructor(init5, update6, view6, config) {
+  constructor(init5, update6, view5, config) {
     super();
     this.init = init5;
     this.update = update6;
-    this.view = view6;
+    this.view = view5;
     this.config = config;
   }
 };
@@ -5696,20 +5696,8 @@ var ComponentAlreadyRegistered = class extends CustomType {
 };
 var NotABrowser = class extends CustomType {
 };
-function component(init5, update6, view6, options) {
-  return new App(init5, update6, view6, new$6(options));
-}
-function application(init5, update6, view6) {
-  return new App(init5, update6, view6, new$6(empty_list));
-}
-function simple(init5, update6, view6) {
-  let init$1 = (start_args) => {
-    return [init5(start_args), none2()];
-  };
-  let update$1 = (model, msg) => {
-    return [update6(model, msg), none2()];
-  };
-  return application(init$1, update$1, view6);
+function component(init5, update6, view5, options) {
+  return new App(init5, update6, view5, new$6(options));
 }
 
 // build/dev/javascript/lustre/lustre/event.mjs
@@ -5765,7 +5753,8 @@ function measure_orientation(root3) {
     width: 0,
     height: 0
   };
-  return rect.width >= rect.height ? "landscape" : "portrait";
+  const wide = rect.width / rect.height > 1;
+  return wide ? "landscape" : "portrait";
 }
 var observer = null;
 function on_resize(root3, cb) {
@@ -7609,7 +7598,7 @@ function update5(model, msg) {
     return [model, none2()];
   }
 }
-var css4 = "\n  :host {\n    display: block;\n    container-type: inline-size;\n    height: 100%;\n    width: 100%;\n  }\n\n  .panel {\n    position: relative;\n    width: 100%;\n    height: 100%;\n    min-height: fit-content;\n    background: linear-gradient(\n      250deg,\n      rgb(40, 40, 40) 0%,\n      rgb(50, 50, 50) 25%,\n      rgb(40, 40, 40) 80%\n    );\n    padding: 2cqh 12cqw;\n    /* This is in px on purpose */\n    box-shadow: inset 0px 3px 10px 10px rgba(0, 0, 0, 0.25);\n\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-content: center;\n    overflow: scroll;\n  }\n\n  .matrix {\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-content: center;\n  }\n  \n  @container (aspect-ratio < 1) {\n    .panel {\n      padding: 5cqh 5cqw;\n      background: rgb(40,40,40);\n      box-shadow: none;\n    }\n\n    .matrix {\n      justify-content: space-around;\n      height: 100%;\n    }\n  }\n  ";
+var css4 = "\n  :host {\n    display: block;\n    container-type: inline-size;\n    height: 100%;\n    width: 100%;\n  }\n\n  .panel {\n    position: relative;\n    width: 100%;\n    height: 100%;\n    min-height: fit-content;\n    background: linear-gradient(\n      250deg,\n      rgb(40, 40, 40) 0%,\n      rgb(50, 50, 50) 25%,\n      rgb(40, 40, 40) 80%\n    );\n    padding: 2cqh 12cqw;\n    /* This is in px on purpose */\n    box-shadow: inset 0px 3px 10px 10px rgba(0, 0, 0, 0.25);\n\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-content: center;\n    overflow: scroll;\n  }\n\n  .matrix {\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n    align-content: center;\n  }\n  \n  @container (aspect-ratio < 1) {\n    .panel {\n      padding: 5cqh 5cqw;\n    }\n\n    .matrix {\n      justify-content: space-around;\n      height: 100%;\n    }\n  }\n  ";
 function view4(model) {
   let _block;
   let $1 = model.current;
@@ -7876,42 +7865,6 @@ var Echo$Inspector2 = class {
   }
 };
 
-// build/dev/javascript/split_flap/components/office.mjs
-var css5 = "\n  :host {\n    --position-x: 50%;\n    --position-y: 30%;\n    --min-height: 40cqw;\n    width: 100%;\n    height: 100%;\n    min-height: var(--min-height);\n    overflow-x: scroll;\n    overflow-y: scroll;\n    position: relative;\n    container-type: inline-size;\n  }\n  \n  .office-void {\n    width: 100%;\n    height: 100%;\n    min-height: var(--min-height);\n    overflow: hidden;\n    position: relative;\n    container-type: size;\n  }\n  \n  .office-void-bg {\n    position: absolute;\n    width: max(100cqw, calc(100cqh * 16/9));\n    height: max(calc(100cqw * 9/16), 100cqh);\n    left: var(--position-x);\n    top: var(--position-y);\n    transform: translate(calc(var(--position-x) * -1), calc(var(--position-y) * -1));\n    background-image: url(./img/bg-3840.webp);\n    background-size: cover;\n    background-position: var(--position-x) var(--position-y);\n  }\n  \n  .split-flap-void {\n    position: absolute;\n    /* background: lime; */\n    /* mix-blend-mode: difference; */\n    /* do not, and I repeat, do not touch this\u2014otherwise the flip-flap will be very very sad and I will cry */\n    top: 28.75%;\n    left: 26.66%;\n    width: 46.66%;\n    height: 23.4%;\n    container-type: size; \n  }\n\n  nick-dot-bingo::part(panel) {\n    background: rgba(50, 50, 50, 0.3);    \n    box-shadow: none;\n  }\n";
-function view5(_) {
-  return fragment2(
-    toList([
-      style2(toList([]), css5),
-      div(
-        toList([class$("office-void")]),
-        toList([
-          div(
-            toList([class$("office-void-bg")]),
-            toList([
-              div(
-                toList([class$("split-flap-void")]),
-                toList([])
-              )
-            ])
-          )
-        ])
-      )
-    ])
-  );
-}
-function register5() {
-  let component2 = simple(
-    (_) => {
-      return void 0;
-    },
-    (_, _1) => {
-      return void 0;
-    },
-    view5
-  );
-  return make_component(component2, "bingo-office");
-}
-
 // build/dev/javascript/split_flap/split_flap.mjs
 var FILEPATH2 = "src/split_flap.gleam";
 function main() {
@@ -7921,10 +7874,10 @@ function main() {
       "let_assert",
       FILEPATH2,
       "split_flap",
-      8,
+      7,
       "main",
       "Pattern match failed, no pattern matched the value.",
-      { value: $, start: 148, end: 182, pattern_start: 159, pattern_end: 164 }
+      { value: $, start: 123, end: 157, pattern_start: 134, pattern_end: 139 }
     );
   }
   let $1 = register2();
@@ -7933,10 +7886,10 @@ function main() {
       "let_assert",
       FILEPATH2,
       "split_flap",
-      9,
+      8,
       "main",
       "Pattern match failed, no pattern matched the value.",
-      { value: $1, start: 185, end: 222, pattern_start: 196, pattern_end: 201 }
+      { value: $1, start: 160, end: 197, pattern_start: 171, pattern_end: 176 }
     );
   }
   let $2 = register3();
@@ -7945,34 +7898,22 @@ function main() {
       "let_assert",
       FILEPATH2,
       "split_flap",
-      10,
+      9,
       "main",
       "Pattern match failed, no pattern matched the value.",
-      { value: $2, start: 225, end: 267, pattern_start: 236, pattern_end: 241 }
+      { value: $2, start: 200, end: 242, pattern_start: 211, pattern_end: 216 }
     );
   }
-  let $3 = register5();
+  let $3 = register4();
   if (!($3 instanceof Ok)) {
     throw makeError(
       "let_assert",
       FILEPATH2,
       "split_flap",
-      11,
+      10,
       "main",
       "Pattern match failed, no pattern matched the value.",
-      { value: $3, start: 270, end: 306, pattern_start: 281, pattern_end: 286 }
-    );
-  }
-  let $4 = register4();
-  if (!($4 instanceof Ok)) {
-    throw makeError(
-      "let_assert",
-      FILEPATH2,
-      "split_flap",
-      12,
-      "main",
-      "Pattern match failed, no pattern matched the value.",
-      { value: $4, start: 309, end: 344, pattern_start: 320, pattern_end: 325 }
+      { value: $3, start: 245, end: 280, pattern_start: 256, pattern_end: 261 }
     );
   }
   return void 0;
