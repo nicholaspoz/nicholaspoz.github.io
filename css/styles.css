@@ -50,3 +50,117 @@ img {
   max-width: 100%;
   height: auto;
 }
+
+body {
+  background-color: rgb(207, 207, 207);
+  overflow: hidden;
+}
+
+.container {
+  --min-width: 600px;
+  container-type: size;
+  container-name: bingo;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 100cqw;
+  height: 100cqh;
+  overflow: hidden;
+  overflow-y: scroll;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+
+  background-color: rgb(217, 217, 217);
+}
+
+.board {
+  position: relative;
+  width: 100cqw;
+  min-width: var(--min-width);
+  height: calc(max(var(--min-width), 100cqw) * 1400 / 3840);
+  /* min-height: fit-content; */
+  flex: 2 0 auto;
+
+  background-image: url(/img/bg-top-3840.webp),
+    url(/img/bg-top-gutter-3840.webp);
+  background-size: cover, 100cqw 100%;
+  background-position: center top, top;
+  background-repeat: no-repeat, no-repeat;
+  container-type: size;
+}
+
+.scene {
+  position: relative;
+  width: 100cqw;
+  min-width: var(--min-width);
+  height: calc(max(var(--min-width), 100cqw) * 760 / 3840);
+  flex: 1 1 auto;
+  bottom: 0;
+
+  background-image: url(/img/bg-bottom-3840.webp),
+    url(/img/bg-bottom-gutter-3840.webp);
+  background-size: cover, 100cqw 100%;
+  background-position: center bottom, bottom;
+  background-repeat: no-repeat, no-repeat;
+}
+
+.split-flap-void {
+  position: absolute;
+  container-type: size;
+  top: 14.7%;
+  height: 74.8%;
+  left: 50%;
+  transform: translateX(-50%);
+  /* golden ratio, ofc */
+  aspect-ratio: 1.612;
+}
+
+nick-dot-bingo::part(panel) {
+  background: rgba(90, 90, 90, 0.2);
+  padding: 2cqh 8cqw;
+  box-shadow: none;
+}
+
+@container bingo (aspect-ratio > 16/9) {
+  .scene {
+    background-size: contain, 100cqw 100%;
+  }
+}
+
+/* Ultra wide */
+@container bingo (aspect-ratio > 2.3) {
+  .scene {
+    display: none;
+  }
+}
+
+/* Ultra tall */
+@container bingo (aspect-ratio < 0.7) {
+  .container {
+    overflow-y: hidden;
+  }
+
+  .split-flap-void {
+    top: 0;
+    height: 95%;
+    width: 100svw;
+    aspect-ratio: unset;
+    padding: 2cqw;
+    background: rgb(217, 217, 217);
+  }
+
+  nick-dot-bingo {
+    border: 2cqw solid #101010;
+    background: black;
+    box-shadow: 0px 3px 5px 2px rgba(0, 0, 0, 0.2);
+  }
+
+  nick-dot-bingo::part(panel) {
+    background: revert-layer;
+    box-shadow: revert-layer;
+  }
+}

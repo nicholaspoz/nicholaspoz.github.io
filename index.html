@@ -43,7 +43,7 @@ https://github.com/nicholaspoz
 
   <!-- Mobile & PWA -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Nick Pozoulakis" />
   <meta name="theme-color" content="#404040" media="(prefers-color-scheme: light)" />
@@ -51,7 +51,6 @@ https://github.com/nicholaspoz
 
   <!-- Security -->
   <meta http-equiv="X-Content-Type-Options" content="nosniff" />
-  <meta http-equiv="X-Frame-Options" content="DENY" />
   <meta http-equiv="X-XSS-Protection" content="1; mode=block" />
 
   <!-- JSON-LD Structured Data for SEO -->
@@ -108,7 +107,15 @@ https://github.com/nicholaspoz
 </head>
 
 <body>
-  <bingo-office></bingo-office>
+  <div class="container">
+    <div class="board">
+      <div class="split-flap-void">
+        <nick-dot-bingo></nick-dot-bingo>
+      </div>
+    </div>
+
+    <div class="scene"></div>
+  </div>
   <script type="module" src="/js/split_flap.mjs"></script>
 </body>
 

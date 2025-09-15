@@ -284,8 +284,6 @@ const css = "
   @container (aspect-ratio < 1) {
     .panel {
       padding: 5cqh 5cqw;
-      background: rgb(40,40,40);
-      box-shadow: none;
     }
 
     .matrix {
