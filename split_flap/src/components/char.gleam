@@ -301,7 +301,7 @@ fn css(flip_duration ms: Int) -> String {
     overflow: hidden;
     user-select: none;
     z-index: 1;
-    background: rgb(40, 40, 40);
+    background: rgb(35, 35, 35);
     box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);
   }
 
@@ -361,7 +361,6 @@ fn css(flip_duration ms: Int) -> String {
     transform-origin: bottom;
     border-radius: 5cqw 5cqw 0 0;
     z-index: 10;
-    background: rgb(40, 40, 40);
     animation: <flip_duration>ms ease-in flip-top;
     animation-iteration-count: 1;
     animation-fill-mode: forwards;
@@ -375,7 +374,6 @@ fn css(flip_duration ms: Int) -> String {
     transform-origin: top;
     border-radius: 0 0 5cqw 5cqw;
     z-index: 10;
-    background: rgb(40, 40, 40);
     box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.1), 0cqw -3cqw 2cqw 2cqw rgba(0, 0, 0, 0.1);
   }
   
