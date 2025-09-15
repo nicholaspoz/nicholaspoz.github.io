@@ -247,48 +247,26 @@ fn view(model: Model) -> Element(Msg) {
 const css = "
   :host {
     display: block;
-    container-type: inline-size;
+    container-type: size;
     height: 100%;
     width: 100%;
+    min-height: fit-content;
   }
 
   .panel {
     position: relative;
     width: 100%;
     height: 100%;
-    min-height: fit-content;
-    background: linear-gradient(
-      250deg,
-      rgb(40, 40, 40) 0%,
-      rgb(50, 50, 50) 25%,
-      rgb(40, 40, 40) 80%
-    );
-    padding: 2cqh 12cqw;
-    /* This is in px on purpose */
-    box-shadow: inset 0px 3px 10px 10px rgba(0, 0, 0, 0.25);
 
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-content: center;
-    overflow: scroll;
   }
 
   .matrix {
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-content: center;
-  }
-  
-  @container (aspect-ratio < 1) {
-    .panel {
-      padding: 5cqh 5cqw;
-    }
-
-    .matrix {
-      justify-content: space-around;
-      height: 100%;
-    }
+    justify-content: space-between;
+    height: 100%;
   }
   "
