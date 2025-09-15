@@ -7598,7 +7598,7 @@ function update5(model, msg) {
     return [model, none2()];
   }
 }
-var css4 = "\n  :host {\n    display: block;\n    container-type: size;\n    height: 100%;\n    width: 100%;\n    min-height: fit-content;\n  }\n\n  .panel {\n    position: relative;\n    width: 100%;\n    height: 100%;\n\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n  }\n\n  .matrix {\n    display: flex;\n    flex-direction: column;\n    justify-content: space-between;\n    height: 100%;\n  }\n  ";
+var css4 = "\n  :host {\n    display: block;\n    container-type: size;\n    height: 100%;\n    width: 100%;\n    min-height: fit-content;\n  }\n\n  .panel {\n    position: relative;\n    width: 100%;\n    height: 100%;\n    min-height: fit-content;\n\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n  }\n\n  .matrix {\n    display: flex;\n    flex-direction: column;\n    justify-content: space-between;\n    height: 100%;\n  }\n  ";
 function view4(model) {
   let _block;
   let $1 = model.current;
