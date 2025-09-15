@@ -44,8 +44,8 @@ var List = class {
     return length3 - 1;
   }
 };
-function prepend(element8, tail) {
-  return new NonEmpty(element8, tail);
+function prepend(element7, tail) {
+  return new NonEmpty(element7, tail);
 }
 function toList(elements, tail) {
   return List.fromArray(elements, tail);
@@ -1735,8 +1735,8 @@ function list(data, decode2, pushPath, index4, emptyList) {
     return [emptyList, List.fromArray([error])];
   }
   const decoded = [];
-  for (const element8 of data) {
-    const layer = decode2(element8);
+  for (const element7 of data) {
+    const layer = decode2(element7);
     const [out, errors] = layer;
     if (errors instanceof NonEmpty) {
       const [_, errors2] = pushPath(layer, index4.toString());
@@ -6702,15 +6702,15 @@ var Echo$Inspector = class {
     let list_out = "[";
     let current = list4;
     while (current instanceof NonEmpty) {
-      let element8 = current.head;
+      let element7 = current.head;
       current = current.tail;
       if (list_out !== "[") {
         list_out += ", ";
       }
-      list_out += this.inspect(element8);
+      list_out += this.inspect(element7);
       if (char_out) {
-        if (Number.isInteger(element8) && element8 >= 32 && element8 <= 126) {
-          char_out += String.fromCharCode(element8);
+        if (Number.isInteger(element7) && element7 >= 32 && element7 <= 126) {
+          char_out += String.fromCharCode(element7);
         } else {
           char_out = null;
         }
@@ -7347,9 +7347,6 @@ var TimeoutStarted = class extends CustomType {
 };
 var TimeoutEnded = class extends CustomType {
 };
-function element7() {
-  return element2("nick-dot-bingo", toList([]), toList([]));
-}
 function get_cols_effect() {
   return before_paint(
     (dispatch, root_element) => {
@@ -7801,15 +7798,15 @@ var Echo$Inspector2 = class {
     let list_out = "[";
     let current = list4;
     while (current instanceof NonEmpty) {
-      let element8 = current.head;
+      let element7 = current.head;
       current = current.tail;
       if (list_out !== "[") {
         list_out += ", ";
       }
-      list_out += this.inspect(element8);
+      list_out += this.inspect(element7);
       if (char_out) {
-        if (Number.isInteger(element8) && element8 >= 32 && element8 <= 126) {
-          char_out += String.fromCharCode(element8);
+        if (Number.isInteger(element7) && element7 >= 32 && element7 <= 126) {
+          char_out += String.fromCharCode(element7);
         } else {
           char_out = null;
         }
@@ -7880,7 +7877,7 @@ var Echo$Inspector2 = class {
 };
 
 // build/dev/javascript/split_flap/components/office.mjs
-var css5 = "\n  :host {\n    --position-x: 50%;\n    --position-y: 60%;\n    --min-height: 55cqw;\n    width: 100%;\n    height: 100%;\n    min-height: var(--min-height);\n    overflow-x: hidden;\n    overflow-y: scroll;\n    position: relative;\n    container-type: inline-size;\n  }\n  \n  .office-void {\n    width: 100%;\n    height: 100%;\n    min-height: var(--min-height);\n    overflow: hidden;\n    position: relative;\n    container-type: size;\n  }\n  \n  .office-void-bg {\n    position: absolute;\n    width: max(100cqw, 100cqh);\n    height: max(100cqw, 100cqh);\n    left: var(--position-x);\n    top: var(--position-y);\n    transform: translate(calc(var(--position-x) * -1), calc(var(--position-y) * -1));\n    background-image: url(./img/bg-3840.webp);\n    background-size: cover;\n    background-position: var(--position-x) var(--position-y);\n  }\n  \n  .split-flap-void {\n    position: absolute;\n    /* background: lime; */\n    /* mix-blend-mode: difference; */\n    /* do not, and I repeat, do not touch this\u2014otherwise the flip-flap will be very very sad and I will cry */\n    top: 28.75%;\n    left: 26.66%;\n    width: 46.66%;\n    height: 23.4%;\n    container-type: size; \n  }\n\n  nick-dot-bingo::part(panel) {\n    background: rgba(50, 50, 50, 0.3);    \n    box-shadow: none;\n  }\n";
+var css5 = "\n  :host {\n    --position-x: 50%;\n    --position-y: 30%;\n    --min-height: 40cqw;\n    width: 100%;\n    height: 100%;\n    min-height: var(--min-height);\n    overflow-x: scroll;\n    overflow-y: scroll;\n    position: relative;\n    container-type: inline-size;\n  }\n  \n  .office-void {\n    width: 100%;\n    height: 100%;\n    min-height: var(--min-height);\n    overflow: hidden;\n    position: relative;\n    container-type: size;\n  }\n  \n  .office-void-bg {\n    position: absolute;\n    width: max(100cqw, calc(100cqh * 16/9));\n    height: max(calc(100cqw * 9/16), 100cqh);\n    left: var(--position-x);\n    top: var(--position-y);\n    transform: translate(calc(var(--position-x) * -1), calc(var(--position-y) * -1));\n    background-image: url(./img/bg-3840.webp);\n    background-size: cover;\n    background-position: var(--position-x) var(--position-y);\n  }\n  \n  .split-flap-void {\n    position: absolute;\n    /* background: lime; */\n    /* mix-blend-mode: difference; */\n    /* do not, and I repeat, do not touch this\u2014otherwise the flip-flap will be very very sad and I will cry */\n    top: 28.75%;\n    left: 26.66%;\n    width: 46.66%;\n    height: 23.4%;\n    container-type: size; \n  }\n\n  nick-dot-bingo::part(panel) {\n    background: rgba(50, 50, 50, 0.3);    \n    box-shadow: none;\n  }\n";
 function view5(_) {
   return fragment2(
     toList([
@@ -7893,7 +7890,7 @@ function view5(_) {
             toList([
               div(
                 toList([class$("split-flap-void")]),
-                toList([element7()])
+                toList([])
               )
             ])
           )
