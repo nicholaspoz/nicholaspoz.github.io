@@ -263,7 +263,6 @@ fn css(flip_duration ms: Int) -> String {
   }
 
   .split-flap {
-    /* TODO -webkit-font-smoothing */
     position: relative;
     width: 100%;
     height: 100%;
