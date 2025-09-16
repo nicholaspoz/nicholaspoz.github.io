@@ -247,7 +247,7 @@ fn view(model: Model) -> Element(Msg) {
 const css = "
   :host {
     display: block;
-    container-type: size;
+    container-type: inline-size;
     height: 100%;
     width: 100%;
     min-height: fit-content;
@@ -258,6 +258,7 @@ const css = "
     width: 100%;
     height: 100%;
     min-height: fit-content;
+    overflow: hidden;
 
     display: flex;
     flex-direction: column;
@@ -269,5 +270,6 @@ const css = "
     flex-direction: column;
     justify-content: space-between;
     height: 100%;
+    min-height: fit-content;
   }
   "
