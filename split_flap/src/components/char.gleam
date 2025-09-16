@@ -301,8 +301,8 @@ fn css(flip_duration ms: Int) -> String {
     overflow: hidden;
     user-select: none;
     z-index: 1;
-    background: rgb(35, 35, 35);
-    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);
+    background: rgb(40, 40, 40);
+    box-shadow: inset 1cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);
   }
 
   .flap-content {
@@ -330,20 +330,9 @@ fn css(flip_duration ms: Int) -> String {
     border-radius: 0 0 5cqw 5cqw;
     opacity: 0;
   }
+
   .flap.bottom.flipping {
     opacity: 1;
-  }
-
-  @keyframes flip-top {
-    0% {
-      transform: rotateX(0deg);
-      box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);
-    }
-    50%, 100% {
-      transform: rotateX(-90deg);
-      box-shadow: none;
-    }
-    
   }
 
   @keyframes flip-bottom {
@@ -355,18 +344,6 @@ fn css(flip_duration ms: Int) -> String {
     }
   }
 
-  .flap.flipping-top {
-    pointer-events: none;
-    top: 0;
-    transform-origin: bottom;
-    border-radius: 5cqw 5cqw 0 0;
-    z-index: 10;
-    animation: <flip_duration>ms ease-in flip-top;
-    animation-iteration-count: 1;
-    animation-fill-mode: forwards;
-    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);
-  }
-
   .flap.flipping-bottom {
     opacity: 0;
     pointer-events: none;
@@ -374,7 +351,7 @@ fn css(flip_duration ms: Int) -> String {
     transform-origin: top;
     border-radius: 0 0 5cqw 5cqw;
     z-index: 10;
-    box-shadow: inset 0cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.1), 0cqw -3cqw 2cqw 2cqw rgba(0, 0, 0, 0.1);
+    box-shadow: inset -2cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.05), 0cqw -3cqw 2cqw 2cqw rgba(0, 0, 0, 0.05);
   }
   
   .flap.flipping-bottom.flipping {
@@ -391,10 +368,6 @@ fn css(flip_duration ms: Int) -> String {
 
   .flap.bottom .flap-content {
     bottom: 0;
-  }
-
-  .flap.flipping-top .flap-content {
-    top: 0;
   }
 
   .flap.flipping-bottom .flap-content {
