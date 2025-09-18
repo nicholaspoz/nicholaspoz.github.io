@@ -1,153 +1,28 @@
-import gleam/dynamic/decode
 import gleam/int
-import gleam/json
 import gleam/list
 import gleam/option.{type Option, None, Some}
 import gleam/string
-import lustre
 import lustre/attribute
 import lustre/component
-import lustre/effect.{type Effect}
 import lustre/element.{type Element}
 import lustre/element/html
 import lustre/element/keyed
 
-const default_rows = 7
+import components/bingo/model.{type Content, Link}
 
-const default_cols = 28
-
-type Model {
-  Model(lines: List(Content), cols: Int, rows: Int, chars: Option(String))
+pub type Display {
+  Display(lines: List(Content), cols: Int, rows: Int, chars: Option(String))
 }
 
-pub type Content {
-  Text(text: String)
-  Link(text: String, url: String)
-}
-
-fn content_to_json(content: Content) -> json.Json {
-  case content {
-    Text(text:) ->
-      json.object([
-        #("type", json.string("text")),
-        #("text", json.string(text)),
-      ])
-    Link(text:, url:) ->
-      json.object([
-        #("type", json.string("link")),
-        #("text", json.string(text)),
-        #("url", json.string(url)),
-      ])
-  }
-}
-
-fn contents_to_json(contents: List(Content)) -> json.Json {
-  json.array(contents, content_to_json)
-}
-
-fn content_decoder() -> decode.Decoder(Content) {
-  use variant <- decode.field("type", decode.string)
-  case variant {
-    "text" -> {
-      use text <- decode.field("text", decode.string)
-      decode.success(Text(text:))
-    }
-    "link" -> {
-      use text <- decode.field("text", decode.string)
-      use url <- decode.field("url", decode.string)
-      decode.success(Link(text:, url:))
-    }
-    _ -> decode.failure(Text(""), "No variant found")
-  }
-}
-
-type Msg {
-  ColsAttrChanged(Int)
-  RowsAttrChanged(Int)
-  LinesAttrChanged(List(Content))
-  CharsAttrChanged(Option(String))
-}
-
-pub fn register() -> Result(Nil, lustre.Error) {
-  let component =
-    lustre.component(init, update, view, [
-      component.on_attribute_change("lines", fn(val) {
-        let lines = json.parse(val, using: decode.list(of: content_decoder()))
-        case lines {
-          Ok(lines) -> Ok(LinesAttrChanged(lines))
-          Error(error) -> {
-            echo "error " <> error_string(error)
-            Error(Nil)
-          }
-        }
-      }),
-
-      component.on_attribute_change("cols", fn(val) {
-        case int.parse(val) {
-          Ok(cols) -> Ok(ColsAttrChanged(cols))
-          Error(_) -> Error(Nil)
-        }
-      }),
-
-      component.on_attribute_change("rows", fn(val) {
-        case int.parse(val) {
-          Ok(rows) -> Ok(RowsAttrChanged(rows))
-          Error(_) -> Error(Nil)
-        }
-      }),
-
-      component.on_attribute_change("chars", fn(val) {
-        Ok(
-          CharsAttrChanged(case val {
-            "" -> None
-            _ -> Some(val)
-          }),
-        )
-      }),
-    ])
-
-  lustre.register(component, "split-flap-display")
-}
-
-pub fn element(
-  contents: List(Content),
+pub fn display(
+  lines: List(Content),
+  chars: Option(String),
   cols cols: Int,
   rows rows: Int,
-  chars chars: Option(String),
 ) -> Element(msg) {
-  element.element(
-    "split-flap-display",
-    [
-      attribute.attribute("lines", json.to_string(contents_to_json(contents))),
-      attribute.attribute("cols", int.to_string(cols)),
-      attribute.attribute("rows", int.to_string(rows)),
-      case chars {
-        Some(stack) -> attribute.attribute("chars", stack)
-        None -> attribute.attribute("chars", "")
-      },
-    ],
-    [],
-  )
-}
-
-fn init(_) -> #(Model, Effect(Msg)) {
-  // Rows and cols are currently hardcoded and never changed
-  #(Model([], default_cols, default_rows, None), effect.none())
-}
-
-fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
-  case msg {
-    LinesAttrChanged(lines) -> #(Model(..model, lines:), effect.none())
-    ColsAttrChanged(cols) -> #(Model(..model, cols:), effect.none())
-    RowsAttrChanged(rows) -> #(Model(..model, rows:), effect.none())
-    CharsAttrChanged(chars) -> #(Model(..model, chars: chars), effect.none())
-  }
-}
-
-fn view(model: Model) -> Element(msg) {
   let sanitized_lines =
-    model.lines
-    |> zip_longest(list.range(0, model.rows - 1), _)
+    lines
+    |> zip_longest(list.range(0, rows - 1), _)
     |> list.filter_map(first_is_some)
 
   element.fragment([
@@ -158,7 +33,7 @@ fn view(model: Model) -> Element(msg) {
       list.index_map(sanitized_lines, fn(line, line_num) {
         #(
           int.to_string(line_num),
-          row(line, row: line_num, cols: model.cols, chars: model.chars),
+          row(line, row: line_num, cols: cols, chars: chars),
         )
       }),
     ),
@@ -205,7 +80,7 @@ fn char(id: String) {
     // TOP FLAP (always visible)
     html.div([attribute.class("flap top")], [
       html.span([attribute.class("flap-content")], [
-        // no content?,
+        html.text("A"),
       ]),
     ]),
 
@@ -257,43 +132,29 @@ fn first_is_some(pair: #(Option(a), b)) -> Result(b, Nil) {
   }
 }
 
-fn decode_error_string(error: decode.DecodeError) -> String {
-  case error {
-    decode.DecodeError(expected:, found:, path:) ->
-      expected <> " | " <> found <> " | " <> string.join(path, ", ")
-  }
-}
-
-fn error_string(error: json.DecodeError) -> String {
-  case error {
-    json.UnexpectedEndOfInput -> "UnexpectedEndOfInput"
-    json.UnexpectedByte(byte) -> "UnexpectedByte(" <> byte <> ")"
-    json.UnexpectedSequence(sequence) ->
-      "UnexpectedSequence(" <> sequence <> ")"
-    json.UnableToDecode(error) ->
-      "UnableToDecode("
-      <> list.map(error, decode_error_string) |> string.join("\n")
-      <> ")"
-  }
-}
-
 const css = "
   :host {
     display: block;
+    width: 100%;
+    height: 100%;
+    container-type: inline-size;
   }
 
   .display {
+    container-type: inline-size;
     display: flex;
     flex-direction: column;
-    gap: 0; 
+    gap: 1cqh; 
     width: 100%;
     height: 100%;
+    background-color: rgb(40, 40, 40);
   }
 
   .row {
+    container-type: inline-size;
     display: flex;
     flex-direction: row;
-    gap: 0rem;
+    gap: 1cqw;
     cursor: default;
   }
 
@@ -304,13 +165,9 @@ const css = "
   .split-flap {
     position: relative;
     width: 100%;
-    height: 100%;
     aspect-ratio: 1/1.618; /* golden ratio ;) */
-    font-size: 120cqw;
-    font-weight: 500;
-    border-radius: 5cqw;
-    perspective: 400cqw;
-    padding: 0.9cqw 0.3cqw;
+    display: inline-block;
+    container-type: inline-size;
   }
 
   .split-flap::selection {
@@ -333,15 +190,20 @@ const css = "
     position: absolute;
     width: 100%;
     height: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    font-size: 120cqw;
+    font-weight: 500;
     color: #d2d1d1;
     overflow: hidden;
     user-select: none;
-    z-index: 1;
+    border-radius: 5cqw;
+    perspective: 400cqw;
     background: rgb(40, 40, 40);
     box-shadow: inset 1cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);
+    z-index: 1;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   .flap-content {
@@ -361,6 +223,7 @@ const css = "
     border-radius: 5cqw;
     user-select: text;
     height: 100%;
+    opacity: 1;
   }
 
   .flap.bottom {
@@ -368,6 +231,19 @@ const css = "
     transform-origin: top;
     border-radius: 0 0 5cqw 5cqw;
     opacity: 0;
+  }
+
+  .flap.bottom.flipping {
+    opacity: 1;
+  }
+
+  @keyframes flip-bottom {
+    0% {
+      transform: rotateX(80deg);      
+    }
+    100% {
+      transform: rotateX(0deg);
+    }
   }
 
   .flap.flipping-bottom {
@@ -378,6 +254,13 @@ const css = "
     border-radius: 0 0 5cqw 5cqw;
     z-index: 10;
     box-shadow: inset -2cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.05), 0cqw -3cqw 2cqw 2cqw rgba(0, 0, 0, 0.05);
+  }
+  
+  .flap.flipping-bottom.flipping {
+    opacity: 1;
+    animation: 1s ease-in flip-bottom;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
   }
   
   .flap.top .flap-content {

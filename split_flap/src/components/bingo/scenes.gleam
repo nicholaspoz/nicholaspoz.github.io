@@ -1,8 +1,7 @@
 import gleam/option.{None, Some}
 import gleam/string
 
-import components/bingo/model.{type Scene, Frame, Scene}
-import components/display.{Link, Text}
+import components/bingo/model.{type Scene, Frame, Link, Scene, Text}
 import components/display_fns as row
 
 const linkedin_url = "https://www.linkedin.com/in/nicholaspozoulakis/"

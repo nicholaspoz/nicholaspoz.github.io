@@ -12,6 +12,7 @@ import lustre/element.{type Element}
 import lustre/element/html
 import lustre/element/keyed
 
+import components/bingo/model.{type Content, Link, Text}
 import components/char as sf_char
 
 const default_rows = 7
@@ -20,11 +21,6 @@ const default_cols = 28
 
 type Model {
   Model(lines: List(Content), cols: Int, rows: Int, chars: Option(String))
-}
-
-pub type Content {
-  Text(text: String)
-  Link(text: String, url: String)
 }
 
 fn content_to_json(content: Content) -> json.Json {

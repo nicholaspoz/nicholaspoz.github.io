@@ -23,3 +23,20 @@ export function on_resize(root, cb) {
   observer = new ResizeObserver(cb);
   observer.observe(root.host);
 }
+
+console.log(gsap);
+
+export function animate_stuff() {
+  let all = document
+    .querySelector("nick-dot-bingo-v2")
+    .#shadowRoot.querySelectorAll(".split-flap");
+
+  console.log("HELLO", all);
+
+  // const tl = gsap.timeline();
+  // tl.to(all, {
+  //   rotationX: 80,
+  //   duration: 1,
+  //   ease: "power2.inOut",
+  // });
+}

@@ -2544,15 +2544,15 @@ function jsCoreUnexpectedByteError(err) {
   const byte = toHex(match[2]);
   return new UnexpectedByte(byte, 0);
 }
-function toHex(char) {
-  return "0x" + char.charCodeAt(0).toString(16).toUpperCase();
+function toHex(char2) {
+  return "0x" + char2.charCodeAt(0).toString(16).toUpperCase();
 }
 function getPositionFromMultiline(line, column, string5) {
   if (line === 1) return column - 1;
   let currentLn = 1;
   let position = 0;
-  string5.split("").find((char, idx) => {
-    if (char === "\n") currentLn += 1;
+  string5.split("").find((char2, idx) => {
+    if (char2 === "\n") currentLn += 1;
     if (currentLn === line) {
       position = idx + column;
       return true;
@@ -2851,6 +2851,9 @@ function class$(name) {
 }
 function none() {
   return class$("");
+}
+function id(value) {
+  return attribute2("id", value);
 }
 function style(property3, value) {
   if (property3 === "") {
@@ -3505,8 +3508,8 @@ function unsafe_raw_html(namespace, tag, attributes, inner_html) {
 function text3(content) {
   return text2(content);
 }
-function style2(attrs, css5) {
-  return unsafe_raw_html("", "style", attrs, css5);
+function style2(attrs, css7) {
+  return unsafe_raw_html("", "style", attrs, css7);
 }
 function div(attrs, children) {
   return element2("div", attrs, children);
@@ -5205,11 +5208,11 @@ var virtualiseAttribute = (attr) => {
 // build/dev/javascript/lustre/lustre/runtime/client/runtime.ffi.mjs
 var is_browser = () => !!document();
 var Runtime = class {
-  constructor(root3, [model, effects], view5, update6) {
+  constructor(root3, [model, effects], view6, update7) {
     this.root = root3;
     this.#model = model;
-    this.#view = view5;
-    this.#update = update6;
+    this.#view = view6;
+    this.#update = update7;
     this.root.addEventListener("context-request", (event4) => {
       if (!(event4.context && event4.callback)) return;
       if (!this.#contexts.has(event4.context)) return;
@@ -5444,7 +5447,7 @@ var SystemRequestedShutdown = class extends CustomType {
 };
 
 // build/dev/javascript/lustre/lustre/runtime/client/component.ffi.mjs
-var make_component = ({ init: init5, update: update6, view: view5, config }, name) => {
+var make_component = ({ init: init6, update: update7, view: view6, config }, name) => {
   if (!is_browser()) return new Error(new NotABrowser());
   if (!name.includes("-")) return new Error(new BadComponentName(name));
   if (customElements.get(name)) {
@@ -5458,7 +5461,7 @@ var make_component = ({ init: init5, update: update6, view: view5, config }, nam
     attributes.set(name2, decoder);
     observedAttributes.push(name2);
   }
-  const [model, effects] = init5(void 0);
+  const [model, effects] = init6(void 0);
   const component2 = class Component extends HTMLElement {
     static get observedAttributes() {
       return observedAttributes;
@@ -5485,8 +5488,8 @@ var make_component = ({ init: init5, update: update6, view: view5, config }, nam
       this.#runtime = new Runtime(
         this.#shadowRoot,
         [model, effects],
-        view5,
-        update6
+        view6,
+        update7
       );
     }
     // CUSTOM ELEMENT LIFECYCLE METHODS ----------------------------------------
@@ -5608,9 +5611,9 @@ var make_component = ({ init: init5, update: update6, view: view5, config }, nam
 
 // build/dev/javascript/lustre/lustre/component.mjs
 var Config2 = class extends CustomType {
-  constructor(open_shadow_root, adopt_styles, delegates_focus, attributes, properties, contexts, is_form_associated, on_form_autofill, on_form_reset, on_form_restore) {
+  constructor(open_shadow_root2, adopt_styles, delegates_focus, attributes, properties, contexts, is_form_associated, on_form_autofill, on_form_reset, on_form_restore) {
     super();
-    this.open_shadow_root = open_shadow_root;
+    this.open_shadow_root = open_shadow_root2;
     this.adopt_styles = adopt_styles;
     this.delegates_focus = delegates_focus;
     this.attributes = attributes;
@@ -5629,7 +5632,7 @@ var Option = class extends CustomType {
   }
 };
 function new$6(options) {
-  let init5 = new Config2(
+  let init6 = new Config2(
     true,
     true,
     false,
@@ -5643,7 +5646,7 @@ function new$6(options) {
   );
   return fold2(
     options,
-    init5,
+    init6,
     (config, option) => {
       return option.apply(config);
     }
@@ -5668,17 +5671,35 @@ function on_attribute_change(name, decoder) {
     }
   );
 }
+function open_shadow_root(open) {
+  return new Option(
+    (config) => {
+      return new Config2(
+        open,
+        config.adopt_styles,
+        config.delegates_focus,
+        config.attributes,
+        config.properties,
+        config.contexts,
+        config.is_form_associated,
+        config.on_form_autofill,
+        config.on_form_reset,
+        config.on_form_restore
+      );
+    }
+  );
+}
 function part(name) {
   return attribute2("part", name);
 }
 
 // build/dev/javascript/lustre/lustre.mjs
 var App = class extends CustomType {
-  constructor(init5, update6, view5, config) {
+  constructor(init6, update7, view6, config) {
     super();
-    this.init = init5;
-    this.update = update6;
-    this.view = view5;
+    this.init = init6;
+    this.update = update7;
+    this.view = view6;
     this.config = config;
   }
 };
@@ -5696,8 +5717,275 @@ var ComponentAlreadyRegistered = class extends CustomType {
 };
 var NotABrowser = class extends CustomType {
 };
-function component(init5, update6, view5, options) {
-  return new App(init5, update6, view5, new$6(options));
+function component(init6, update7, view6, options) {
+  return new App(init6, update7, view6, new$6(options));
+}
+
+// build/dev/javascript/split_flap/components/bingo/model.mjs
+var Text2 = class extends CustomType {
+  constructor(text4) {
+    super();
+    this.text = text4;
+  }
+};
+var Link = class extends CustomType {
+  constructor(text4, url) {
+    super();
+    this.text = text4;
+    this.url = url;
+  }
+};
+var Frame = class extends CustomType {
+  constructor(lines, ms) {
+    super();
+    this.lines = lines;
+    this.ms = ms;
+  }
+};
+var Scene = class extends CustomType {
+  constructor(name, frames, chars) {
+    super();
+    this.name = name;
+    this.frames = frames;
+    this.chars = chars;
+  }
+};
+
+// build/dev/javascript/split_flap/components/display_fns.mjs
+function center(text4, background) {
+  let len = string_length(background);
+  let text$1 = slice(text4, 0, len);
+  let middle_idx = string_length(text$1);
+  let start_idx = max(0, globalThis.Math.trunc((len - middle_idx) / 2));
+  let end_idx = max(0, len - start_idx - middle_idx);
+  return slice(background, 0, start_idx) + text$1 + slice(
+    background,
+    start_idx + middle_idx,
+    end_idx
+  );
+}
+function left(text4, background) {
+  let bg_len = string_length(background);
+  let text$1 = slice(text4, 0, bg_len);
+  let text_len = string_length(text$1);
+  return text$1 + slice(background, text_len, bg_len);
+}
+function right(text4, background) {
+  let bg_len = string_length(background);
+  let text$1 = slice(text4, 0, bg_len);
+  let text_len = string_length(text$1);
+  return slice(background, 0, bg_len - text_len) + text$1;
+}
+
+// build/dev/javascript/split_flap/components/bingo/scenes.mjs
+var linkedin_url = "https://www.linkedin.com/in/nicholaspozoulakis/";
+var github_url = "https://github.com/nicholaspoz";
+var mailto = "mailto:nicholaspoz@gmail.com";
+function scenes(columns) {
+  let blank_line = repeat(" ", columns);
+  let left2 = (_capture) => {
+    return left(_capture, blank_line);
+  };
+  let center2 = (_capture) => {
+    return center(_capture, blank_line);
+  };
+  let right2 = (_capture) => {
+    return right(_capture, blank_line);
+  };
+  let $ = [
+    left2("NICK"),
+    left2("((POZOULAKIS))"),
+    center2("(DOT)"),
+    right2("BINGO")
+  ];
+  let nick;
+  let poz;
+  let dot;
+  let bingo;
+  nick = $[0];
+  poz = $[1];
+  dot = $[2];
+  bingo = $[3];
+  let $1 = [left2("FREELANCE"), left2("TECHNOLOGIST"), left2("CELLIST")];
+  let freelance;
+  let tech;
+  let cellist;
+  freelance = $1[0];
+  tech = $1[1];
+  cellist = $1[2];
+  let $2 = [
+    center2(" \u250F\u2501\u2501\u2501\u2513 \u257B\u25CF    "),
+    center2(" \u2503   \u2503 \u2503   \u257B\u25CF"),
+    center2(" \u2503 #\u25CF\u2579 \u2517\u2501\u2501\u2501\u251B "),
+    center2("\u25CF\u2579           ")
+  ];
+  let notes_1;
+  let notes_2;
+  let notes_3;
+  let notes_4;
+  notes_1 = $2[0];
+  notes_2 = $2[1];
+  notes_3 = $2[2];
+  notes_4 = $2[3];
+  let linked_in = new Link(right2("LINKEDIN \u25B6"), linkedin_url);
+  let github = new Link(right2("GITHUB \u25B6"), github_url);
+  let email = new Link(right2("EMAIL \u25B6"), mailto);
+  let $3 = [
+    center2("         WHAT"),
+    center2("       A     "),
+    center2("  TIME       "),
+    center2("TO           "),
+    center2("   BE        "),
+    center2("      ALIVE  "),
+    center2("            !")
+  ];
+  let what;
+  let a;
+  let time;
+  let to;
+  let be;
+  let alive;
+  let exclaim;
+  what = $3[0];
+  a = $3[1];
+  time = $3[2];
+  to = $3[3];
+  be = $3[4];
+  alive = $3[5];
+  exclaim = $3[6];
+  return toList([
+    new Scene(
+      "HOME",
+      toList([
+        new Frame(
+          toList([
+            new Text2(nick),
+            new Text2(""),
+            new Text2(""),
+            new Text2(""),
+            new Text2(""),
+            new Text2("")
+          ]),
+          1e3
+        ),
+        new Frame(
+          toList([
+            new Text2(nick),
+            new Text2(""),
+            new Text2(""),
+            new Text2(dot),
+            new Text2(""),
+            new Text2(""),
+            new Text2("")
+          ]),
+          1e3
+        ),
+        new Frame(
+          toList([
+            new Text2(nick),
+            new Text2(""),
+            new Text2(""),
+            new Text2(dot),
+            new Text2(""),
+            new Text2(""),
+            new Text2(bingo)
+          ]),
+          1200
+        ),
+        new Frame(
+          toList([
+            new Text2(nick),
+            new Text2(poz),
+            new Text2(""),
+            new Text2(dot),
+            new Text2(""),
+            new Text2(""),
+            new Text2(bingo)
+          ]),
+          7e3
+        )
+      ]),
+      new None()
+    ),
+    new Scene(
+      "TECH",
+      toList([
+        new Frame(
+          toList([
+            new Text2(freelance),
+            new Text2(tech),
+            new Text2(""),
+            new Text2(""),
+            linked_in,
+            github,
+            email
+          ]),
+          8e3
+        )
+      ]),
+      new None()
+    ),
+    new Scene(
+      "MUSIC",
+      toList([
+        new Frame(
+          toList([
+            new Text2(freelance),
+            new Text2(cellist),
+            new Text2(""),
+            new Text2(""),
+            new Text2(""),
+            new Text2(""),
+            email
+          ]),
+          1e3
+        ),
+        new Frame(
+          toList([
+            new Text2(freelance),
+            new Text2(cellist),
+            new Text2(notes_1),
+            new Text2(notes_2),
+            new Text2(notes_3),
+            new Text2(notes_4),
+            email
+          ]),
+          7e3
+        )
+      ]),
+      new Some("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\u25B6#\u250F\u2501\u2513\u2503\u25CF\u2579\u257B\u2517\u251B")
+    ),
+    new Scene(
+      "!",
+      toList([
+        new Frame(
+          toList([
+            new Text2(what),
+            new Text2(a),
+            new Text2(time),
+            new Text2(to),
+            new Text2(be),
+            new Text2(alive),
+            new Text2("")
+          ]),
+          3e3
+        ),
+        new Frame(
+          toList([
+            new Text2(what),
+            new Text2(a),
+            new Text2(time),
+            new Text2(to),
+            new Text2(be),
+            new Text2(alive),
+            new Text2(exclaim)
+          ]),
+          4500
+        )
+      ]),
+      new None()
+    )
+  ]);
 }
 
 // build/dev/javascript/lustre/lustre/event.mjs
@@ -5745,8 +6033,8 @@ function on_click(msg) {
 function set_timeout(delay, cb) {
   return window.setTimeout(cb, delay);
 }
-function clear_timeout(id) {
-  window.clearTimeout(id);
+function clear_timeout(id2) {
+  window.clearTimeout(id2);
 }
 function measure_orientation(root3) {
   const rect = root3?.host?.getBoundingClientRect() || {
@@ -5764,6 +6052,7 @@ function on_resize(root3, cb) {
   observer = new ResizeObserver(cb);
   observer.observe(root3.host);
 }
+console.log(gsap);
 
 // build/dev/javascript/split_flap/utils.mjs
 function find_next(loop$l, loop$current) {
@@ -5834,8 +6123,8 @@ var FlipEnded = class extends CustomType {
 };
 function to_adjacency_list(chars) {
   let _pipe = first(chars);
-  let _pipe$1 = map3(_pipe, (char) => {
-    return chars + char;
+  let _pipe$1 = map3(_pipe, (char2) => {
+    return chars + char2;
   });
   let _pipe$2 = unwrap(_pipe$1, "");
   let _pipe$3 = graphemes(_pipe$2);
@@ -5852,11 +6141,11 @@ function css(ms) {
   return replace(_pipe, "<flip_duration>", to_string(ms));
 }
 var default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\u25B6()\u{1D122}\u{1D15F}\u{1D13D}#!";
-function element4(char, chars, on_click2, flip_duration_ms2) {
+function element4(char2, chars, on_click2, flip_duration_ms2) {
   return element2(
     "split-flap-char",
     toList([
-      attribute2("letter", char),
+      attribute2("letter", char2),
       attribute2(
         "chars",
         (() => {
@@ -6147,8 +6436,8 @@ function register() {
         (val) => {
           return try$(
             first(val),
-            (char) => {
-              return new Ok(new LetterAttrChanged(char));
+            (char2) => {
+              return new Ok(new LetterAttrChanged(char2));
             }
           );
         }
@@ -6160,8 +6449,8 @@ function register() {
           let _pipe$1 = graphemes(_pipe);
           let _pipe$2 = filter(
             _pipe$1,
-            (char) => {
-              return char !== " ";
+            (char2) => {
+              return char2 !== " ";
             }
           );
           let _pipe$3 = unique(_pipe$2);
@@ -6195,19 +6484,6 @@ var Model2 = class extends CustomType {
     this.cols = cols;
     this.rows = rows;
     this.chars = chars;
-  }
-};
-var Text2 = class extends CustomType {
-  constructor(text4) {
-    super();
-    this.text = text4;
-  }
-};
-var Link = class extends CustomType {
-  constructor(text4, url) {
-    super();
-    this.text = text4;
-    this.url = url;
   }
 };
 var ColsAttrChanged = class extends CustomType {
@@ -6350,9 +6626,9 @@ function row(line, row_num, num_cols, char_stack) {
   let _pipe$1 = graphemes(_pipe);
   _block$1 = index_map(
     _pipe$1,
-    (char, idx) => {
+    (char2, idx) => {
       let key = to_string(row_num) + "-" + to_string(idx);
-      return [key, element4(char, char_stack, new None(), new None())];
+      return [key, element4(char2, char_stack, new None(), new None())];
     }
   );
   let children = _block$1;
@@ -6515,7 +6791,7 @@ function register2() {
               "error " + error_string(error),
               void 0,
               "src/components/display.gleam",
-              81
+              77
             );
             return new Error(void 0);
           }
@@ -6714,8 +6990,8 @@ var Echo$Inspector = class {
   #string(str) {
     let new_str = '"';
     for (let i = 0; i < str.length; i++) {
-      const char = str[i];
-      switch (char) {
+      const char2 = str[i];
+      switch (char2) {
         case "\n":
           new_str += "\\n";
           break;
@@ -6735,10 +7011,10 @@ var Echo$Inspector = class {
           new_str += '\\"';
           break;
         default:
-          if (char < " " || char > "~" && char < "\xA0") {
-            new_str += "\\u{" + char.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0") + "}";
+          if (char2 < " " || char2 > "~" && char2 < "\xA0") {
+            new_str += "\\u{" + char2.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0") + "}";
           } else {
-            new_str += char;
+            new_str += char2;
           }
       }
     }
@@ -6768,260 +7044,6 @@ var Echo$Inspector = class {
     return acc;
   }
 };
-
-// build/dev/javascript/split_flap/components/bingo/model.mjs
-var Frame = class extends CustomType {
-  constructor(lines, ms) {
-    super();
-    this.lines = lines;
-    this.ms = ms;
-  }
-};
-var Scene = class extends CustomType {
-  constructor(name, frames, chars) {
-    super();
-    this.name = name;
-    this.frames = frames;
-    this.chars = chars;
-  }
-};
-
-// build/dev/javascript/split_flap/components/display_fns.mjs
-function center(text4, background) {
-  let len = string_length(background);
-  let text$1 = slice(text4, 0, len);
-  let middle_idx = string_length(text$1);
-  let start_idx = max(0, globalThis.Math.trunc((len - middle_idx) / 2));
-  let end_idx = max(0, len - start_idx - middle_idx);
-  return slice(background, 0, start_idx) + text$1 + slice(
-    background,
-    start_idx + middle_idx,
-    end_idx
-  );
-}
-function left(text4, background) {
-  let bg_len = string_length(background);
-  let text$1 = slice(text4, 0, bg_len);
-  let text_len = string_length(text$1);
-  return text$1 + slice(background, text_len, bg_len);
-}
-function right(text4, background) {
-  let bg_len = string_length(background);
-  let text$1 = slice(text4, 0, bg_len);
-  let text_len = string_length(text$1);
-  return slice(background, 0, bg_len - text_len) + text$1;
-}
-
-// build/dev/javascript/split_flap/components/bingo/scenes.mjs
-var linkedin_url = "https://www.linkedin.com/in/nicholaspozoulakis/";
-var github_url = "https://github.com/nicholaspoz";
-var mailto = "mailto:nicholaspoz@gmail.com";
-function scenes(columns) {
-  let blank_line = repeat(" ", columns);
-  let left2 = (_capture) => {
-    return left(_capture, blank_line);
-  };
-  let center2 = (_capture) => {
-    return center(_capture, blank_line);
-  };
-  let right2 = (_capture) => {
-    return right(_capture, blank_line);
-  };
-  let $ = [
-    left2("NICK"),
-    left2("((POZOULAKIS))"),
-    center2("(DOT)"),
-    right2("BINGO")
-  ];
-  let nick;
-  let poz;
-  let dot;
-  let bingo;
-  nick = $[0];
-  poz = $[1];
-  dot = $[2];
-  bingo = $[3];
-  let $1 = [left2("FREELANCE"), left2("TECHNOLOGIST"), left2("CELLIST")];
-  let freelance;
-  let tech;
-  let cellist;
-  freelance = $1[0];
-  tech = $1[1];
-  cellist = $1[2];
-  let $2 = [
-    center2(" \u250F\u2501\u2501\u2501\u2513 \u257B\u25CF    "),
-    center2(" \u2503   \u2503 \u2503   \u257B\u25CF"),
-    center2(" \u2503 #\u25CF\u2579 \u2517\u2501\u2501\u2501\u251B "),
-    center2("\u25CF\u2579           ")
-  ];
-  let notes_1;
-  let notes_2;
-  let notes_3;
-  let notes_4;
-  notes_1 = $2[0];
-  notes_2 = $2[1];
-  notes_3 = $2[2];
-  notes_4 = $2[3];
-  let linked_in = new Link(right2("LINKEDIN \u25B6"), linkedin_url);
-  let github = new Link(right2("GITHUB \u25B6"), github_url);
-  let email = new Link(right2("EMAIL \u25B6"), mailto);
-  let $3 = [
-    center2("         WHAT"),
-    center2("       A     "),
-    center2("  TIME       "),
-    center2("TO           "),
-    center2("   BE        "),
-    center2("      ALIVE  "),
-    center2("            !")
-  ];
-  let what;
-  let a;
-  let time;
-  let to;
-  let be;
-  let alive;
-  let exclaim;
-  what = $3[0];
-  a = $3[1];
-  time = $3[2];
-  to = $3[3];
-  be = $3[4];
-  alive = $3[5];
-  exclaim = $3[6];
-  return toList([
-    new Scene(
-      "HOME",
-      toList([
-        new Frame(
-          toList([
-            new Text2(nick),
-            new Text2(""),
-            new Text2(""),
-            new Text2(""),
-            new Text2(""),
-            new Text2("")
-          ]),
-          1e3
-        ),
-        new Frame(
-          toList([
-            new Text2(nick),
-            new Text2(""),
-            new Text2(""),
-            new Text2(dot),
-            new Text2(""),
-            new Text2(""),
-            new Text2("")
-          ]),
-          1e3
-        ),
-        new Frame(
-          toList([
-            new Text2(nick),
-            new Text2(""),
-            new Text2(""),
-            new Text2(dot),
-            new Text2(""),
-            new Text2(""),
-            new Text2(bingo)
-          ]),
-          1200
-        ),
-        new Frame(
-          toList([
-            new Text2(nick),
-            new Text2(poz),
-            new Text2(""),
-            new Text2(dot),
-            new Text2(""),
-            new Text2(""),
-            new Text2(bingo)
-          ]),
-          7e3
-        )
-      ]),
-      new None()
-    ),
-    new Scene(
-      "TECH",
-      toList([
-        new Frame(
-          toList([
-            new Text2(freelance),
-            new Text2(tech),
-            new Text2(""),
-            new Text2(""),
-            linked_in,
-            github,
-            email
-          ]),
-          8e3
-        )
-      ]),
-      new None()
-    ),
-    new Scene(
-      "MUSIC",
-      toList([
-        new Frame(
-          toList([
-            new Text2(freelance),
-            new Text2(cellist),
-            new Text2(""),
-            new Text2(""),
-            new Text2(""),
-            new Text2(""),
-            email
-          ]),
-          1e3
-        ),
-        new Frame(
-          toList([
-            new Text2(freelance),
-            new Text2(cellist),
-            new Text2(notes_1),
-            new Text2(notes_2),
-            new Text2(notes_3),
-            new Text2(notes_4),
-            email
-          ]),
-          7e3
-        )
-      ]),
-      new Some("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\u25B6#\u250F\u2501\u2513\u2503\u25CF\u2579\u257B\u2517\u251B")
-    ),
-    new Scene(
-      "!",
-      toList([
-        new Frame(
-          toList([
-            new Text2(what),
-            new Text2(a),
-            new Text2(time),
-            new Text2(to),
-            new Text2(be),
-            new Text2(alive),
-            new Text2("")
-          ]),
-          3e3
-        ),
-        new Frame(
-          toList([
-            new Text2(what),
-            new Text2(a),
-            new Text2(time),
-            new Text2(to),
-            new Text2(be),
-            new Text2(alive),
-            new Text2(exclaim)
-          ]),
-          4500
-        )
-      ]),
-      new None()
-    )
-  ]);
-}
 
 // build/dev/javascript/split_flap/components/progress_bar.mjs
 var Model3 = class extends CustomType {
@@ -7172,10 +7194,10 @@ function view3(model) {
   let first_dot_idx = fold_until(
     chars,
     0,
-    (acc, char) => {
-      if (char === "\u25CB") {
+    (acc, char2) => {
+      if (char2 === "\u25CB") {
         return new Stop(acc);
-      } else if (char === "\u25CF") {
+      } else if (char2 === "\u25CF") {
         return new Stop(acc);
       } else {
         return new Continue(acc + 1);
@@ -7189,41 +7211,41 @@ function view3(model) {
         toList([class$("progress-bar")]),
         index_map(
           chars,
-          (char, idx) => {
+          (char2, idx) => {
             let page = 1 + globalThis.Math.trunc((idx - first_dot_idx) / 2);
             return [
               "pb-" + to_string(idx),
               element4(
-                char,
+                char2,
                 (() => {
-                  if (char === "\u25CB") {
+                  if (char2 === "\u25CB") {
                     return new Some("\u25CB\u25CF");
-                  } else if (char === "\u25CF") {
+                  } else if (char2 === "\u25CF") {
                     return new Some("\u25CB\u25CF");
-                  } else if (char === "\u{1D106}") {
+                  } else if (char2 === "\u{1D106}") {
                     return new Some("()\u{1D106}\u{1D107}");
-                  } else if (char === "\u{1D107}") {
+                  } else if (char2 === "\u{1D107}") {
                     return new Some("()\u{1D106}\u{1D107}");
-                  } else if (char === "(") {
+                  } else if (char2 === "(") {
                     return new Some("()\u{1D106}\u{1D107}");
-                  } else if (char === ")") {
+                  } else if (char2 === ")") {
                     return new Some("()\u{1D106}\u{1D107}");
                   } else {
                     return new None();
                   }
                 })(),
                 (() => {
-                  if (char === "\u25CB") {
+                  if (char2 === "\u25CB") {
                     return new Some(new PageClicked(page));
-                  } else if (char === "\u25CF") {
+                  } else if (char2 === "\u25CF") {
                     return new Some(new PageClicked(page));
-                  } else if (char === "\u{1D106}") {
+                  } else if (char2 === "\u{1D106}") {
                     return new Some(new AutoPlayClicked());
-                  } else if (char === "\u{1D107}") {
+                  } else if (char2 === "\u{1D107}") {
                     return new Some(new AutoPlayClicked());
-                  } else if (char === "(") {
+                  } else if (char2 === "(") {
                     return new Some(new AutoPlayClicked());
-                  } else if (char === ")") {
+                  } else if (char2 === ")") {
                     return new Some(new AutoPlayClicked());
                   } else {
                     return new None();
@@ -7397,8 +7419,8 @@ function find_scene(loop$scenes, loop$page) {
     }
   }
 }
-function start_timeout(frame, id) {
-  if (id instanceof Some) {
+function start_timeout(frame, id2) {
+  if (id2 instanceof Some) {
     return none2();
   } else {
     return from(
@@ -7449,24 +7471,24 @@ function reduce(model, msg) {
       () => {
         let $ = model.timeout;
         if ($ instanceof Some) {
-          let id = $[0];
-          clear_timeout(id);
+          let id2 = $[0];
+          clear_timeout(id2);
         } else {
         }
         let scenes$1 = scenes(columns);
         return try$(
           initial_state(scenes$1),
-          (initial_state2) => {
+          (initial_state3) => {
             return new Ok(
               [
                 new Model4(
                   scenes$1,
                   columns,
-                  new Ok(initial_state2),
+                  new Ok(initial_state3),
                   model.auto_play,
                   new None()
                 ),
-                start_timeout(initial_state2.frame, new None())
+                start_timeout(initial_state3.frame, new None())
               ]
             );
           }
@@ -7521,8 +7543,8 @@ function reduce(model, msg) {
         (() => {
           let $ = model.timeout;
           if ($ instanceof Some) {
-            let id = $[0];
-            clear_timeout(id);
+            let id2 = $[0];
+            clear_timeout(id2);
           } else {
           }
           return from(
@@ -7534,7 +7556,7 @@ function reduce(model, msg) {
       ]
     );
   } else if (msg instanceof TimeoutStarted) {
-    let id = msg[0];
+    let id2 = msg[0];
     return new Ok(
       [
         new Model4(
@@ -7542,7 +7564,7 @@ function reduce(model, msg) {
           model.columns,
           model.current,
           model.auto_play,
-          new Some(id)
+          new Some(id2)
         ),
         none2()
       ]
@@ -7810,8 +7832,8 @@ var Echo$Inspector2 = class {
   #string(str) {
     let new_str = '"';
     for (let i = 0; i < str.length; i++) {
-      const char = str[i];
-      switch (char) {
+      const char2 = str[i];
+      switch (char2) {
         case "\n":
           new_str += "\\n";
           break;
@@ -7831,10 +7853,744 @@ var Echo$Inspector2 = class {
           new_str += '\\"';
           break;
         default:
-          if (char < " " || char > "~" && char < "\xA0") {
-            new_str += "\\u{" + char.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0") + "}";
+          if (char2 < " " || char2 > "~" && char2 < "\xA0") {
+            new_str += "\\u{" + char2.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0") + "}";
           } else {
-            new_str += char;
+            new_str += char2;
+          }
+      }
+    }
+    new_str += '"';
+    return new_str;
+  }
+  #utfCodepoint(codepoint2) {
+    return `//utfcodepoint(${String.fromCodePoint(codepoint2.value)})`;
+  }
+  #bit_array(bits) {
+    if (bits.bitSize === 0) {
+      return "<<>>";
+    }
+    let acc = "<<";
+    for (let i = 0; i < bits.byteSize - 1; i++) {
+      acc += bits.byteAt(i).toString();
+      acc += ", ";
+    }
+    if (bits.byteSize * 8 === bits.bitSize) {
+      acc += bits.byteAt(bits.byteSize - 1).toString();
+    } else {
+      const trailingBitsCount = bits.bitSize % 8;
+      acc += bits.byteAt(bits.byteSize - 1) >> 8 - trailingBitsCount;
+      acc += `:size(${trailingBitsCount})`;
+    }
+    acc += ">>";
+    return acc;
+  }
+};
+
+// build/dev/javascript/split_flap/components/display_v2.mjs
+function char(id2) {
+  return div(
+    toList([id(id2), class$("split-flap")]),
+    toList([
+      div(
+        toList([class$("flap top")]),
+        toList([
+          span(
+            toList([class$("flap-content")]),
+            toList([text3("A")])
+          )
+        ])
+      ),
+      div(
+        toList([class$("flap bottom")]),
+        toList([
+          span(toList([class$("flap-content")]), toList([]))
+        ])
+      ),
+      div(
+        toList([class$("flap flipping-bottom")]),
+        toList([
+          span(toList([class$("flap-content")]), toList([]))
+        ])
+      )
+    ])
+  );
+}
+function row2(line, row_num, num_cols, _) {
+  let _block;
+  if (line instanceof Some) {
+    let content = line[0];
+    let _pipe2 = content.text;
+    let _pipe$12 = pad_end(_pipe2, num_cols, " ");
+    _block = slice(_pipe$12, 0, num_cols);
+  } else {
+    _block = repeat(" ", num_cols);
+  }
+  let chars = _block;
+  let _block$1;
+  let _pipe = chars;
+  let _pipe$1 = graphemes(_pipe);
+  _block$1 = index_map(
+    _pipe$1,
+    (_2, idx) => {
+      let key = to_string(row_num) + "-" + to_string(idx);
+      return [key, char(key)];
+    }
+  );
+  let children = _block$1;
+  let _block$2;
+  if (line instanceof Some) {
+    let $ = line[0];
+    if ($ instanceof Link) {
+      let url = $.url;
+      _block$2 = toList([href(url), target("_blank")]);
+    } else {
+      _block$2 = toList([]);
+    }
+  } else {
+    _block$2 = toList([]);
+  }
+  let link_attrs = _block$2;
+  return element3(
+    "a",
+    prepend(
+      class$("row"),
+      prepend(part("row"), link_attrs)
+    ),
+    children
+  );
+}
+function zip_longest2(list1, list22) {
+  let _block;
+  if (list1 instanceof Empty) {
+    _block = [new None(), toList([])];
+  } else {
+    let h = list1.head;
+    let rest = list1.tail;
+    _block = [new Some(h), rest];
+  }
+  let $ = _block;
+  let head1;
+  let rest1;
+  head1 = $[0];
+  rest1 = $[1];
+  let _block$1;
+  if (list22 instanceof Empty) {
+    _block$1 = [new None(), toList([])];
+  } else {
+    let h = list22.head;
+    let rest = list22.tail;
+    _block$1 = [new Some(h), rest];
+  }
+  let $1 = _block$1;
+  let head2;
+  let rest2;
+  head2 = $1[0];
+  rest2 = $1[1];
+  let _block$2;
+  if (head2 instanceof Some) {
+    if (head1 instanceof Some) {
+      let h2 = head2[0];
+      let h1 = head1[0];
+      _block$2 = new Some([new Some(h1), new Some(h2)]);
+    } else {
+      let h2 = head2[0];
+      _block$2 = new Some([new None(), new Some(h2)]);
+    }
+  } else if (head1 instanceof Some) {
+    let h1 = head1[0];
+    _block$2 = new Some([new Some(h1), new None()]);
+  } else {
+    _block$2 = head1;
+  }
+  let el = _block$2;
+  if (el instanceof Some) {
+    let el$1 = el[0];
+    return prepend(el$1, zip_longest2(rest1, rest2));
+  } else {
+    return toList([]);
+  }
+}
+function first_is_some2(pair) {
+  let $ = pair[0];
+  if ($ instanceof Some) {
+    let b = pair[1];
+    return new Ok(b);
+  } else {
+    return new Error(void 0);
+  }
+}
+var css5 = '\n  :host {\n    display: block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  .display {\n    container-type: inline-size;\n    display: flex;\n    flex-direction: column;\n    gap: 1cqh; \n    width: 100%;\n    height: 100%;\n    background-color: rgb(40, 40, 40);\n  }\n\n  .row {\n    container-type: inline-size;\n    display: flex;\n    flex-direction: row;\n    gap: 1cqw;\n    cursor: default;\n  }\n\n  .row[href] {\n    cursor: pointer;\n  }\n  \n  .split-flap {\n    position: relative;\n    width: 100%;\n    aspect-ratio: 1/1.618; /* golden ratio ;) */\n    display: inline-block;\n    container-type: inline-size;\n  }\n\n  .split-flap::selection {\n    background: white;\n    color: black;\n  }\n\n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 3.5cqw;\n    background: rgb(20, 20, 20);\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    font-size: 120cqw;\n    font-weight: 500;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    border-radius: 5cqw;\n    perspective: 400cqw;\n    background: rgb(40, 40, 40);\n    box-shadow: inset 1cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    z-index: 1;\n    \n    display: flex;\n    align-items: center;\n    justify-content: center;\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n    z-index: 0;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw;\n    user-select: text;\n    height: 100%;\n    opacity: 1;\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    opacity: 0;\n  }\n\n  .flap.bottom.flipping {\n    opacity: 1;\n  }\n\n  @keyframes flip-bottom {\n    0% {\n      transform: rotateX(80deg);      \n    }\n    100% {\n      transform: rotateX(0deg);\n    }\n  }\n\n  .flap.flipping-bottom {\n    opacity: 0;\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    z-index: 10;\n    box-shadow: inset -2cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.05), 0cqw -3cqw 2cqw 2cqw rgba(0, 0, 0, 0.05);\n  }\n  \n  .flap.flipping-bottom.flipping {\n    opacity: 1;\n    animation: 1s ease-in flip-bottom;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n  }\n  \n  .flap.top .flap-content {\n    top: 0;\n    height: 100%\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
+function display(lines, chars, cols, rows) {
+  let _block;
+  let _pipe = lines;
+  let _pipe$1 = ((_capture) => {
+    return zip_longest2(range(0, rows - 1), _capture);
+  })(_pipe);
+  _block = filter_map(_pipe$1, first_is_some2);
+  let sanitized_lines = _block;
+  return fragment2(
+    toList([
+      style2(toList([]), css5),
+      div2(
+        toList([class$("display")]),
+        index_map(
+          sanitized_lines,
+          (line, line_num) => {
+            return [to_string(line_num), row2(line, line_num, cols, chars)];
+          }
+        )
+      )
+    ])
+  );
+}
+
+// build/dev/javascript/split_flap/components/bingo_v2.mjs
+var BingoState2 = class extends CustomType {
+  constructor(scene, frame) {
+    super();
+    this.scene = scene;
+    this.frame = frame;
+  }
+};
+var Model5 = class extends CustomType {
+  constructor(scenes2, columns, current, auto_play, timeout) {
+    super();
+    this.scenes = scenes2;
+    this.columns = columns;
+    this.current = current;
+    this.auto_play = auto_play;
+    this.timeout = timeout;
+  }
+};
+var Resized2 = class extends CustomType {
+};
+var ColumnsChanged2 = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var PageClicked3 = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var AutoPlayClicked3 = class extends CustomType {
+};
+var TimeoutStarted2 = class extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+};
+var TimeoutEnded2 = class extends CustomType {
+};
+function get_cols_effect2() {
+  return before_paint(
+    (dispatch, root_element) => {
+      let _block;
+      let $ = measure_orientation(root_element);
+      if ($ === "portrait") {
+        _block = 15;
+      } else {
+        _block = 27;
+      }
+      let cols = _block;
+      return dispatch(new ColumnsChanged2(cols));
+    }
+  );
+}
+function initial_state2(scenes2) {
+  return try$(
+    first2(scenes2),
+    (first_scene) => {
+      return try$(
+        first2(first_scene.frames),
+        (first_frame) => {
+          return new Ok(new BingoState2(first_scene, first_frame));
+        }
+      );
+    }
+  );
+}
+function init5(_) {
+  let cols = 0;
+  let scenes$1 = toList([]);
+  let state = initial_state2(scenes$1);
+  return [
+    new Model5(scenes$1, cols, state, true, new None()),
+    before_paint(
+      (dispatch, root_element) => {
+        return on_resize(
+          root_element,
+          () => {
+            return dispatch(new Resized2());
+          }
+        );
+      }
+    )
+  ];
+}
+function find_scene2(loop$scenes, loop$page) {
+  while (true) {
+    let scenes2 = loop$scenes;
+    let page = loop$page;
+    if (page === 1) {
+      return first2(scenes2);
+    } else if (scenes2 instanceof Empty) {
+      return new Error(void 0);
+    } else {
+      let rest = scenes2.tail;
+      loop$scenes = rest;
+      loop$page = page - 1;
+    }
+  }
+}
+function start_timeout2(frame, id2) {
+  if (id2 instanceof Some) {
+    return none2();
+  } else {
+    return from(
+      (dispatch) => {
+        let id$1 = set_timeout(
+          frame.ms,
+          () => {
+            return dispatch(new TimeoutEnded2());
+          }
+        );
+        return dispatch(new TimeoutStarted2(id$1));
+      }
+    );
+  }
+}
+function find_next_state2(scenes2, current) {
+  let $ = find_next(current.scene.frames, current.frame);
+  if ($ instanceof Ok) {
+    let frame = $[0];
+    return new Ok(new BingoState2(current.scene, frame));
+  } else {
+    return lazy_or(
+      try$(
+        find_next(scenes2, current.scene),
+        (scene) => {
+          return try$(
+            first2(scene.frames),
+            (frame) => {
+              return new Ok(new BingoState2(scene, frame));
+            }
+          );
+        }
+      ),
+      () => {
+        return initial_state2(scenes2);
+      }
+    );
+  }
+}
+function reduce2(model, msg) {
+  if (msg instanceof Resized2) {
+    return new Ok([model, get_cols_effect2()]);
+  } else if (msg instanceof ColumnsChanged2) {
+    let columns = msg[0];
+    return guard(
+      columns === model.columns,
+      new Ok([model, none2()]),
+      () => {
+        let $ = model.timeout;
+        if ($ instanceof Some) {
+          let id2 = $[0];
+          clear_timeout(id2);
+        } else {
+        }
+        let scenes$1 = scenes(columns);
+        return try$(
+          initial_state2(scenes$1),
+          (initial_state3) => {
+            return new Ok(
+              [
+                new Model5(
+                  scenes$1,
+                  columns,
+                  new Ok(initial_state3),
+                  model.auto_play,
+                  new None()
+                ),
+                start_timeout2(initial_state3.frame, new None())
+              ]
+            );
+          }
+        );
+      }
+    );
+  } else if (msg instanceof PageClicked3) {
+    let page = msg[0];
+    return try$(
+      find_scene2(model.scenes, page),
+      (scene) => {
+        return try$(
+          first2(scene.frames),
+          (frame) => {
+            let next = map3(
+              model.current,
+              (current) => {
+                let $ = !isEqual(current.scene, scene);
+                if ($) {
+                  return new BingoState2(scene, frame);
+                } else {
+                  return current;
+                }
+              }
+            );
+            return new Ok(
+              [
+                new Model5(
+                  model.scenes,
+                  model.columns,
+                  next,
+                  false,
+                  model.timeout
+                ),
+                start_timeout2(frame, model.timeout)
+              ]
+            );
+          }
+        );
+      }
+    );
+  } else if (msg instanceof AutoPlayClicked3) {
+    return new Ok(
+      [
+        new Model5(
+          model.scenes,
+          model.columns,
+          model.current,
+          !model.auto_play,
+          new None()
+        ),
+        (() => {
+          let $ = model.timeout;
+          if ($ instanceof Some) {
+            let id2 = $[0];
+            clear_timeout(id2);
+          } else {
+          }
+          return from(
+            (dispatch) => {
+              return dispatch(new TimeoutEnded2());
+            }
+          );
+        })()
+      ]
+    );
+  } else if (msg instanceof TimeoutStarted2) {
+    let id2 = msg[0];
+    return new Ok(
+      [
+        new Model5(
+          model.scenes,
+          model.columns,
+          model.current,
+          model.auto_play,
+          new Some(id2)
+        ),
+        none2()
+      ]
+    );
+  } else {
+    return try$(
+      model.current,
+      (current) => {
+        return try$(
+          find_next_state2(model.scenes, current),
+          (next) => {
+            let continue$ = isEqual(current.scene, next.scene) || model.auto_play;
+            if (continue$) {
+              return new Ok(
+                [
+                  new Model5(
+                    model.scenes,
+                    model.columns,
+                    new Ok(next),
+                    model.auto_play,
+                    new None()
+                  ),
+                  start_timeout2(next.frame, new None())
+                ]
+              );
+            } else {
+              return new Ok(
+                [
+                  new Model5(
+                    model.scenes,
+                    model.columns,
+                    model.current,
+                    model.auto_play,
+                    new None()
+                  ),
+                  none2()
+                ]
+              );
+            }
+          }
+        );
+      }
+    );
+  }
+}
+function update6(model, msg) {
+  let $ = reduce2(model, msg);
+  if ($ instanceof Ok) {
+    let next = $[0];
+    return next;
+  } else {
+    echo3("ERROR", void 0, "src/components/bingo_v2.gleam", 91);
+    return [model, none2()];
+  }
+}
+var css6 = "\n  :host {\n    display: block;\n    container-type: inline-size;\n    height: 100%;\n    width: 100%;\n    min-height: fit-content;\n  }\n\n  .panel {\n    position: relative;\n    width: 100%;\n    height: 100%;\n    min-height: fit-content;\n    overflow: hidden;\n\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n  }\n\n  .matrix {\n    display: flex;\n    flex-direction: column;\n    justify-content: space-between;\n    height: 100%;\n    min-height: fit-content;\n  }\n  ";
+function view5(model) {
+  let _block;
+  let $1 = model.current;
+  if ($1 instanceof Ok) {
+    let scene = $1[0].scene;
+    let frame = $1[0].frame;
+    _block = [frame.lines, scene.chars];
+  } else {
+    _block = [toList([]), new None()];
+  }
+  let $ = _block;
+  let lines;
+  let chars;
+  lines = $[0];
+  chars = $[1];
+  return fragment2(
+    toList([
+      style2(toList([]), css6),
+      div(
+        toList([class$("panel"), part("panel")]),
+        toList([
+          div(
+            toList([class$("matrix"), part("matrix")]),
+            toList([
+              display(lines, chars, model.columns, 7),
+              element6(
+                length2(model.scenes),
+                fold_until(
+                  model.scenes,
+                  1,
+                  (acc, s) => {
+                    let $2 = model.current;
+                    if ($2 instanceof Ok) {
+                      let state = $2[0];
+                      if (isEqual(s, state.scene)) {
+                        return new Stop(acc);
+                      } else {
+                        return new Continue(acc + 1);
+                      }
+                    } else {
+                      return new Stop(0);
+                    }
+                  }
+                ),
+                model.columns,
+                model.auto_play,
+                (var0) => {
+                  return new PageClicked3(var0);
+                },
+                new AutoPlayClicked3()
+              )
+            ])
+          )
+        ])
+      )
+    ])
+  );
+}
+function register5() {
+  let component2 = component(
+    init5,
+    update6,
+    view5,
+    toList([open_shadow_root(true)])
+  );
+  return make_component(component2, "nick-dot-bingo-v2");
+}
+function echo3(value, message, file, line) {
+  const grey = "\x1B[90m";
+  const reset_color = "\x1B[39m";
+  const file_line = `${file}:${line}`;
+  const inspector = new Echo$Inspector3();
+  const string_value = inspector.inspect(value);
+  const string_message = message === void 0 ? "" : " " + message;
+  if (globalThis.process?.stderr?.write) {
+    const string5 = `${grey}${file_line}${reset_color}${string_message}
+${string_value}
+`;
+    globalThis.process.stderr.write(string5);
+  } else if (globalThis.Deno) {
+    const string5 = `${grey}${file_line}${reset_color}${string_message}
+${string_value}
+`;
+    globalThis.Deno.stderr.writeSync(new TextEncoder().encode(string5));
+  } else {
+    const string5 = `${file_line}
+${string_value}`;
+    globalThis.console.log(string5);
+  }
+  return value;
+}
+var Echo$Inspector3 = class {
+  #references = /* @__PURE__ */ new Set();
+  #isDict(value) {
+    try {
+      return value instanceof Dict;
+    } catch {
+      return false;
+    }
+  }
+  #float(float2) {
+    const string5 = float2.toString().replace("+", "");
+    if (string5.indexOf(".") >= 0) {
+      return string5;
+    } else {
+      const index4 = string5.indexOf("e");
+      if (index4 >= 0) {
+        return string5.slice(0, index4) + ".0" + string5.slice(index4);
+      } else {
+        return string5 + ".0";
+      }
+    }
+  }
+  inspect(v) {
+    const t = typeof v;
+    if (v === true) return "True";
+    if (v === false) return "False";
+    if (v === null) return "//js(null)";
+    if (v === void 0) return "Nil";
+    if (t === "string") return this.#string(v);
+    if (t === "bigint" || Number.isInteger(v)) return v.toString();
+    if (t === "number") return this.#float(v);
+    if (v instanceof UtfCodepoint) return this.#utfCodepoint(v);
+    if (v instanceof BitArray) return this.#bit_array(v);
+    if (v instanceof RegExp) return `//js(${v})`;
+    if (v instanceof Date) return `//js(Date("${v.toISOString()}"))`;
+    if (v instanceof globalThis.Error) return `//js(${v.toString()})`;
+    if (v instanceof Function) {
+      const args = [];
+      for (const i of Array(v.length).keys())
+        args.push(String.fromCharCode(i + 97));
+      return `//fn(${args.join(", ")}) { ... }`;
+    }
+    if (this.#references.size === this.#references.add(v).size) {
+      return "//js(circular reference)";
+    }
+    let printed;
+    if (Array.isArray(v)) {
+      printed = `#(${v.map((v2) => this.inspect(v2)).join(", ")})`;
+    } else if (v instanceof List) {
+      printed = this.#list(v);
+    } else if (v instanceof CustomType) {
+      printed = this.#customType(v);
+    } else if (this.#isDict(v)) {
+      printed = this.#dict(v);
+    } else if (v instanceof Set) {
+      return `//js(Set(${[...v].map((v2) => this.inspect(v2)).join(", ")}))`;
+    } else {
+      printed = this.#object(v);
+    }
+    this.#references.delete(v);
+    return printed;
+  }
+  #object(v) {
+    const name = Object.getPrototypeOf(v)?.constructor?.name || "Object";
+    const props = [];
+    for (const k of Object.keys(v)) {
+      props.push(`${this.inspect(k)}: ${this.inspect(v[k])}`);
+    }
+    const body = props.length ? " " + props.join(", ") + " " : "";
+    const head = name === "Object" ? "" : name + " ";
+    return `//js(${head}{${body}})`;
+  }
+  #dict(map4) {
+    let body = "dict.from_list([";
+    let first3 = true;
+    let key_value_pairs = [];
+    map4.forEach((value, key) => {
+      key_value_pairs.push([key, value]);
+    });
+    key_value_pairs.sort();
+    key_value_pairs.forEach(([key, value]) => {
+      if (!first3) body = body + ", ";
+      body = body + "#(" + this.inspect(key) + ", " + this.inspect(value) + ")";
+      first3 = false;
+    });
+    return body + "])";
+  }
+  #customType(record) {
+    const props = Object.keys(record).map((label) => {
+      const value = this.inspect(record[label]);
+      return isNaN(parseInt(label)) ? `${label}: ${value}` : value;
+    }).join(", ");
+    return props ? `${record.constructor.name}(${props})` : record.constructor.name;
+  }
+  #list(list4) {
+    if (list4 instanceof Empty) {
+      return "[]";
+    }
+    let char_out = 'charlist.from_string("';
+    let list_out = "[";
+    let current = list4;
+    while (current instanceof NonEmpty) {
+      let element7 = current.head;
+      current = current.tail;
+      if (list_out !== "[") {
+        list_out += ", ";
+      }
+      list_out += this.inspect(element7);
+      if (char_out) {
+        if (Number.isInteger(element7) && element7 >= 32 && element7 <= 126) {
+          char_out += String.fromCharCode(element7);
+        } else {
+          char_out = null;
+        }
+      }
+    }
+    if (char_out) {
+      return char_out + '")';
+    } else {
+      return list_out + "]";
+    }
+  }
+  #string(str) {
+    let new_str = '"';
+    for (let i = 0; i < str.length; i++) {
+      const char2 = str[i];
+      switch (char2) {
+        case "\n":
+          new_str += "\\n";
+          break;
+        case "\r":
+          new_str += "\\r";
+          break;
+        case "	":
+          new_str += "\\t";
+          break;
+        case "\f":
+          new_str += "\\f";
+          break;
+        case "\\":
+          new_str += "\\\\";
+          break;
+        case '"':
+          new_str += '\\"';
+          break;
+        default:
+          if (char2 < " " || char2 > "~" && char2 < "\xA0") {
+            new_str += "\\u{" + char2.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0") + "}";
+          } else {
+            new_str += char2;
           }
       }
     }
@@ -7874,10 +8630,10 @@ function main() {
       "let_assert",
       FILEPATH2,
       "split_flap",
-      7,
+      8,
       "main",
       "Pattern match failed, no pattern matched the value.",
-      { value: $, start: 123, end: 157, pattern_start: 134, pattern_end: 139 }
+      { value: $, start: 150, end: 184, pattern_start: 161, pattern_end: 166 }
     );
   }
   let $1 = register2();
@@ -7886,10 +8642,10 @@ function main() {
       "let_assert",
       FILEPATH2,
       "split_flap",
-      8,
+      9,
       "main",
       "Pattern match failed, no pattern matched the value.",
-      { value: $1, start: 160, end: 197, pattern_start: 171, pattern_end: 176 }
+      { value: $1, start: 187, end: 224, pattern_start: 198, pattern_end: 203 }
     );
   }
   let $2 = register3();
@@ -7898,10 +8654,10 @@ function main() {
       "let_assert",
       FILEPATH2,
       "split_flap",
-      9,
+      10,
       "main",
       "Pattern match failed, no pattern matched the value.",
-      { value: $2, start: 200, end: 242, pattern_start: 211, pattern_end: 216 }
+      { value: $2, start: 227, end: 269, pattern_start: 238, pattern_end: 243 }
     );
   }
   let $3 = register4();
@@ -7910,10 +8666,22 @@ function main() {
       "let_assert",
       FILEPATH2,
       "split_flap",
-      10,
+      11,
       "main",
       "Pattern match failed, no pattern matched the value.",
-      { value: $3, start: 245, end: 280, pattern_start: 256, pattern_end: 261 }
+      { value: $3, start: 272, end: 307, pattern_start: 283, pattern_end: 288 }
+    );
+  }
+  let $4 = register5();
+  if (!($4 instanceof Ok)) {
+    throw makeError(
+      "let_assert",
+      FILEPATH2,
+      "split_flap",
+      12,
+      "main",
+      "Pattern match failed, no pattern matched the value.",
+      { value: $4, start: 310, end: 348, pattern_start: 321, pattern_end: 326 }
     );
   }
   return void 0;
