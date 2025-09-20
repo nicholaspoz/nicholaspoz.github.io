@@ -5911,7 +5911,7 @@ function scenes(columns) {
             new Text2(""),
             new Text2("")
           ]),
-          1e3
+          200
         ),
         new Frame(
           toList([
@@ -5923,7 +5923,7 @@ function scenes(columns) {
             new Text2(""),
             new Text2("")
           ]),
-          1e3
+          200
         ),
         new Frame(
           toList([
@@ -5935,7 +5935,7 @@ function scenes(columns) {
             new Text2(""),
             new Text2(bingo)
           ]),
-          1200
+          200
         ),
         new Frame(
           toList([
@@ -5947,7 +5947,7 @@ function scenes(columns) {
             new Text2(""),
             new Text2(bingo)
           ]),
-          7e3
+          5e3
         )
       ]),
       new None()
@@ -5965,7 +5965,7 @@ function scenes(columns) {
             github,
             email
           ]),
-          8e3
+          5e3
         )
       ]),
       new None()
@@ -5995,7 +5995,7 @@ function scenes(columns) {
             new Text2(notes_4),
             email
           ]),
-          7e3
+          5e3
         )
       ]),
       new Some(" ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\u25B6#\u250F\u2501\u2513\u2503\u25CF\u2579\u257B\u2517\u251B")
@@ -6013,7 +6013,7 @@ function scenes(columns) {
             new Text2(alive),
             new Text2("")
           ]),
-          3e3
+          2e3
         ),
         new Frame(
           toList([
@@ -6101,7 +6101,6 @@ gsap.registerPlugin(TextPlugin);
 gsap.config({
   force3D: true
 });
-var timeline;
 function getDistance(from2, to, adjacencyList) {
   if (!from2 || !to) {
     console.error("Invalid characters", { from: from2, to });
@@ -6141,9 +6140,14 @@ function flip(el, adjacencyList) {
   if (distance === 0) {
     return null;
   }
-  let timeline2 = gsap.timeline({ force3D: true }).set(bottom, { opacity: 1 }, 0);
+  let timeline = gsap.timeline({
+    force3D: true,
+    onInterrupt: () => {
+      console.log("interrupted!");
+    }
+  }).set(bottom, { opacity: 1 }, 0);
   while (distance > 0) {
-    timeline2 = timeline2.call(() => {
+    timeline = timeline.call(() => {
       topContent.textContent = next;
       bottomContent.textContent = curr;
       flippingBottomContent.textContent = next;
@@ -6153,30 +6157,42 @@ function flip(el, adjacencyList) {
       rotationX: 0,
       duration: 0.04,
       ease: "power1.inOut"
-    }).set(flippingBottom, { rotationX: 90 }, ">");
+    }).set(flippingBottom, { rotationX: 90 }, ">").addLabel(`${distance}`, ">");
     distance--;
   }
-  timeline2 = timeline2.set(bottom, { opacity: 0 }, ">");
-  return timeline2;
+  timeline = timeline.set(bottom, { opacity: 0 }, ">");
+  return timeline;
 }
-function animate_stuff() {
-  let display2 = document.querySelector("nick-dot-bingo-v2").shadowRoot.querySelector(".display");
-  let list4 = JSON.parse(display2.dataset.adjacencyList);
-  let displayEls = display2.querySelectorAll(".split-flap");
-  if (timeline) {
-    timeline.kill();
-  }
-  timeline = gsap.timeline({
-    paused: true,
-    force3D: true
-  });
-  for (const el of displayEls) {
-    const child = flip(el, list4);
-    if (child) {
-      timeline = timeline.add(child, 0);
+var timelines = {};
+var selectors = [".display", "#pagination"];
+function animate() {
+  for (const selector of selectors) {
+    const display2 = document.querySelector("nick-dot-bingo-v2").shadowRoot.querySelector(selector);
+    const adjacencyList = JSON.parse(display2.dataset.adjacencyList);
+    const displayEls = display2.querySelectorAll(".split-flap");
+    if (timelines[selector]) {
+      timelines[selector].pause();
+      timelines[selector].getChildren(true, false, true).forEach((child) => {
+        child.seek(child.nextLabel());
+        child.kill();
+      });
+      timelines[selector].kill();
+      delete timelines[selector];
     }
+    timelines[selector] = gsap.timeline({
+      paused: true,
+      force3D: true
+    });
+    let i = 0;
+    for (const el of displayEls) {
+      const child = flip(el, adjacencyList);
+      if (child) {
+        timelines[selector] = timelines[selector].add(child, 0);
+      }
+      i++;
+    }
+    timelines[selector].play();
   }
-  timeline.play();
 }
 
 // build/dev/javascript/split_flap/utils.mjs
@@ -8186,22 +8202,22 @@ function find_scene2(loop$scenes, loop$page) {
   }
 }
 function start_timeout2(frame, id2) {
-  if (id2 instanceof Some) {
-    echo3("Timeout Skipped", void 0, "src/components/bingo_v2.gleam", 202);
-    return none2();
-  } else {
-    return after_paint(
-      (dispatch, _) => {
-        let id$1 = set_timeout(
-          frame.ms,
-          () => {
-            return dispatch(new TimeoutEnded2());
-          }
-        );
-        return dispatch(new TimeoutStarted2(id$1));
+  return after_paint(
+    (dispatch, _) => {
+      if (id2 instanceof Some) {
+        let id$12 = id2[0];
+        clear_timeout(id$12);
+      } else {
       }
-    );
-  }
+      let id$1 = set_timeout(
+        frame.ms,
+        () => {
+          return dispatch(new TimeoutEnded2());
+        }
+      );
+      return dispatch(new TimeoutStarted2(id$1));
+    }
+  );
 }
 function find_next_state2(scenes2, current) {
   let $ = find_next(current.scene.frames, current.frame);
@@ -8307,19 +8323,18 @@ function reduce2(model, msg) {
           !model.auto_play,
           new None()
         ),
-        (() => {
-          let $ = model.timeout;
-          if ($ instanceof Some) {
-            let id2 = $[0];
-            clear_timeout(id2);
-          } else {
-          }
-          return from(
-            (dispatch) => {
-              return dispatch(new TimeoutEnded2());
+        after_paint(
+          (dispatch, _) => {
+            let $ = model.timeout;
+            if ($ instanceof Some) {
+              let id2 = $[0];
+              clear_timeout(id2);
+            } else {
             }
-          );
-        })()
+            animate();
+            return dispatch(new TimeoutEnded2());
+          }
+        )
       ]
     );
   } else if (msg instanceof TimeoutStarted2) {
@@ -8334,7 +8349,7 @@ function reduce2(model, msg) {
           new Some(id2)
         ),
         (() => {
-          animate_stuff();
+          animate();
           return none2();
         })()
       ]
@@ -8402,6 +8417,13 @@ function character(id2, dest, on_click2) {
           return on_click(m);
         } else {
           return none();
+        }
+      })(),
+      (() => {
+        if (on_click2 instanceof Some) {
+          return style("cursor", "pointer");
+        } else {
+          return style("cursor", "inherit");
         }
       })()
     ]),
@@ -8513,8 +8535,17 @@ function pagination(pages, page, cols, auto_play) {
       }
     }
   );
+  let _block$3;
+  let _pipe$4 = to_adjacency_list(" \u25CB\u25CF()\u{1D106}\u{1D107}");
+  let _pipe$5 = dict2(_pipe$4, identity2, string3);
+  _block$3 = to_string2(_pipe$5);
+  let list_data = _block$3;
   return div2(
-    toList([class$("row")]),
+    toList([
+      id("pagination"),
+      class$("row"),
+      data("adjacency-list", list_data)
+    ]),
     index_map(
       chars,
       (char, idx) => {

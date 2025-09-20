@@ -128,7 +128,7 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
     TimeoutStarted(id) ->
       Ok(
         #(Model(..model, timeout: Some(id)), {
-          utils.animate_stuff()
+          utils.animate()
           effect.none()
         }),
       )
@@ -166,17 +166,19 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
       ))
     }
 
-    AutoPlayClicked ->
+    AutoPlayClicked -> {
       Ok(
         #(Model(..model, timeout: None, auto_play: !model.auto_play), {
+          use dispatch, _ <- effect.after_paint
           case model.timeout {
             Some(id) -> utils.clear_timeout(id)
             None -> Nil
           }
-          use dispatch <- effect.from
+          utils.animate()
           dispatch(TimeoutEnded)
         }),
       )
+    }
   }
 }
 
@@ -189,20 +191,13 @@ fn find_scene(scenes: List(Scene), page: Int) -> Result(Scene, Nil) {
 }
 
 fn start_timeout(frame: Frame, current_timeout id: Option(Int)) -> Effect(Msg) {
+  use dispatch, _ <- effect.after_paint
   case id {
-    None -> {
-      use dispatch, _ <- effect.after_paint
-      let id = utils.set_timeout(frame.ms, fn() { dispatch(TimeoutEnded) })
-      dispatch(TimeoutStarted(id))
-    }
-
-    Some(_) -> {
-      // Skip the timeout if there is already one in progress. Otherwise, we get
-      // a snowball of transitions/timeouts weee
-      echo "Timeout Skipped"
-      effect.none()
-    }
+    Some(id) -> utils.clear_timeout(id)
+    None -> Nil
   }
+  let id = utils.set_timeout(frame.ms, fn() { dispatch(TimeoutEnded) })
+  dispatch(TimeoutStarted(id))
 }
 
 fn find_next_state(
@@ -340,6 +335,10 @@ fn character(
         Some(m) -> event.on_click(m)
         None -> attribute.none()
       },
+      case on_click {
+        Some(_) -> attribute.style("cursor", "pointer")
+        None -> attribute.style("cursor", "inherit")
+      },
     ],
     [
       html.div([attribute.class("flap top")], [
@@ -393,27 +392,27 @@ fn pagination(
       }
     })
 
+  let list_data =
+    utils.to_adjacency_list(" ○●()𝄆𝄇")
+    |> json.dict(function.identity, json.string)
+    |> json.to_string()
+
   keyed.div(
-    [attribute.class("row")],
+    [
+      attribute.id("pagination"),
+      attribute.class("row"),
+      attribute.data("adjacency-list", list_data),
+    ],
     list.index_map(chars, fn(char, idx) {
       let page = 1 + { { idx - first_dot_idx } / 2 }
       let id = "pb-" <> int.to_string(idx)
       #(
         id,
-        character(
-          id:,
-          dest: char,
-          // char_stack: case char {
-          //   "○" | "●" -> Some("○●")
-          //   "𝄆" | "𝄇" | "(" | ")" -> Some("()𝄆𝄇")
-          //   _ -> None
-          // },
-          on_click: case char {
-            "○" | "●" -> Some(PageClicked(page))
-            "𝄆" | "𝄇" | "(" | ")" -> Some(AutoPlayClicked)
-            _ -> None
-          },
-        ),
+        character(id:, dest: char, on_click: case char {
+          "○" | "●" -> Some(PageClicked(page))
+          "𝄆" | "𝄇" | "(" | ")" -> Some(AutoPlayClicked)
+          _ -> None
+        }),
       )
     }),
   )

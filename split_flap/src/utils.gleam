@@ -28,8 +28,8 @@ pub fn on_resize(_root: decode.Dynamic, _cb: fn() -> Nil) -> Nil {
   Nil
 }
 
-@external(javascript, "./split_flap.ffi.mjs", "animate_stuff")
-pub fn animate_stuff() -> Nil {
+@external(javascript, "./split_flap.ffi.mjs", "animate")
+pub fn animate() -> Nil {
   Nil
 }
 

@@ -16,7 +16,6 @@ export function measure_orientation(root) {
 }
 
 let observer = null;
-
 export function on_resize(root, cb) {
   if (observer) {
     return;
@@ -29,8 +28,6 @@ gsap.registerPlugin(TextPlugin);
 gsap.config({
   force3D: true,
 });
-
-let timeline;
 
 function getDistance(from, to, adjacencyList) {
   if (!from || !to) {
@@ -77,7 +74,12 @@ function flip(el, adjacencyList) {
   }
 
   let timeline = gsap
-    .timeline({ force3D: true })
+    .timeline({
+      force3D: true,
+      onInterrupt: () => {
+        console.log("interrupted!");
+      },
+    })
     .set(bottom, { opacity: 1 }, 0);
 
   while (distance > 0) {
@@ -94,7 +96,8 @@ function flip(el, adjacencyList) {
         duration: 0.04,
         ease: "power1.inOut",
       })
-      .set(flippingBottom, { rotationX: 90 }, ">");
+      .set(flippingBottom, { rotationX: 90 }, ">")
+      .addLabel(`${distance}`, ">");
 
     distance--;
   }
@@ -103,30 +106,44 @@ function flip(el, adjacencyList) {
   return timeline;
 }
 
-export function animate_stuff() {
-  let display = document
-    .querySelector("nick-dot-bingo-v2")
-    .shadowRoot.querySelector(".display");
+let timelines = {};
 
-  let list = JSON.parse(display.dataset.adjacencyList);
-  let displayEls = display.querySelectorAll(".split-flap");
+const selectors = [".display", "#pagination"];
 
-  if (timeline) {
-    // timeline.pause();
-    timeline.kill();
-  }
+export function animate() {
+  for (const selector of selectors) {
+    const display = document
+      .querySelector("nick-dot-bingo-v2")
+      .shadowRoot.querySelector(selector);
 
-  timeline = gsap.timeline({
-    paused: true,
-    force3D: true,
-  });
+    const adjacencyList = JSON.parse(display.dataset.adjacencyList);
+    const displayEls = display.querySelectorAll(".split-flap");
 
-  for (const el of displayEls) {
-    const child = flip(el, list);
-    if (child) {
-      timeline = timeline.add(child, 0);
+    if (timelines[selector]) {
+      timelines[selector].pause();
+      timelines[selector].getChildren(true, false, true).forEach((child) => {
+        child.seek(child.nextLabel());
+        child.kill();
+      });
+      // timelines[selector].progress(1);
+      timelines[selector].kill();
+      delete timelines[selector];
     }
-  }
 
-  timeline.play();
+    timelines[selector] = gsap.timeline({
+      paused: true,
+      force3D: true,
+    });
+
+    let i = 0;
+    for (const el of displayEls) {
+      const child = flip(el, adjacencyList);
+      if (child) {
+        timelines[selector] = timelines[selector].add(child, 0);
+      }
+      i++;
+    }
+
+    timelines[selector].play();
+  }
 }

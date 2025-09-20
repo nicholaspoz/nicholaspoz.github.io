@@ -52,7 +52,7 @@ pub fn scenes(columns: Int) -> List(Scene) {
 
   [
     Scene(name: "HOME", chars: None, frames: [
-      Frame(ms: 1000, lines: [
+      Frame(ms: 200, lines: [
         Text(nick),
         Text(""),
         Text(""),
@@ -60,7 +60,7 @@ pub fn scenes(columns: Int) -> List(Scene) {
         Text(""),
         Text(""),
       ]),
-      Frame(ms: 1000, lines: [
+      Frame(ms: 200, lines: [
         Text(nick),
         Text(""),
         Text(""),
@@ -70,7 +70,7 @@ pub fn scenes(columns: Int) -> List(Scene) {
         Text(""),
       ]),
 
-      Frame(ms: 1200, lines: [
+      Frame(ms: 200, lines: [
         Text(nick),
         Text(""),
         Text(""),
@@ -79,7 +79,7 @@ pub fn scenes(columns: Int) -> List(Scene) {
         Text(""),
         Text(bingo),
       ]),
-      Frame(ms: 7000, lines: [
+      Frame(ms: 5000, lines: [
         Text(nick),
         Text(poz),
         Text(""),
@@ -91,7 +91,7 @@ pub fn scenes(columns: Int) -> List(Scene) {
     ]),
 
     Scene(name: "TECH", chars: None, frames: [
-      Frame(ms: 8000, lines: [
+      Frame(ms: 5000, lines: [
         Text(freelance),
         Text(tech),
         Text(""),
@@ -115,7 +115,7 @@ pub fn scenes(columns: Int) -> List(Scene) {
           Text(""),
           email,
         ]),
-        Frame(ms: 7000, lines: [
+        Frame(ms: 5000, lines: [
           Text(freelance),
           Text(cellist),
           Text(notes_1),
@@ -128,7 +128,7 @@ pub fn scenes(columns: Int) -> List(Scene) {
     ),
 
     Scene(name: "!", chars: None, frames: [
-      Frame(ms: 3000, lines: [
+      Frame(ms: 2000, lines: [
         Text(what),
         Text(a),
         Text(time),
