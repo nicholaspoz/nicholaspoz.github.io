@@ -80,21 +80,21 @@ fn char(id: String) {
     // TOP FLAP (always visible)
     html.div([attribute.class("flap top")], [
       html.span([attribute.class("flap-content")], [
-        html.text("A"),
+        html.text(" "),
       ]),
     ]),
 
     // BOTTOM FLAP
     html.div([attribute.class("flap bottom")], [
       html.span([attribute.class("flap-content")], [
-        // no content?
+        html.text(" "),
       ]),
     ]),
 
     // FLIPPING BOTTOM
     html.div([attribute.class("flap flipping-bottom")], [
       html.span([attribute.class("flap-content")], [
-        // no content?
+        html.text(" "),
       ]),
     ]),
   ])
@@ -230,7 +230,7 @@ const css = "
     bottom: 0;
     transform-origin: top;
     border-radius: 0 0 5cqw 5cqw;
-    opacity: 0;
+    opacity: 1;
   }
 
   .flap.bottom.flipping {
@@ -247,20 +247,14 @@ const css = "
   }
 
   .flap.flipping-bottom {
-    opacity: 0;
+    opacity: 1;
     pointer-events: none;
     bottom: 0;
     transform-origin: top;
     border-radius: 0 0 5cqw 5cqw;
     z-index: 10;
     box-shadow: inset -2cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.05), 0cqw -3cqw 2cqw 2cqw rgba(0, 0, 0, 0.05);
-  }
-  
-  .flap.flipping-bottom.flipping {
-    opacity: 1;
-    animation: 1s ease-in flip-bottom;
-    animation-iteration-count: 1;
-    animation-fill-mode: forwards;
+    transform: rotateX(90deg);
   }
   
   .flap.top .flap-content {

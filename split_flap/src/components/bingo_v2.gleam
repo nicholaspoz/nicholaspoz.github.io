@@ -99,7 +99,13 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
 fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
   case msg {
     Resized -> Ok(#(model, get_cols_effect()))
-    Clicked -> Ok(#(model, effect.none()))
+    Clicked ->
+      Ok(
+        #(model, {
+          utils.animate_stuff()
+          effect.none()
+        }),
+      )
 
     ColumnsChanged(columns) -> {
       use <- bool.guard(columns == model.columns, Ok(#(model, effect.none())))

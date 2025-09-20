@@ -2625,7 +2625,7 @@ function array2(entries, inner_type) {
 }
 
 // build/dev/javascript/lustre/lustre/internals/constants.ffi.mjs
-var document = () => globalThis?.document;
+var document2 = () => globalThis?.document;
 var NAMESPACE_HTML = "http://www.w3.org/1999/xhtml";
 var ELEMENT_NODE = 1;
 var TEXT_NODE = 3;
@@ -4564,9 +4564,9 @@ function diff(events, old, new$8) {
 // build/dev/javascript/lustre/lustre/vdom/reconciler.ffi.mjs
 var setTimeout = globalThis.setTimeout;
 var clearTimeout = globalThis.clearTimeout;
-var createElementNS = (ns, name) => document().createElementNS(ns, name);
-var createTextNode = (data) => document().createTextNode(data);
-var createDocumentFragment = () => document().createDocumentFragment();
+var createElementNS = (ns, name) => document2().createElementNS(ns, name);
+var createTextNode = (data) => document2().createTextNode(data);
+var createDocumentFragment = () => document2().createDocumentFragment();
 var insertBefore = (parent, node, reference) => parent.insertBefore(node, reference);
 var moveBefore = SUPPORTS_MOVE_BEFORE ? (parent, node, reference) => parent.moveBefore(node, reference) : insertBefore;
 var removeChild = (parent, child) => parent.removeChild(child);
@@ -5091,7 +5091,7 @@ var virtualise = (root3) => {
     if (canVirtualiseNode(child)) virtualisableRootChildren += 1;
   }
   if (virtualisableRootChildren === 0) {
-    const placeholder = document().createTextNode("");
+    const placeholder = document2().createTextNode("");
     insertMetadataChild(text_kind, rootMeta, placeholder, 0, null);
     root3.replaceChildren(placeholder);
     return none3();
@@ -5100,7 +5100,7 @@ var virtualise = (root3) => {
     const children2 = virtualiseChildNodes(rootMeta, root3);
     return children2.head[1];
   }
-  const fragmentHead = document().createTextNode("");
+  const fragmentHead = document2().createTextNode("");
   const fragmentMeta = insertMetadataChild(fragment_kind, rootMeta, fragmentHead, 0, null);
   const children = virtualiseChildNodes(fragmentMeta, root3);
   root3.insertBefore(fragmentHead, root3.firstChild);
@@ -5153,7 +5153,7 @@ var virtualiseInputEvents = (tag, node) => {
     node.checked = checked;
     node.dispatchEvent(new Event("input", { bubbles: true }));
     node.dispatchEvent(new Event("change", { bubbles: true }));
-    if (document().activeElement !== node) {
+    if (document2().activeElement !== node) {
       node.dispatchEvent(new Event("blur", { bubbles: true }));
     }
   });
@@ -5206,7 +5206,7 @@ var virtualiseAttribute = (attr) => {
 };
 
 // build/dev/javascript/lustre/lustre/runtime/client/runtime.ffi.mjs
-var is_browser = () => !!document();
+var is_browser = () => !!document2();
 var Runtime = class {
   constructor(root3, [model, effects], view6, update7) {
     this.root = root3;
@@ -5380,7 +5380,7 @@ function listAppend(a, b) {
 var copiedStyleSheets = /* @__PURE__ */ new WeakMap();
 async function adoptStylesheets(shadowRoot) {
   const pendingParentStylesheets = [];
-  for (const node of document().querySelectorAll(
+  for (const node of document2().querySelectorAll(
     "link[rel=stylesheet], style"
   )) {
     if (node.sheet) continue;
@@ -5397,7 +5397,7 @@ async function adoptStylesheets(shadowRoot) {
   }
   shadowRoot.adoptedStyleSheets = shadowRoot.host.getRootNode().adoptedStyleSheets;
   const pending = [];
-  for (const sheet of document().styleSheets) {
+  for (const sheet of document2().styleSheets) {
     try {
       shadowRoot.adoptedStyleSheets.push(sheet);
     } catch {
@@ -6052,7 +6052,120 @@ function on_resize(root3, cb) {
   observer = new ResizeObserver(cb);
   observer.observe(root3.host);
 }
-console.log(gsap);
+gsap.registerPlugin(TextPlugin);
+gsap.config({
+  force3D: true
+});
+var timeline;
+var charState = {};
+var adjacencyList = {};
+var desiredState = {};
+function getState(id2) {
+  return charState[id2] || " ";
+}
+function getNext(char2) {
+  return adjacencyList[char2] || " ";
+}
+function getDistance(from2, to) {
+  if (!(from2 in adjacencyList) || !(to in adjacencyList)) {
+    console.error("Invalid characters", from2, to);
+    return 0;
+  }
+  let dist = 0;
+  let current = from2;
+  while (current !== to) {
+    current = getNext(current);
+    dist++;
+  }
+  return dist;
+}
+function flip(el, times) {
+  const id2 = el.id;
+  function curr() {
+    return charState[id2] || " ";
+  }
+  function next() {
+    return adjacencyList[curr()];
+  }
+  const topContent = el.querySelector(`.top > .flap-content`);
+  const bottomContent = el.querySelector(`.bottom > .flap-content`);
+  const flippingBottomContent = el.querySelector(
+    `.flipping-bottom > .flap-content`
+  );
+  const flippingBottom = el.querySelector(`.flipping-bottom`);
+  return gsap.timeline({
+    // paused: true,
+    onStart: () => {
+      topContent.textContent = next();
+      bottomContent.textContent = curr();
+      flippingBottomContent.textContent = next();
+    },
+    onRepeat: () => {
+      charState[id2] = next();
+      topContent.textContent = next();
+      bottomContent.textContent = curr();
+      flippingBottomContent.textContent = next();
+    },
+    onComplete: () => {
+      charState[id2] = next();
+      bottomContent.textContent = curr();
+      flippingBottomContent.textContent = curr();
+    }
+  }).set(flippingBottom, { rotationX: 90 }, 0).to(flippingBottom, {
+    rotationX: 0,
+    duration: 0.05,
+    ease: "power1.inOut"
+  }).set(flippingBottom, { rotationX: 90 }, ">").repeat(times - 1);
+}
+function animate_stuff() {
+  adjacencyList = {
+    " ": "A",
+    A: "B",
+    B: "C",
+    C: "D",
+    D: "E",
+    E: "F",
+    F: "G",
+    G: "H",
+    H: " "
+  };
+  desiredState = {
+    "1-1": "A",
+    "1-2": "B",
+    "1-3": "C",
+    "1-4": "D",
+    "1-5": "E",
+    "1-6": "F",
+    "1-7": "G"
+  };
+  let all = document.querySelector("nick-dot-bingo-v2").shadowRoot.querySelectorAll(".split-flap");
+  console.log("All", all);
+  if (timeline) {
+    timeline.pause();
+    timeline.progress(0);
+    timeline.kill();
+  }
+  timeline = gsap.timeline({
+    paused: true,
+    // autoRemoveChildren: true,
+    onComplete: function() {
+      console.log(charState);
+    }
+  });
+  for (const el of all) {
+    if (!(el.id in desiredState)) {
+      continue;
+    }
+    let from2 = getState(el.id);
+    let to = desiredState[el.id];
+    let distance = getDistance(from2, to);
+    if (distance === 0) {
+      continue;
+    }
+    timeline.add(flip(el, distance), 0);
+  }
+  timeline.play();
+}
 
 // build/dev/javascript/split_flap/utils.mjs
 function find_next(loop$l, loop$current) {
@@ -7897,20 +8010,26 @@ function char(id2) {
         toList([
           span(
             toList([class$("flap-content")]),
-            toList([text3("A")])
+            toList([text3(" ")])
           )
         ])
       ),
       div(
         toList([class$("flap bottom")]),
         toList([
-          span(toList([class$("flap-content")]), toList([]))
+          span(
+            toList([class$("flap-content")]),
+            toList([text3(" ")])
+          )
         ])
       ),
       div(
         toList([class$("flap flipping-bottom")]),
         toList([
-          span(toList([class$("flap-content")]), toList([]))
+          span(
+            toList([class$("flap-content")]),
+            toList([text3(" ")])
+          )
         ])
       )
     ])
@@ -8020,7 +8139,7 @@ function first_is_some2(pair) {
     return new Error(void 0);
   }
 }
-var css5 = '\n  :host {\n    display: block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  .display {\n    container-type: inline-size;\n    display: flex;\n    flex-direction: column;\n    gap: 1cqh; \n    width: 100%;\n    height: 100%;\n    background-color: rgb(40, 40, 40);\n  }\n\n  .row {\n    container-type: inline-size;\n    display: flex;\n    flex-direction: row;\n    gap: 1cqw;\n    cursor: default;\n  }\n\n  .row[href] {\n    cursor: pointer;\n  }\n  \n  .split-flap {\n    position: relative;\n    width: 100%;\n    aspect-ratio: 1/1.618; /* golden ratio ;) */\n    display: inline-block;\n    container-type: inline-size;\n  }\n\n  .split-flap::selection {\n    background: white;\n    color: black;\n  }\n\n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 3.5cqw;\n    background: rgb(20, 20, 20);\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    font-size: 120cqw;\n    font-weight: 500;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    border-radius: 5cqw;\n    perspective: 400cqw;\n    background: rgb(40, 40, 40);\n    box-shadow: inset 1cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    z-index: 1;\n    \n    display: flex;\n    align-items: center;\n    justify-content: center;\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n    z-index: 0;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw;\n    user-select: text;\n    height: 100%;\n    opacity: 1;\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    opacity: 0;\n  }\n\n  .flap.bottom.flipping {\n    opacity: 1;\n  }\n\n  @keyframes flip-bottom {\n    0% {\n      transform: rotateX(80deg);      \n    }\n    100% {\n      transform: rotateX(0deg);\n    }\n  }\n\n  .flap.flipping-bottom {\n    opacity: 0;\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    z-index: 10;\n    box-shadow: inset -2cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.05), 0cqw -3cqw 2cqw 2cqw rgba(0, 0, 0, 0.05);\n  }\n  \n  .flap.flipping-bottom.flipping {\n    opacity: 1;\n    animation: 1s ease-in flip-bottom;\n    animation-iteration-count: 1;\n    animation-fill-mode: forwards;\n  }\n  \n  .flap.top .flap-content {\n    top: 0;\n    height: 100%\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
+var css5 = '\n  :host {\n    display: block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  .display {\n    container-type: inline-size;\n    display: flex;\n    flex-direction: column;\n    gap: 1cqh; \n    width: 100%;\n    height: 100%;\n    background-color: rgb(40, 40, 40);\n  }\n\n  .row {\n    container-type: inline-size;\n    display: flex;\n    flex-direction: row;\n    gap: 1cqw;\n    cursor: default;\n  }\n\n  .row[href] {\n    cursor: pointer;\n  }\n  \n  .split-flap {\n    position: relative;\n    width: 100%;\n    aspect-ratio: 1/1.618; /* golden ratio ;) */\n    display: inline-block;\n    container-type: inline-size;\n  }\n\n  .split-flap::selection {\n    background: white;\n    color: black;\n  }\n\n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 3.5cqw;\n    background: rgb(20, 20, 20);\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    font-size: 120cqw;\n    font-weight: 500;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    border-radius: 5cqw;\n    perspective: 400cqw;\n    background: rgb(40, 40, 40);\n    box-shadow: inset 1cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    z-index: 1;\n    \n    display: flex;\n    align-items: center;\n    justify-content: center;\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n    z-index: 0;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw;\n    user-select: text;\n    height: 100%;\n    opacity: 1;\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    opacity: 1;\n  }\n\n  .flap.bottom.flipping {\n    opacity: 1;\n  }\n\n  @keyframes flip-bottom {\n    0% {\n      transform: rotateX(80deg);      \n    }\n    100% {\n      transform: rotateX(0deg);\n    }\n  }\n\n  .flap.flipping-bottom {\n    opacity: 1;\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    z-index: 10;\n    box-shadow: inset -2cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.05), 0cqw -3cqw 2cqw 2cqw rgba(0, 0, 0, 0.05);\n    transform: rotateX(90deg);\n  }\n  \n  .flap.top .flap-content {\n    top: 0;\n    height: 100%\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
 function display(lines, chars, cols, rows) {
   let _block;
   let _pipe = lines;
@@ -8086,6 +8205,8 @@ var TimeoutStarted2 = class extends CustomType {
   }
 };
 var TimeoutEnded2 = class extends CustomType {
+};
+var Clicked = class extends CustomType {
 };
 function get_cols_effect2() {
   return before_paint(
@@ -8298,7 +8419,7 @@ function reduce2(model, msg) {
         none2()
       ]
     );
-  } else {
+  } else if (msg instanceof TimeoutEnded2) {
     return try$(
       model.current,
       (current) => {
@@ -8337,6 +8458,16 @@ function reduce2(model, msg) {
         );
       }
     );
+  } else {
+    return new Ok(
+      [
+        model,
+        (() => {
+          animate_stuff();
+          return none2();
+        })()
+      ]
+    );
   }
 }
 function update6(model, msg) {
@@ -8345,7 +8476,7 @@ function update6(model, msg) {
     let next = $[0];
     return next;
   } else {
-    echo3("ERROR", void 0, "src/components/bingo_v2.gleam", 91);
+    echo3("ERROR", void 0, "src/components/bingo_v2.gleam", 93);
     return [model, none2()];
   }
 }
@@ -8369,7 +8500,11 @@ function view5(model) {
     toList([
       style2(toList([]), css6),
       div(
-        toList([class$("panel"), part("panel")]),
+        toList([
+          class$("panel"),
+          part("panel"),
+          on_click(new Clicked())
+        ]),
         toList([
           div(
             toList([class$("matrix"), part("matrix")]),

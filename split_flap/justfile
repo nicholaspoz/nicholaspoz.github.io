@@ -2,4 +2,5 @@ build:
     gleam run -m lustre/dev build --outdir=../js
 
 dev:
-    watchexec --restart --verbose --wrap-process=session --stop-signal SIGTERM --exts gleam -- "just build"
+    pwd
+    watchexec --restart --verbose --wrap-process=session --stop-signal SIGTERM --exts gleam,mjs --ignore build/ --ignore ../js/ --watch src/ -- "just build"
