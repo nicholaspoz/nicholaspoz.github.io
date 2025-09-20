@@ -104,7 +104,7 @@ pub fn scenes(columns: Int) -> List(Scene) {
 
     Scene(
       name: "MUSIC",
-      chars: Some("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶#┏━┓┃●╹╻┗┛"),
+      chars: Some(" ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶#┏━┓┃●╹╻┗┛"),
       frames: [
         Frame(ms: 1000, lines: [
           Text(freelance),

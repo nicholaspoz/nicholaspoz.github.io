@@ -9,10 +9,7 @@ import lustre/element/html
 import lustre/element/keyed
 
 import components/bingo/model.{type Content, Link}
-
-pub type Display {
-  Display(lines: List(Content), cols: Int, rows: Int, chars: Option(String))
-}
+import utils
 
 pub fn display(
   lines: List(Content),
@@ -22,8 +19,8 @@ pub fn display(
 ) -> Element(msg) {
   let sanitized_lines =
     lines
-    |> zip_longest(list.range(0, rows - 1), _)
-    |> list.filter_map(first_is_some)
+    |> utils.zip_longest(list.range(0, rows - 1), _)
+    |> list.filter_map(utils.first_is_some)
 
   element.fragment([
     html.style([], css),
@@ -98,38 +95,6 @@ fn char(id: String) {
       ]),
     ]),
   ])
-}
-
-/// probs a better way to do this
-fn zip_longest(list1: List(a), list2: List(b)) -> List(#(Option(a), Option(b))) {
-  let #(head1, rest1) = case list1 {
-    [] -> #(None, [])
-    [h, ..rest] -> #(Some(h), rest)
-  }
-
-  let #(head2, rest2) = case list2 {
-    [] -> #(None, [])
-    [h, ..rest] -> #(Some(h), rest)
-  }
-
-  let el = case head1, head2 {
-    None, None -> None
-    Some(h1), None -> Some(#(Some(h1), None))
-    None, Some(h2) -> Some(#(None, Some(h2)))
-    Some(h1), Some(h2) -> Some(#(Some(h1), Some(h2)))
-  }
-
-  case el {
-    None -> []
-    Some(el) -> [el, ..zip_longest(rest1, rest2)]
-  }
-}
-
-fn first_is_some(pair: #(Option(a), b)) -> Result(b, Nil) {
-  case pair {
-    #(Some(_), b) -> Ok(b)
-    _ -> Error(Nil)
-  }
 }
 
 const css = "
@@ -233,19 +198,6 @@ const css = "
     opacity: 1;
   }
 
-  .flap.bottom.flipping {
-    opacity: 1;
-  }
-
-  @keyframes flip-bottom {
-    0% {
-      transform: rotateX(80deg);      
-    }
-    100% {
-      transform: rotateX(0deg);
-    }
-  }
-
   .flap.flipping-bottom {
     opacity: 1;
     pointer-events: none;
@@ -267,7 +219,6 @@ const css = "
   }
 
   .flap.flipping-bottom .flap-content {
-    /* Positions text in bottom half of flap */
     bottom: 0;
   }
 "

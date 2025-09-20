@@ -1,4 +1,9 @@
+import gleam/dict
 import gleam/dynamic/decode
+import gleam/list
+import gleam/option.{type Option, None, Some}
+import gleam/result
+import gleam/string
 
 @external(javascript, "./split_flap.ffi.mjs", "set_timeout")
 pub fn set_timeout(_delay: Int, _cb: fn() -> a) -> Int {
@@ -42,4 +47,48 @@ pub fn find_next(l: List(a), current: a) -> Result(a, Nil) {
     }
     _ -> Error(Nil)
   }
+}
+
+/// probs a better way to do this
+pub fn zip_longest(
+  list1: List(a),
+  list2: List(b),
+) -> List(#(Option(a), Option(b))) {
+  let #(head1, rest1) = case list1 {
+    [] -> #(None, [])
+    [h, ..rest] -> #(Some(h), rest)
+  }
+
+  let #(head2, rest2) = case list2 {
+    [] -> #(None, [])
+    [h, ..rest] -> #(Some(h), rest)
+  }
+
+  let el = case head1, head2 {
+    None, None -> None
+    Some(h1), None -> Some(#(Some(h1), None))
+    None, Some(h2) -> Some(#(None, Some(h2)))
+    Some(h1), Some(h2) -> Some(#(Some(h1), Some(h2)))
+  }
+
+  case el {
+    None -> []
+    Some(el) -> [el, ..zip_longest(rest1, rest2)]
+  }
+}
+
+pub fn first_is_some(pair: #(Option(a), b)) -> Result(b, Nil) {
+  case pair {
+    #(Some(_), b) -> Ok(b)
+    _ -> Error(Nil)
+  }
+}
+
+pub fn to_adjacency_list(chars: String) -> dict.Dict(String, String) {
+  string.first(chars)
+  |> result.map(fn(char) { chars <> char })
+  |> result.unwrap("")
+  |> string.to_graphemes
+  |> list.window_by_2
+  |> dict.from_list
 }

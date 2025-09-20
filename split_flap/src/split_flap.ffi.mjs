@@ -16,6 +16,7 @@ export function measure_orientation(root) {
 }
 
 let observer = null;
+
 export function on_resize(root, cb) {
   if (observer) {
     return;
@@ -30,143 +31,102 @@ gsap.config({
 });
 
 let timeline;
-let charState = {};
-let adjacencyList = {};
-let desiredState = {};
 
-function getState(id) {
-  return charState[id] || " ";
-}
-
-function getNext(char) {
-  return adjacencyList[char] || " ";
-}
-
-function getDistance(from, to) {
+function getDistance(from, to, adjacencyList) {
+  if (!from || !to) {
+    console.error("Invalid characters", { from, to });
+    return 0;
+  }
   if (!(from in adjacencyList) || !(to in adjacencyList)) {
-    console.error("Invalid characters", from, to);
+    console.error("Invalid list", { adjacencyList, from, to });
     return 0;
   }
 
   let dist = 0;
   let current = from;
   while (current !== to) {
-    current = getNext(current);
+    current = adjacencyList[current];
     dist++;
   }
   return dist;
 }
 
-function flip(el, times) {
-  const id = el.id;
-  function curr() {
-    return charState[id] || " ";
-  }
-
-  function next() {
-    return adjacencyList[curr()];
-  }
-
+function flip(el, adjacencyList) {
   const topContent = el.querySelector(`.top > .flap-content`);
-  const bottomContent = el.querySelector(`.bottom > .flap-content`);
-  const flippingBottomContent = el.querySelector(
-    `.flipping-bottom > .flap-content`
-  );
+  const bottom = el.querySelector(`.bottom`);
+  const bottomContent = bottom.querySelector(`.flap-content`);
   const flippingBottom = el.querySelector(`.flipping-bottom`);
+  const flippingBottomContent = flippingBottom.querySelector(`.flap-content`);
 
-  return gsap
-    .timeline({
-      // paused: true,
-      onStart: () => {
-        topContent.textContent = next();
-        bottomContent.textContent = curr();
-        flippingBottomContent.textContent = next();
-      },
-      onRepeat: () => {
-        charState[id] = next();
-        topContent.textContent = next();
-        bottomContent.textContent = curr();
-        flippingBottomContent.textContent = next();
-      },
-      onComplete: () => {
-        charState[id] = next();
-        bottomContent.textContent = curr();
-        flippingBottomContent.textContent = curr();
-      },
-    })
-    .set(flippingBottom, { rotationX: 90 }, 0)
-    .to(flippingBottom, {
-      rotationX: 0,
-      duration: 0.05,
-      ease: "power1.inOut",
-    })
-    .set(flippingBottom, { rotationX: 90 }, ">")
-    .repeat(times - 1);
-}
+  let destination = el.dataset.dest || " ";
+  let distance = 0;
+  let curr = topContent.textContent || " ";
+  let from = curr;
+  let next = (() => {
+    if (curr in adjacencyList) {
+      return adjacencyList[curr];
+    }
+    distance = 1;
+    from = " ";
+    return " ";
+  })();
 
-// TODO
-export function set_adjacency_list(list) {
-  adjacencyList = list;
+  distance += getDistance(from, destination, adjacencyList);
+  if (distance === 0) {
+    return null;
+  }
+
+  let timeline = gsap
+    .timeline({ force3D: true })
+    .set(bottom, { opacity: 1 }, 0);
+
+  while (distance > 0) {
+    timeline = timeline
+      .call(() => {
+        topContent.textContent = next;
+        bottomContent.textContent = curr;
+        flippingBottomContent.textContent = next;
+        curr = next;
+        next = adjacencyList[curr];
+      }, 0)
+      .to(flippingBottom, {
+        rotationX: 0,
+        duration: 0.04,
+        ease: "power1.inOut",
+      })
+      .set(flippingBottom, { rotationX: 90 }, ">");
+
+    distance--;
+  }
+  timeline = timeline.set(bottom, { opacity: 0 }, ">");
+
+  return timeline;
 }
 
 export function animate_stuff() {
-  adjacencyList = {
-    " ": "A",
-    A: "B",
-    B: "C",
-    C: "D",
-    D: "E",
-    E: "F",
-    F: "G",
-    G: "H",
-    H: " ",
-  };
-
-  desiredState = {
-    "1-1": "A",
-    "1-2": "B",
-    "1-3": "C",
-    "1-4": "D",
-    "1-5": "E",
-    "1-6": "F",
-    "1-7": "G",
-  };
-
-  let all = document
+  let display = document
     .querySelector("nick-dot-bingo-v2")
-    .shadowRoot.querySelectorAll(".split-flap");
+    .shadowRoot.querySelector(".display");
 
-  console.log("All", all);
+  let list = JSON.parse(display.dataset.adjacencyList);
+  let displayEls = display.querySelectorAll(".split-flap");
 
   if (timeline) {
-    timeline.pause();
-    timeline.progress(0);
+    // timeline.pause();
     timeline.kill();
   }
 
   timeline = gsap.timeline({
     paused: true,
-    // autoRemoveChildren: true,
-    onComplete: function () {
-      console.log(charState);
-    },
+    force3D: true,
   });
 
-  for (const el of all) {
-    if (!(el.id in desiredState)) {
-      continue;
+  for (const el of displayEls) {
+    const child = flip(el, list);
+    if (child) {
+      timeline = timeline.add(child, 0);
     }
-    let from = getState(el.id);
-    let to = desiredState[el.id];
-    let distance = getDistance(from, to);
-    // console.log("Distance", el.id, from, to, distance);
-    if (distance === 0) {
-      continue;
-    }
-    timeline.add(flip(el, distance), 0);
   }
-
-  // console.log("Timeline", timeline);
 
   timeline.play();
 }

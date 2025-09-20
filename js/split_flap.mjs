@@ -274,8 +274,8 @@ function bitArrayPrintDeprecationWarning(name, message) {
 }
 var Result = class _Result extends CustomType {
   // @internal
-  static isResult(data) {
-    return data instanceof _Result;
+  static isResult(data2) {
+    return data2 instanceof _Result;
   }
 };
 var Ok = class extends Result {
@@ -1292,8 +1292,8 @@ var Decoder = class extends CustomType {
     this.function = function$;
   }
 };
-function run(data, decoder) {
-  let $ = decoder.function(data);
+function run(data2, decoder) {
+  let $ = decoder.function(data2);
   let maybe_invalid_data;
   let errors;
   maybe_invalid_data = $[0];
@@ -1304,26 +1304,26 @@ function run(data, decoder) {
     return new Error(errors);
   }
 }
-function success(data) {
+function success(data2) {
   return new Decoder((_) => {
-    return [data, toList([])];
+    return [data2, toList([])];
   });
 }
 function map2(decoder, transformer) {
   return new Decoder(
     (d) => {
       let $ = decoder.function(d);
-      let data;
+      let data2;
       let errors;
-      data = $[0];
+      data2 = $[0];
       errors = $[1];
-      return [transformer(data), errors];
+      return [transformer(data2), errors];
     }
   );
 }
 function run_decoders(loop$data, loop$failure, loop$decoders) {
   while (true) {
-    let data = loop$data;
+    let data2 = loop$data;
     let failure2 = loop$failure;
     let decoders = loop$decoders;
     if (decoders instanceof Empty) {
@@ -1331,7 +1331,7 @@ function run_decoders(loop$data, loop$failure, loop$decoders) {
     } else {
       let decoder = decoders.head;
       let decoders$1 = decoders.tail;
-      let $ = decoder.function(data);
+      let $ = decoder.function(data2);
       let layer;
       let errors;
       layer = $;
@@ -1339,7 +1339,7 @@ function run_decoders(loop$data, loop$failure, loop$decoders) {
       if (errors instanceof Empty) {
         return layer;
       } else {
-        loop$data = data;
+        loop$data = data2;
         loop$failure = failure2;
         loop$decoders = decoders$1;
       }
@@ -1367,8 +1367,8 @@ function decode_error(expected, found) {
     new DecodeError(expected, classify_dynamic(found), toList([]))
   ]);
 }
-function run_dynamic_function(data, name, f) {
-  let $ = f(data);
+function run_dynamic_function(data2, name, f) {
+  let $ = f(data2);
   if ($ instanceof Ok) {
     let data$1 = $[0];
     return [data$1, toList([])];
@@ -1376,12 +1376,12 @@ function run_dynamic_function(data, name, f) {
     let zero = $[0];
     return [
       zero,
-      toList([new DecodeError(name, classify_dynamic(data), toList([]))])
+      toList([new DecodeError(name, classify_dynamic(data2), toList([]))])
     ];
   }
 }
-function decode_int(data) {
-  return run_dynamic_function(data, "Int", int);
+function decode_int(data2) {
+  return run_dynamic_function(data2, "Int", int);
 }
 function failure(zero, expected) {
   return new Decoder((d) => {
@@ -1389,15 +1389,15 @@ function failure(zero, expected) {
   });
 }
 var int2 = /* @__PURE__ */ new Decoder(decode_int);
-function decode_string(data) {
-  return run_dynamic_function(data, "String", string);
+function decode_string(data2) {
+  return run_dynamic_function(data2, "String", string);
 }
 var string2 = /* @__PURE__ */ new Decoder(decode_string);
 function list2(inner) {
   return new Decoder(
-    (data) => {
+    (data2) => {
       return list(
-        data,
+        data2,
         inner.function,
         (p, k) => {
           return push_path(p, toList([k]));
@@ -1448,15 +1448,15 @@ function index3(loop$path, loop$position, loop$inner, loop$data, loop$handle_mis
     let path = loop$path;
     let position = loop$position;
     let inner = loop$inner;
-    let data = loop$data;
+    let data2 = loop$data;
     let handle_miss = loop$handle_miss;
     if (path instanceof Empty) {
-      let _pipe = inner(data);
+      let _pipe = inner(data2);
       return push_path(_pipe, reverse(position));
     } else {
       let key = path.head;
       let path$1 = path.tail;
-      let $ = index2(data, key);
+      let $ = index2(data2, key);
       if ($ instanceof Ok) {
         let $1 = $[0];
         if ($1 instanceof Some) {
@@ -1467,16 +1467,16 @@ function index3(loop$path, loop$position, loop$inner, loop$data, loop$handle_mis
           loop$data = data$1;
           loop$handle_miss = handle_miss;
         } else {
-          return handle_miss(data, prepend(key, position));
+          return handle_miss(data2, prepend(key, position));
         }
       } else {
         let kind = $[0];
-        let $1 = inner(data);
+        let $1 = inner(data2);
         let default$;
         default$ = $1[0];
         let _pipe = [
           default$,
-          toList([new DecodeError(kind, classify_dynamic(data), toList([]))])
+          toList([new DecodeError(kind, classify_dynamic(data2), toList([]))])
         ];
         return push_path(_pipe, reverse(position));
       }
@@ -1485,14 +1485,14 @@ function index3(loop$path, loop$position, loop$inner, loop$data, loop$handle_mis
 }
 function subfield(field_path, field_decoder, next) {
   return new Decoder(
-    (data) => {
+    (data2) => {
       let $ = index3(
         field_path,
         toList([]),
         field_decoder.function,
-        data,
-        (data2, position) => {
-          let $12 = field_decoder.function(data2);
+        data2,
+        (data3, position) => {
+          let $12 = field_decoder.function(data3);
           let default$;
           default$ = $12[0];
           let _pipe = [
@@ -1506,7 +1506,7 @@ function subfield(field_path, field_decoder, next) {
       let errors1;
       out = $[0];
       errors1 = $[1];
-      let $1 = next(out).function(data);
+      let $1 = next(out).function(data2);
       let out$1;
       let errors2;
       out$1 = $1[0];
@@ -1517,14 +1517,14 @@ function subfield(field_path, field_decoder, next) {
 }
 function at(path, inner) {
   return new Decoder(
-    (data) => {
+    (data2) => {
       return index3(
         path,
         toList([]),
         inner.function,
-        data,
-        (data2, position) => {
-          let $ = inner.function(data2);
+        data2,
+        (data3, position) => {
+          let $ = inner.function(data3);
           let default$;
           default$ = $[0];
           let _pipe = [
@@ -1669,6 +1669,9 @@ function random_uniform() {
 function new_map() {
   return Dict.new();
 }
+function map_to_list(map4) {
+  return List.fromArray(map4.entries());
+}
 function map_get(map4, key) {
   const value = map4.get(key, NOT_FOUND);
   if (value === NOT_FOUND) {
@@ -1679,63 +1682,63 @@ function map_get(map4, key) {
 function map_insert(key, value, map4) {
   return map4.set(key, value);
 }
-function classify_dynamic(data) {
-  if (typeof data === "string") {
+function classify_dynamic(data2) {
+  if (typeof data2 === "string") {
     return "String";
-  } else if (typeof data === "boolean") {
+  } else if (typeof data2 === "boolean") {
     return "Bool";
-  } else if (data instanceof Result) {
+  } else if (data2 instanceof Result) {
     return "Result";
-  } else if (data instanceof List) {
+  } else if (data2 instanceof List) {
     return "List";
-  } else if (data instanceof BitArray) {
+  } else if (data2 instanceof BitArray) {
     return "BitArray";
-  } else if (data instanceof Dict) {
+  } else if (data2 instanceof Dict) {
     return "Dict";
-  } else if (Number.isInteger(data)) {
+  } else if (Number.isInteger(data2)) {
     return "Int";
-  } else if (Array.isArray(data)) {
+  } else if (Array.isArray(data2)) {
     return `Array`;
-  } else if (typeof data === "number") {
+  } else if (typeof data2 === "number") {
     return "Float";
-  } else if (data === null) {
+  } else if (data2 === null) {
     return "Nil";
-  } else if (data === void 0) {
+  } else if (data2 === void 0) {
     return "Nil";
   } else {
-    const type = typeof data;
+    const type = typeof data2;
     return type.charAt(0).toUpperCase() + type.slice(1);
   }
 }
-function index2(data, key) {
-  if (data instanceof Dict || data instanceof WeakMap || data instanceof Map) {
+function index2(data2, key) {
+  if (data2 instanceof Dict || data2 instanceof WeakMap || data2 instanceof Map) {
     const token = {};
-    const entry = data.get(key, token);
+    const entry = data2.get(key, token);
     if (entry === token) return new Ok(new None());
     return new Ok(new Some(entry));
   }
   const key_is_int = Number.isInteger(key);
-  if (key_is_int && key >= 0 && key < 8 && data instanceof List) {
+  if (key_is_int && key >= 0 && key < 8 && data2 instanceof List) {
     let i = 0;
-    for (const value of data) {
+    for (const value of data2) {
       if (i === key) return new Ok(new Some(value));
       i++;
     }
     return new Error("Indexable");
   }
-  if (key_is_int && Array.isArray(data) || data && typeof data === "object" || data && Object.getPrototypeOf(data) === Object.prototype) {
-    if (key in data) return new Ok(new Some(data[key]));
+  if (key_is_int && Array.isArray(data2) || data2 && typeof data2 === "object" || data2 && Object.getPrototypeOf(data2) === Object.prototype) {
+    if (key in data2) return new Ok(new Some(data2[key]));
     return new Ok(new None());
   }
   return new Error(key_is_int ? "Indexable" : "Dict");
 }
-function list(data, decode2, pushPath, index4, emptyList) {
-  if (!(data instanceof List || Array.isArray(data))) {
-    const error = new DecodeError("List", classify_dynamic(data), emptyList);
+function list(data2, decode2, pushPath, index4, emptyList) {
+  if (!(data2 instanceof List || Array.isArray(data2))) {
+    const error = new DecodeError("List", classify_dynamic(data2), emptyList);
     return [emptyList, List.fromArray([error])];
   }
   const decoded = [];
-  for (const element7 of data) {
+  for (const element7 of data2) {
     const layer = decode2(element7);
     const [out, errors] = layer;
     if (errors instanceof NonEmpty) {
@@ -1747,12 +1750,12 @@ function list(data, decode2, pushPath, index4, emptyList) {
   }
   return [List.fromArray(decoded), emptyList];
 }
-function int(data) {
-  if (Number.isInteger(data)) return new Ok(data);
+function int(data2) {
+  if (Number.isInteger(data2)) return new Ok(data2);
   return new Error(0);
 }
-function string(data) {
-  if (typeof data === "string") return new Ok(data);
+function string(data2) {
+  if (typeof data2 === "string") return new Ok(data2);
   return new Error("");
 }
 
@@ -1783,6 +1786,26 @@ function from_list_loop(loop$list, loop$initial) {
 }
 function from_list(list4) {
   return from_list_loop(list4, new_map());
+}
+function fold_loop(loop$list, loop$initial, loop$fun) {
+  while (true) {
+    let list4 = loop$list;
+    let initial = loop$initial;
+    let fun = loop$fun;
+    if (list4 instanceof Empty) {
+      return initial;
+    } else {
+      let rest = list4.tail;
+      let k = list4.head[0];
+      let v = list4.head[1];
+      loop$list = rest;
+      loop$initial = fun(initial, k, v);
+      loop$fun = fun;
+    }
+  }
+}
+function fold(dict3, initial, fun) {
+  return fold_loop(map_to_list(dict3), initial, fun);
 }
 
 // build/dev/javascript/gleam_stdlib/gleam/list.mjs
@@ -2544,15 +2567,15 @@ function jsCoreUnexpectedByteError(err) {
   const byte = toHex(match[2]);
   return new UnexpectedByte(byte, 0);
 }
-function toHex(char2) {
-  return "0x" + char2.charCodeAt(0).toString(16).toUpperCase();
+function toHex(char) {
+  return "0x" + char.charCodeAt(0).toString(16).toUpperCase();
 }
 function getPositionFromMultiline(line, column, string5) {
   if (line === 1) return column - 1;
   let currentLn = 1;
   let position = 0;
-  string5.split("").find((char2, idx) => {
-    if (char2 === "\n") currentLn += 1;
+  string5.split("").find((char, idx) => {
+    if (char === "\n") currentLn += 1;
     if (currentLn === line) {
       position = idx + column;
       return true;
@@ -2622,6 +2645,17 @@ function array2(entries, inner_type) {
   let _pipe = entries;
   let _pipe$1 = map(_pipe, inner_type);
   return preprocessed_array(_pipe$1);
+}
+function dict2(dict3, keys2, values3) {
+  return object2(
+    fold(
+      dict3,
+      toList([]),
+      (acc, k, v) => {
+        return prepend([keys2(k), values3(v)], acc);
+      }
+    )
+  );
 }
 
 // build/dev/javascript/lustre/lustre/internals/constants.ffi.mjs
@@ -2852,6 +2886,9 @@ function class$(name) {
 function none() {
   return class$("");
 }
+function data(key, value) {
+  return attribute2("data-" + key, value);
+}
 function id(value) {
   return attribute2("id", value);
 }
@@ -2873,11 +2910,11 @@ function target(value) {
 
 // build/dev/javascript/lustre/lustre/effect.mjs
 var Effect = class extends CustomType {
-  constructor(synchronous, before_paint2, after_paint) {
+  constructor(synchronous, before_paint2, after_paint2) {
     super();
     this.synchronous = synchronous;
     this.before_paint = before_paint2;
-    this.after_paint = after_paint;
+    this.after_paint = after_paint2;
   }
 };
 var empty = /* @__PURE__ */ new Effect(
@@ -2903,9 +2940,17 @@ function before_paint(effect) {
   };
   return new Effect(empty.synchronous, toList([task]), empty.after_paint);
 }
-function event2(name, data) {
+function after_paint(effect) {
   let task = (actions) => {
-    return actions.emit(name, data);
+    let root3 = actions.root();
+    let dispatch = actions.dispatch;
+    return effect(dispatch, root3);
+  };
+  return new Effect(empty.synchronous, empty.before_paint, toList([task]));
+}
+function event2(name, data2) {
+  let task = (actions) => {
+    return actions.emit(name, data2);
   };
   return new Effect(toList([task]), empty.before_paint, empty.after_paint);
 }
@@ -3508,8 +3553,8 @@ function unsafe_raw_html(namespace, tag, attributes, inner_html) {
 function text3(content) {
   return text2(content);
 }
-function style2(attrs, css7) {
-  return unsafe_raw_html("", "style", attrs, css7);
+function style2(attrs, css6) {
+  return unsafe_raw_html("", "style", attrs, css6);
 }
 function div(attrs, children) {
   return element2("div", attrs, children);
@@ -4565,7 +4610,7 @@ function diff(events, old, new$8) {
 var setTimeout = globalThis.setTimeout;
 var clearTimeout = globalThis.clearTimeout;
 var createElementNS = (ns, name) => document2().createElementNS(ns, name);
-var createTextNode = (data) => document2().createTextNode(data);
+var createTextNode = (data2) => document2().createTextNode(data2);
 var createDocumentFragment = () => document2().createDocumentFragment();
 var insertBefore = (parent, node, reference) => parent.insertBefore(node, reference);
 var moveBefore = SUPPORTS_MOVE_BEFORE ? (parent, node, reference) => parent.moveBefore(node, reference) : insertBefore;
@@ -4576,7 +4621,7 @@ var removeAttribute = (node, name) => node.removeAttribute(name);
 var addEventListener = (node, name, handler, options) => node.addEventListener(name, handler, options);
 var removeEventListener = (node, name, handler) => node.removeEventListener(name, handler);
 var setInnerHtml = (node, innerHtml) => node.innerHTML = innerHtml;
-var setData = (node, data) => node.data = data;
+var setData = (node, data2) => node.data = data2;
 var meta = Symbol("lustre");
 var MetadataNode = class {
   constructor(kind, parent, node, key) {
@@ -4901,7 +4946,7 @@ var Reconciler = class {
         ...new FormData(event4.target, event4.submitter).entries()
       ];
     }
-    const data = this.#useServerEvents ? createServerEvent(event4, include ?? []) : event4;
+    const data2 = this.#useServerEvents ? createServerEvent(event4, include ?? []) : event4;
     const throttle = throttles.get(type);
     if (throttle) {
       const now = Date.now();
@@ -4909,7 +4954,7 @@ var Reconciler = class {
       if (now > last + throttle.delay) {
         throttle.last = now;
         throttle.lastEvent = event4;
-        this.#dispatch(data, path, type, immediate);
+        this.#dispatch(data2, path, type, immediate);
       }
     }
     const debounce = debouncers.get(type);
@@ -4917,11 +4962,11 @@ var Reconciler = class {
       clearTimeout(debounce.timeout);
       debounce.timeout = setTimeout(() => {
         if (event4 === throttles.get(type)?.lastEvent) return;
-        this.#dispatch(data, path, type, immediate);
+        this.#dispatch(data2, path, type, immediate);
       }, debounce.delay);
     }
     if (!throttle && !debounce) {
-      this.#dispatch(data, path, type, immediate);
+      this.#dispatch(data2, path, type, immediate);
     }
   }
 };
@@ -4942,7 +4987,7 @@ var handleEvent = (event4) => {
   handler(event4);
 };
 var createServerEvent = (event4, include = []) => {
-  const data = {};
+  const data2 = {};
   if (event4.type === "input" || event4.type === "change") {
     include.push("target.value");
   }
@@ -4951,7 +4996,7 @@ var createServerEvent = (event4, include = []) => {
   }
   for (const property3 of include) {
     const path = property3.split(".");
-    for (let i = 0, input = event4, output = data; i < path.length; i++) {
+    for (let i = 0, input = event4, output = data2; i < path.length; i++) {
       if (i === path.length - 1) {
         output[path[i]] = input[path[i]];
         break;
@@ -4960,7 +5005,7 @@ var createServerEvent = (event4, include = []) => {
       input = input[path[i]];
     }
   }
-  return data;
+  return data2;
 };
 var syncedBooleanAttribute = /* @__NO_SIDE_EFFECTS__ */ (name) => {
   return {
@@ -5258,11 +5303,11 @@ var Runtime = class {
       this.#tick(effects);
     }
   }
-  emit(event4, data) {
+  emit(event4, data2) {
     const target2 = this.root.host ?? this.root;
     target2.dispatchEvent(
       new CustomEvent(event4, {
-        detail: data,
+        detail: data2,
         bubbles: true,
         composed: true
       })
@@ -5305,7 +5350,7 @@ var Runtime = class {
   #shouldFlush = false;
   #actions = {
     dispatch: (msg, immediate) => this.dispatch(msg, immediate),
-    emit: (event4, data) => this.emit(event4, data),
+    emit: (event4, data2) => this.emit(event4, data2),
     select: () => {
     },
     root: () => this.root,
@@ -5437,10 +5482,10 @@ var EffectDispatchedMessage = class extends CustomType {
   }
 };
 var EffectEmitEvent = class extends CustomType {
-  constructor(name, data) {
+  constructor(name, data2) {
     super();
     this.name = name;
-    this.data = data;
+    this.data = data2;
   }
 };
 var SystemRequestedShutdown = class extends CustomType {
@@ -5573,8 +5618,8 @@ var make_component = ({ init: init6, update: update7, view: view6, config }, nam
     dispatch(msg, immediate = false) {
       this.#runtime.dispatch(msg, immediate);
     }
-    emit(event4, data) {
-      this.#runtime.emit(event4, data);
+    emit(event4, data2) {
+      this.#runtime.emit(event4, data2);
     }
     provide(key, value) {
       this.#runtime.provide(key, value);
@@ -5953,7 +5998,7 @@ function scenes(columns) {
           7e3
         )
       ]),
-      new Some("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\u25B6#\u250F\u2501\u2513\u2503\u25CF\u2579\u257B\u2517\u251B")
+      new Some(" ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\u25B6#\u250F\u2501\u2513\u2503\u25CF\u2579\u257B\u2517\u251B")
     ),
     new Scene(
       "!",
@@ -5989,8 +6034,8 @@ function scenes(columns) {
 }
 
 // build/dev/javascript/lustre/lustre/event.mjs
-function emit2(event4, data) {
-  return event2(event4, data);
+function emit2(event4, data2) {
+  return event2(event4, data2);
 }
 function is_immediate_event(name) {
   if (name === "input") {
@@ -6057,112 +6102,79 @@ gsap.config({
   force3D: true
 });
 var timeline;
-var charState = {};
-var adjacencyList = {};
-var desiredState = {};
-function getState(id2) {
-  return charState[id2] || " ";
-}
-function getNext(char2) {
-  return adjacencyList[char2] || " ";
-}
-function getDistance(from2, to) {
+function getDistance(from2, to, adjacencyList) {
+  if (!from2 || !to) {
+    console.error("Invalid characters", { from: from2, to });
+    return 0;
+  }
   if (!(from2 in adjacencyList) || !(to in adjacencyList)) {
-    console.error("Invalid characters", from2, to);
+    console.error("Invalid list", { adjacencyList, from: from2, to });
     return 0;
   }
   let dist = 0;
   let current = from2;
   while (current !== to) {
-    current = getNext(current);
+    current = adjacencyList[current];
     dist++;
   }
   return dist;
 }
-function flip(el, times) {
-  const id2 = el.id;
-  function curr() {
-    return charState[id2] || " ";
-  }
-  function next() {
-    return adjacencyList[curr()];
-  }
+function flip(el, adjacencyList) {
   const topContent = el.querySelector(`.top > .flap-content`);
-  const bottomContent = el.querySelector(`.bottom > .flap-content`);
-  const flippingBottomContent = el.querySelector(
-    `.flipping-bottom > .flap-content`
-  );
+  const bottom = el.querySelector(`.bottom`);
+  const bottomContent = bottom.querySelector(`.flap-content`);
   const flippingBottom = el.querySelector(`.flipping-bottom`);
-  return gsap.timeline({
-    // paused: true,
-    onStart: () => {
-      topContent.textContent = next();
-      bottomContent.textContent = curr();
-      flippingBottomContent.textContent = next();
-    },
-    onRepeat: () => {
-      charState[id2] = next();
-      topContent.textContent = next();
-      bottomContent.textContent = curr();
-      flippingBottomContent.textContent = next();
-    },
-    onComplete: () => {
-      charState[id2] = next();
-      bottomContent.textContent = curr();
-      flippingBottomContent.textContent = curr();
+  const flippingBottomContent = flippingBottom.querySelector(`.flap-content`);
+  let destination = el.dataset.dest || " ";
+  let distance = 0;
+  let curr = topContent.textContent || " ";
+  let from2 = curr;
+  let next = (() => {
+    if (curr in adjacencyList) {
+      return adjacencyList[curr];
     }
-  }).set(flippingBottom, { rotationX: 90 }, 0).to(flippingBottom, {
-    rotationX: 0,
-    duration: 0.05,
-    ease: "power1.inOut"
-  }).set(flippingBottom, { rotationX: 90 }, ">").repeat(times - 1);
+    distance = 1;
+    from2 = " ";
+    return " ";
+  })();
+  distance += getDistance(from2, destination, adjacencyList);
+  if (distance === 0) {
+    return null;
+  }
+  let timeline2 = gsap.timeline({ force3D: true }).set(bottom, { opacity: 1 }, 0);
+  while (distance > 0) {
+    timeline2 = timeline2.call(() => {
+      topContent.textContent = next;
+      bottomContent.textContent = curr;
+      flippingBottomContent.textContent = next;
+      curr = next;
+      next = adjacencyList[curr];
+    }, 0).to(flippingBottom, {
+      rotationX: 0,
+      duration: 0.04,
+      ease: "power1.inOut"
+    }).set(flippingBottom, { rotationX: 90 }, ">");
+    distance--;
+  }
+  timeline2 = timeline2.set(bottom, { opacity: 0 }, ">");
+  return timeline2;
 }
 function animate_stuff() {
-  adjacencyList = {
-    " ": "A",
-    A: "B",
-    B: "C",
-    C: "D",
-    D: "E",
-    E: "F",
-    F: "G",
-    G: "H",
-    H: " "
-  };
-  desiredState = {
-    "1-1": "A",
-    "1-2": "B",
-    "1-3": "C",
-    "1-4": "D",
-    "1-5": "E",
-    "1-6": "F",
-    "1-7": "G"
-  };
-  let all = document.querySelector("nick-dot-bingo-v2").shadowRoot.querySelectorAll(".split-flap");
-  console.log("All", all);
+  let display2 = document.querySelector("nick-dot-bingo-v2").shadowRoot.querySelector(".display");
+  let list4 = JSON.parse(display2.dataset.adjacencyList);
+  let displayEls = display2.querySelectorAll(".split-flap");
   if (timeline) {
-    timeline.pause();
-    timeline.progress(0);
     timeline.kill();
   }
   timeline = gsap.timeline({
     paused: true,
-    // autoRemoveChildren: true,
-    onComplete: function() {
-      console.log(charState);
-    }
+    force3D: true
   });
-  for (const el of all) {
-    if (!(el.id in desiredState)) {
-      continue;
+  for (const el of displayEls) {
+    const child = flip(el, list4);
+    if (child) {
+      timeline = timeline.add(child, 0);
     }
-    let from2 = getState(el.id);
-    let to = desiredState[el.id];
-    let distance = getDistance(from2, to);
-    if (distance === 0) {
-      continue;
-    }
-    timeline.add(flip(el, distance), 0);
   }
   timeline.play();
 }
@@ -6192,6 +6204,76 @@ function find_next(loop$l, loop$current) {
       }
     }
   }
+}
+function zip_longest(list1, list22) {
+  let _block;
+  if (list1 instanceof Empty) {
+    _block = [new None(), toList([])];
+  } else {
+    let h = list1.head;
+    let rest = list1.tail;
+    _block = [new Some(h), rest];
+  }
+  let $ = _block;
+  let head1;
+  let rest1;
+  head1 = $[0];
+  rest1 = $[1];
+  let _block$1;
+  if (list22 instanceof Empty) {
+    _block$1 = [new None(), toList([])];
+  } else {
+    let h = list22.head;
+    let rest = list22.tail;
+    _block$1 = [new Some(h), rest];
+  }
+  let $1 = _block$1;
+  let head2;
+  let rest2;
+  head2 = $1[0];
+  rest2 = $1[1];
+  let _block$2;
+  if (head2 instanceof Some) {
+    if (head1 instanceof Some) {
+      let h2 = head2[0];
+      let h1 = head1[0];
+      _block$2 = new Some([new Some(h1), new Some(h2)]);
+    } else {
+      let h2 = head2[0];
+      _block$2 = new Some([new None(), new Some(h2)]);
+    }
+  } else if (head1 instanceof Some) {
+    let h1 = head1[0];
+    _block$2 = new Some([new Some(h1), new None()]);
+  } else {
+    _block$2 = head1;
+  }
+  let el = _block$2;
+  if (el instanceof Some) {
+    let el$1 = el[0];
+    return prepend(el$1, zip_longest(rest1, rest2));
+  } else {
+    return toList([]);
+  }
+}
+function first_is_some(pair) {
+  let $ = pair[0];
+  if ($ instanceof Some) {
+    let b = pair[1];
+    return new Ok(b);
+  } else {
+    return new Error(void 0);
+  }
+}
+function to_adjacency_list(chars) {
+  let _pipe = first(chars);
+  let _pipe$1 = map3(_pipe, (char) => {
+    return chars + char;
+  });
+  let _pipe$2 = unwrap(_pipe$1, "");
+  let _pipe$3 = graphemes(_pipe$2);
+  let _pipe$4 = window_by_2(_pipe$3);
+  return from_list(_pipe$4);
 }
 
 // build/dev/javascript/split_flap/components/char.mjs
@@ -6234,10 +6316,10 @@ var FlipStarted = class extends CustomType {
 };
 var FlipEnded = class extends CustomType {
 };
-function to_adjacency_list(chars) {
+function to_adjacency_list2(chars) {
   let _pipe = first(chars);
-  let _pipe$1 = map3(_pipe, (char2) => {
-    return chars + char2;
+  let _pipe$1 = map3(_pipe, (char) => {
+    return chars + char;
   });
   let _pipe$2 = unwrap(_pipe$1, "");
   let _pipe$3 = graphemes(_pipe$2);
@@ -6254,11 +6336,11 @@ function css(ms) {
   return replace(_pipe, "<flip_duration>", to_string(ms));
 }
 var default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\u25B6()\u{1D122}\u{1D15F}\u{1D13D}#!";
-function element4(char2, chars, on_click2, flip_duration_ms2) {
+function element4(char, chars, on_click2, flip_duration_ms2) {
   return element2(
     "split-flap-char",
     toList([
-      attribute2("letter", char2),
+      attribute2("letter", char),
       attribute2(
         "chars",
         (() => {
@@ -6401,7 +6483,7 @@ var flip_duration_ms = 30;
 function init(_) {
   return [
     new Model(
-      to_adjacency_list(default_chars),
+      to_adjacency_list2(default_chars),
       " ",
       " ",
       new Idle(),
@@ -6430,7 +6512,7 @@ function update2(model, msg) {
     let chars = msg[0];
     return [
       new Model(
-        to_adjacency_list(chars),
+        to_adjacency_list2(chars),
         model.current_char,
         model.dest_char,
         model.state,
@@ -6549,8 +6631,8 @@ function register() {
         (val) => {
           return try$(
             first(val),
-            (char2) => {
-              return new Ok(new LetterAttrChanged(char2));
+            (char) => {
+              return new Ok(new LetterAttrChanged(char));
             }
           );
         }
@@ -6562,8 +6644,8 @@ function register() {
           let _pipe$1 = graphemes(_pipe);
           let _pipe$2 = filter(
             _pipe$1,
-            (char2) => {
-              return char2 !== " ";
+            (char) => {
+              return char !== " ";
             }
           );
           let _pipe$3 = unique(_pipe$2);
@@ -6739,9 +6821,9 @@ function row(line, row_num, num_cols, char_stack) {
   let _pipe$1 = graphemes(_pipe);
   _block$1 = index_map(
     _pipe$1,
-    (char2, idx) => {
+    (char, idx) => {
       let key = to_string(row_num) + "-" + to_string(idx);
-      return [key, element4(char2, char_stack, new None(), new None())];
+      return [key, element4(char, char_stack, new None(), new None())];
     }
   );
   let children = _block$1;
@@ -6767,7 +6849,7 @@ function row(line, row_num, num_cols, char_stack) {
     children
   );
 }
-function zip_longest(list1, list22) {
+function zip_longest2(list1, list22) {
   let _block;
   if (list1 instanceof Empty) {
     _block = [new None(), toList([])];
@@ -6813,12 +6895,12 @@ function zip_longest(list1, list22) {
   let el = _block$2;
   if (el instanceof Some) {
     let el$1 = el[0];
-    return prepend(el$1, zip_longest(rest1, rest2));
+    return prepend(el$1, zip_longest2(rest1, rest2));
   } else {
     return toList([]);
   }
 }
-function first_is_some(pair) {
+function first_is_some2(pair) {
   let $ = pair[0];
   if ($ instanceof Some) {
     let b = pair[1];
@@ -6863,9 +6945,9 @@ function view2(model) {
   let _block;
   let _pipe = model.lines;
   let _pipe$1 = ((_capture) => {
-    return zip_longest(range(0, model.rows - 1), _capture);
+    return zip_longest2(range(0, model.rows - 1), _capture);
   })(_pipe);
-  _block = filter_map(_pipe$1, first_is_some);
+  _block = filter_map(_pipe$1, first_is_some2);
   let sanitized_lines = _block;
   return fragment2(
     toList([
@@ -7103,8 +7185,8 @@ var Echo$Inspector = class {
   #string(str) {
     let new_str = '"';
     for (let i = 0; i < str.length; i++) {
-      const char2 = str[i];
-      switch (char2) {
+      const char = str[i];
+      switch (char) {
         case "\n":
           new_str += "\\n";
           break;
@@ -7124,10 +7206,10 @@ var Echo$Inspector = class {
           new_str += '\\"';
           break;
         default:
-          if (char2 < " " || char2 > "~" && char2 < "\xA0") {
-            new_str += "\\u{" + char2.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0") + "}";
+          if (char < " " || char > "~" && char < "\xA0") {
+            new_str += "\\u{" + char.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0") + "}";
           } else {
-            new_str += char2;
+            new_str += char;
           }
       }
     }
@@ -7307,10 +7389,10 @@ function view3(model) {
   let first_dot_idx = fold_until(
     chars,
     0,
-    (acc, char2) => {
-      if (char2 === "\u25CB") {
+    (acc, char) => {
+      if (char === "\u25CB") {
         return new Stop(acc);
-      } else if (char2 === "\u25CF") {
+      } else if (char === "\u25CF") {
         return new Stop(acc);
       } else {
         return new Continue(acc + 1);
@@ -7324,41 +7406,41 @@ function view3(model) {
         toList([class$("progress-bar")]),
         index_map(
           chars,
-          (char2, idx) => {
+          (char, idx) => {
             let page = 1 + globalThis.Math.trunc((idx - first_dot_idx) / 2);
             return [
               "pb-" + to_string(idx),
               element4(
-                char2,
+                char,
                 (() => {
-                  if (char2 === "\u25CB") {
+                  if (char === "\u25CB") {
                     return new Some("\u25CB\u25CF");
-                  } else if (char2 === "\u25CF") {
+                  } else if (char === "\u25CF") {
                     return new Some("\u25CB\u25CF");
-                  } else if (char2 === "\u{1D106}") {
+                  } else if (char === "\u{1D106}") {
                     return new Some("()\u{1D106}\u{1D107}");
-                  } else if (char2 === "\u{1D107}") {
+                  } else if (char === "\u{1D107}") {
                     return new Some("()\u{1D106}\u{1D107}");
-                  } else if (char2 === "(") {
+                  } else if (char === "(") {
                     return new Some("()\u{1D106}\u{1D107}");
-                  } else if (char2 === ")") {
+                  } else if (char === ")") {
                     return new Some("()\u{1D106}\u{1D107}");
                   } else {
                     return new None();
                   }
                 })(),
                 (() => {
-                  if (char2 === "\u25CB") {
+                  if (char === "\u25CB") {
                     return new Some(new PageClicked(page));
-                  } else if (char2 === "\u25CF") {
+                  } else if (char === "\u25CF") {
                     return new Some(new PageClicked(page));
-                  } else if (char2 === "\u{1D106}") {
+                  } else if (char === "\u{1D106}") {
                     return new Some(new AutoPlayClicked());
-                  } else if (char2 === "\u{1D107}") {
+                  } else if (char === "\u{1D107}") {
                     return new Some(new AutoPlayClicked());
-                  } else if (char2 === "(") {
+                  } else if (char === "(") {
                     return new Some(new AutoPlayClicked());
-                  } else if (char2 === ")") {
+                  } else if (char === ")") {
                     return new Some(new AutoPlayClicked());
                   } else {
                     return new None();
@@ -7945,8 +8027,8 @@ var Echo$Inspector2 = class {
   #string(str) {
     let new_str = '"';
     for (let i = 0; i < str.length; i++) {
-      const char2 = str[i];
-      switch (char2) {
+      const char = str[i];
+      switch (char) {
         case "\n":
           new_str += "\\n";
           break;
@@ -7966,10 +8048,10 @@ var Echo$Inspector2 = class {
           new_str += '\\"';
           break;
         default:
-          if (char2 < " " || char2 > "~" && char2 < "\xA0") {
-            new_str += "\\u{" + char2.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0") + "}";
+          if (char < " " || char > "~" && char < "\xA0") {
+            new_str += "\\u{" + char.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0") + "}";
           } else {
-            new_str += char2;
+            new_str += char;
           }
       }
     }
@@ -7999,170 +8081,6 @@ var Echo$Inspector2 = class {
     return acc;
   }
 };
-
-// build/dev/javascript/split_flap/components/display_v2.mjs
-function char(id2) {
-  return div(
-    toList([id(id2), class$("split-flap")]),
-    toList([
-      div(
-        toList([class$("flap top")]),
-        toList([
-          span(
-            toList([class$("flap-content")]),
-            toList([text3(" ")])
-          )
-        ])
-      ),
-      div(
-        toList([class$("flap bottom")]),
-        toList([
-          span(
-            toList([class$("flap-content")]),
-            toList([text3(" ")])
-          )
-        ])
-      ),
-      div(
-        toList([class$("flap flipping-bottom")]),
-        toList([
-          span(
-            toList([class$("flap-content")]),
-            toList([text3(" ")])
-          )
-        ])
-      )
-    ])
-  );
-}
-function row2(line, row_num, num_cols, _) {
-  let _block;
-  if (line instanceof Some) {
-    let content = line[0];
-    let _pipe2 = content.text;
-    let _pipe$12 = pad_end(_pipe2, num_cols, " ");
-    _block = slice(_pipe$12, 0, num_cols);
-  } else {
-    _block = repeat(" ", num_cols);
-  }
-  let chars = _block;
-  let _block$1;
-  let _pipe = chars;
-  let _pipe$1 = graphemes(_pipe);
-  _block$1 = index_map(
-    _pipe$1,
-    (_2, idx) => {
-      let key = to_string(row_num) + "-" + to_string(idx);
-      return [key, char(key)];
-    }
-  );
-  let children = _block$1;
-  let _block$2;
-  if (line instanceof Some) {
-    let $ = line[0];
-    if ($ instanceof Link) {
-      let url = $.url;
-      _block$2 = toList([href(url), target("_blank")]);
-    } else {
-      _block$2 = toList([]);
-    }
-  } else {
-    _block$2 = toList([]);
-  }
-  let link_attrs = _block$2;
-  return element3(
-    "a",
-    prepend(
-      class$("row"),
-      prepend(part("row"), link_attrs)
-    ),
-    children
-  );
-}
-function zip_longest2(list1, list22) {
-  let _block;
-  if (list1 instanceof Empty) {
-    _block = [new None(), toList([])];
-  } else {
-    let h = list1.head;
-    let rest = list1.tail;
-    _block = [new Some(h), rest];
-  }
-  let $ = _block;
-  let head1;
-  let rest1;
-  head1 = $[0];
-  rest1 = $[1];
-  let _block$1;
-  if (list22 instanceof Empty) {
-    _block$1 = [new None(), toList([])];
-  } else {
-    let h = list22.head;
-    let rest = list22.tail;
-    _block$1 = [new Some(h), rest];
-  }
-  let $1 = _block$1;
-  let head2;
-  let rest2;
-  head2 = $1[0];
-  rest2 = $1[1];
-  let _block$2;
-  if (head2 instanceof Some) {
-    if (head1 instanceof Some) {
-      let h2 = head2[0];
-      let h1 = head1[0];
-      _block$2 = new Some([new Some(h1), new Some(h2)]);
-    } else {
-      let h2 = head2[0];
-      _block$2 = new Some([new None(), new Some(h2)]);
-    }
-  } else if (head1 instanceof Some) {
-    let h1 = head1[0];
-    _block$2 = new Some([new Some(h1), new None()]);
-  } else {
-    _block$2 = head1;
-  }
-  let el = _block$2;
-  if (el instanceof Some) {
-    let el$1 = el[0];
-    return prepend(el$1, zip_longest2(rest1, rest2));
-  } else {
-    return toList([]);
-  }
-}
-function first_is_some2(pair) {
-  let $ = pair[0];
-  if ($ instanceof Some) {
-    let b = pair[1];
-    return new Ok(b);
-  } else {
-    return new Error(void 0);
-  }
-}
-var css5 = '\n  :host {\n    display: block;\n    width: 100%;\n    height: 100%;\n    container-type: inline-size;\n  }\n\n  .display {\n    container-type: inline-size;\n    display: flex;\n    flex-direction: column;\n    gap: 1cqh; \n    width: 100%;\n    height: 100%;\n    background-color: rgb(40, 40, 40);\n  }\n\n  .row {\n    container-type: inline-size;\n    display: flex;\n    flex-direction: row;\n    gap: 1cqw;\n    cursor: default;\n  }\n\n  .row[href] {\n    cursor: pointer;\n  }\n  \n  .split-flap {\n    position: relative;\n    width: 100%;\n    aspect-ratio: 1/1.618; /* golden ratio ;) */\n    display: inline-block;\n    container-type: inline-size;\n  }\n\n  .split-flap::selection {\n    background: white;\n    color: black;\n  }\n\n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 3.5cqw;\n    background: rgb(20, 20, 20);\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    font-size: 120cqw;\n    font-weight: 500;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    border-radius: 5cqw;\n    perspective: 400cqw;\n    background: rgb(40, 40, 40);\n    box-shadow: inset 1cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    z-index: 1;\n    \n    display: flex;\n    align-items: center;\n    justify-content: center;\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n    z-index: 0;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw;\n    user-select: text;\n    height: 100%;\n    opacity: 1;\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    opacity: 1;\n  }\n\n  .flap.bottom.flipping {\n    opacity: 1;\n  }\n\n  @keyframes flip-bottom {\n    0% {\n      transform: rotateX(80deg);      \n    }\n    100% {\n      transform: rotateX(0deg);\n    }\n  }\n\n  .flap.flipping-bottom {\n    opacity: 1;\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    z-index: 10;\n    box-shadow: inset -2cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.05), 0cqw -3cqw 2cqw 2cqw rgba(0, 0, 0, 0.05);\n    transform: rotateX(90deg);\n  }\n  \n  .flap.top .flap-content {\n    top: 0;\n    height: 100%\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    /* Positions text in bottom half of flap */\n    bottom: 0;\n  }\n';
-function display(lines, chars, cols, rows) {
-  let _block;
-  let _pipe = lines;
-  let _pipe$1 = ((_capture) => {
-    return zip_longest2(range(0, rows - 1), _capture);
-  })(_pipe);
-  _block = filter_map(_pipe$1, first_is_some2);
-  let sanitized_lines = _block;
-  return fragment2(
-    toList([
-      style2(toList([]), css5),
-      div2(
-        toList([class$("display")]),
-        index_map(
-          sanitized_lines,
-          (line, line_num) => {
-            return [to_string(line_num), row2(line, line_num, cols, chars)];
-          }
-        )
-      )
-    ])
-  );
-}
 
 // build/dev/javascript/split_flap/components/bingo_v2.mjs
 var BingoState2 = class extends CustomType {
@@ -8205,8 +8123,6 @@ var TimeoutStarted2 = class extends CustomType {
   }
 };
 var TimeoutEnded2 = class extends CustomType {
-};
-var Clicked = class extends CustomType {
 };
 function get_cols_effect2() {
   return before_paint(
@@ -8271,10 +8187,11 @@ function find_scene2(loop$scenes, loop$page) {
 }
 function start_timeout2(frame, id2) {
   if (id2 instanceof Some) {
+    echo3("Timeout Skipped", void 0, "src/components/bingo_v2.gleam", 202);
     return none2();
   } else {
-    return from(
-      (dispatch) => {
+    return after_paint(
+      (dispatch, _) => {
         let id$1 = set_timeout(
           frame.ms,
           () => {
@@ -8416,10 +8333,13 @@ function reduce2(model, msg) {
           model.auto_play,
           new Some(id2)
         ),
-        none2()
+        (() => {
+          animate_stuff();
+          return none2();
+        })()
       ]
     );
-  } else if (msg instanceof TimeoutEnded2) {
+  } else {
     return try$(
       model.current,
       (current) => {
@@ -8458,16 +8378,6 @@ function reduce2(model, msg) {
         );
       }
     );
-  } else {
-    return new Ok(
-      [
-        model,
-        (() => {
-          animate_stuff();
-          return none2();
-        })()
-      ]
-    );
   }
 }
 function update6(model, msg) {
@@ -8476,11 +8386,206 @@ function update6(model, msg) {
     let next = $[0];
     return next;
   } else {
-    echo3("ERROR", void 0, "src/components/bingo_v2.gleam", 93);
+    echo3("ERROR", void 0, "src/components/bingo_v2.gleam", 98);
     return [model, none2()];
   }
 }
-var css6 = "\n  :host {\n    display: block;\n    container-type: inline-size;\n    height: 100%;\n    width: 100%;\n    min-height: fit-content;\n  }\n\n  .panel {\n    position: relative;\n    width: 100%;\n    height: 100%;\n    min-height: fit-content;\n    overflow: hidden;\n\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n  }\n\n  .matrix {\n    display: flex;\n    flex-direction: column;\n    justify-content: space-between;\n    height: 100%;\n    min-height: fit-content;\n  }\n  ";
+function character(id2, dest, on_click2) {
+  return div(
+    toList([
+      id(id2),
+      class$("split-flap"),
+      data("dest", dest),
+      (() => {
+        if (on_click2 instanceof Some) {
+          let m = on_click2[0];
+          return on_click(m);
+        } else {
+          return none();
+        }
+      })()
+    ]),
+    toList([
+      div(
+        toList([class$("flap top")]),
+        toList([
+          span(toList([class$("flap-content")]), toList([]))
+        ])
+      ),
+      div(
+        toList([class$("flap bottom")]),
+        toList([
+          span(toList([class$("flap-content")]), toList([]))
+        ])
+      ),
+      div(
+        toList([class$("flap flipping-bottom")]),
+        toList([
+          span(toList([class$("flap-content")]), toList([]))
+        ])
+      )
+    ])
+  );
+}
+function row2(line, row_num, num_cols) {
+  let _block;
+  if (line instanceof Some) {
+    let content = line[0];
+    let _pipe2 = content.text;
+    let _pipe$12 = pad_end(_pipe2, num_cols, " ");
+    _block = slice(_pipe$12, 0, num_cols);
+  } else {
+    _block = repeat(" ", num_cols);
+  }
+  let chars = _block;
+  let _block$1;
+  let _pipe = chars;
+  let _pipe$1 = graphemes(_pipe);
+  _block$1 = index_map(
+    _pipe$1,
+    (char, idx) => {
+      let id2 = to_string(row_num) + "-" + to_string(idx);
+      return [id2, character(id2, char, new None())];
+    }
+  );
+  let children = _block$1;
+  let _block$2;
+  if (line instanceof Some) {
+    let $ = line[0];
+    if ($ instanceof Link) {
+      let url = $.url;
+      _block$2 = toList([href(url), target("_blank")]);
+    } else {
+      _block$2 = toList([]);
+    }
+  } else {
+    _block$2 = toList([]);
+  }
+  let link_attrs = _block$2;
+  return element3(
+    "a",
+    prepend(
+      class$("row"),
+      prepend(part("row"), link_attrs)
+    ),
+    children
+  );
+}
+function pagination(pages, page, cols, auto_play) {
+  let empty3 = repeat(" ", cols);
+  let _block;
+  let _pipe = range(1, pages);
+  let _pipe$1 = map(
+    _pipe,
+    (idx) => {
+      let $ = idx === page;
+      if ($) {
+        return "\u25CF";
+      } else {
+        return "\u25CB";
+      }
+    }
+  );
+  _block = join(_pipe$1, " ");
+  let dots = _block;
+  let _block$1;
+  if (auto_play) {
+    _block$1 = "( " + dots + " )";
+  } else {
+    _block$1 = "\u{1D106} " + dots + " \u{1D107}";
+  }
+  let dots$1 = _block$1;
+  let _block$2;
+  let _pipe$2 = dots$1;
+  let _pipe$3 = center(_pipe$2, empty3);
+  _block$2 = graphemes(_pipe$3);
+  let chars = _block$2;
+  let first_dot_idx = fold_until(
+    chars,
+    0,
+    (acc, char) => {
+      if (char === "\u25CB") {
+        return new Stop(acc);
+      } else if (char === "\u25CF") {
+        return new Stop(acc);
+      } else {
+        return new Continue(acc + 1);
+      }
+    }
+  );
+  return div2(
+    toList([class$("row")]),
+    index_map(
+      chars,
+      (char, idx) => {
+        let page$1 = 1 + globalThis.Math.trunc((idx - first_dot_idx) / 2);
+        let id2 = "pb-" + to_string(idx);
+        return [
+          id2,
+          character(
+            id2,
+            char,
+            (() => {
+              if (char === "\u25CB") {
+                return new Some(new PageClicked3(page$1));
+              } else if (char === "\u25CF") {
+                return new Some(new PageClicked3(page$1));
+              } else if (char === "\u{1D106}") {
+                return new Some(new AutoPlayClicked3());
+              } else if (char === "\u{1D107}") {
+                return new Some(new AutoPlayClicked3());
+              } else if (char === "(") {
+                return new Some(new AutoPlayClicked3());
+              } else if (char === ")") {
+                return new Some(new AutoPlayClicked3());
+              } else {
+                return new None();
+              }
+            })()
+          )
+        ];
+      }
+    )
+  );
+}
+var default_chars2 = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789\u25B6()\u{1D122}\u{1D15F}\u{1D13D}#!";
+function display(lines, chars, cols, rows) {
+  let _block;
+  let _pipe = lines;
+  let _pipe$1 = ((_capture) => {
+    return zip_longest(range(0, rows - 1), _capture);
+  })(_pipe);
+  _block = filter_map(_pipe$1, first_is_some);
+  let sanitized_lines = _block;
+  let adjacency_list = to_adjacency_list(
+    (() => {
+      if (chars instanceof Some) {
+        let chars$1 = chars[0];
+        return chars$1;
+      } else {
+        return default_chars2;
+      }
+    })()
+  );
+  let _block$1;
+  let _pipe$2 = adjacency_list;
+  let _pipe$3 = dict2(_pipe$2, identity2, string3);
+  _block$1 = to_string2(_pipe$3);
+  let list_data = _block$1;
+  return div2(
+    toList([
+      class$("display"),
+      data("adjacency-list", list_data)
+    ]),
+    index_map(
+      sanitized_lines,
+      (line, line_num) => {
+        return [to_string(line_num), row2(line, line_num, cols)];
+      }
+    )
+  );
+}
+var css5 = '\n  :host {\n    display: block;\n    container-type: inline-size;\n    height: 100%;\n    width: 100%;\n    min-height: fit-content;\n  }\n\n  .panel {\n    position: relative;\n    width: 100%;\n    height: 100%;\n    min-height: fit-content;\n    overflow: hidden;\n\n    display: flex;\n    flex-direction: column;\n    justify-content: center;\n  }\n\n  .matrix {\n    display: flex;\n    flex-direction: column;\n    justify-content: space-between;\n    height: 100%;\n    min-height: fit-content;\n  }\n\n  .display {\n    container-type: inline-size;\n    display: flex;\n    flex-direction: column;\n    gap: 1cqh; \n    width: 100%;\n    height: 100%;\n    background-color: rgb(40, 40, 40);\n  }\n\n  .row {\n    container-type: inline-size;\n    display: flex;\n    flex-direction: row;\n    gap: 1cqw;\n    cursor: default;\n  }\n\n  .row[href] {\n    cursor: pointer;\n  }\n  \n  .split-flap {\n    position: relative;\n    width: 100%;\n    aspect-ratio: 1/1.618; /* golden ratio ;) */\n    display: inline-block;\n    container-type: inline-size;\n  }\n\n  .split-flap::selection {\n    background: white;\n    color: black;\n  }\n\n  .split-flap::after {\n    content: "";\n    position: absolute;\n    left: 0;\n    right: 0;\n    top: 50%;\n    height: 3.5cqw;\n    background: rgb(20, 20, 20);\n    z-index: 20;\n  }\n\n  .flap {\n    position: absolute;\n    width: 100%;\n    height: 50%;\n    font-size: 120cqw;\n    font-weight: 500;\n    color: #d2d1d1;\n    overflow: hidden;\n    user-select: none;\n    border-radius: 5cqw;\n    perspective: 400cqw;\n    background: rgb(40, 40, 40);\n    box-shadow: inset 1cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);\n    z-index: 1;\n    \n    display: flex;\n    align-items: center;\n    justify-content: center;\n  }\n\n  .flap-content {\n    position: absolute;\n    width: 100%;\n    height: 200%;\n    display: flex;\n    align-items: center;\n    justify-content: center;\n    text-align: center;\n    z-index: 0;\n  }\n\n  .flap.top {\n    top: 0;\n    transform-origin: bottom;\n    border-radius: 5cqw;\n    user-select: text;\n    height: 100%;\n  }\n\n  .flap.bottom {\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    opacity: 0;\n  }\n\n  .flap.flipping-bottom {\n    pointer-events: none;\n    bottom: 0;\n    transform-origin: top;\n    border-radius: 0 0 5cqw 5cqw;\n    z-index: 10;\n    transform: rotateX(90deg);\n    will-change: transform;\n  }\n  \n  .flap.top .flap-content {\n    top: 0;\n    height: 100%\n  }\n\n  .flap.bottom .flap-content {\n    bottom: 0;\n  }\n\n  .flap.flipping-bottom .flap-content {\n    bottom: 0;\n  }\n  ';
 function view5(model) {
   let _block;
   let $1 = model.current;
@@ -8498,19 +8603,15 @@ function view5(model) {
   chars = $[1];
   return fragment2(
     toList([
-      style2(toList([]), css6),
+      style2(toList([]), css5),
       div(
-        toList([
-          class$("panel"),
-          part("panel"),
-          on_click(new Clicked())
-        ]),
+        toList([class$("panel"), part("panel")]),
         toList([
           div(
             toList([class$("matrix"), part("matrix")]),
             toList([
               display(lines, chars, model.columns, 7),
-              element6(
+              pagination(
                 length2(model.scenes),
                 fold_until(
                   model.scenes,
@@ -8530,11 +8631,7 @@ function view5(model) {
                   }
                 ),
                 model.columns,
-                model.auto_play,
-                (var0) => {
-                  return new PageClicked3(var0);
-                },
-                new AutoPlayClicked3()
+                model.auto_play
               )
             ])
           )
@@ -8701,8 +8798,8 @@ var Echo$Inspector3 = class {
   #string(str) {
     let new_str = '"';
     for (let i = 0; i < str.length; i++) {
-      const char2 = str[i];
-      switch (char2) {
+      const char = str[i];
+      switch (char) {
         case "\n":
           new_str += "\\n";
           break;
@@ -8722,10 +8819,10 @@ var Echo$Inspector3 = class {
           new_str += '\\"';
           break;
         default:
-          if (char2 < " " || char2 > "~" && char2 < "\xA0") {
-            new_str += "\\u{" + char2.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0") + "}";
+          if (char < " " || char > "~" && char < "\xA0") {
+            new_str += "\\u{" + char.charCodeAt(0).toString(16).toUpperCase().padStart(4, "0") + "}";
           } else {
-            new_str += char2;
+            new_str += char;
           }
       }
     }

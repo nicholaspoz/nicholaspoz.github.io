@@ -1,20 +1,26 @@
 import gleam/bool
+import gleam/function
+import gleam/int
+import gleam/json
 import gleam/list.{Continue, Stop}
 import gleam/option.{type Option, None, Some}
 import gleam/result.{lazy_or, try}
+import gleam/string
 import lustre
 import lustre/attribute
 import lustre/component
 import lustre/effect.{type Effect}
 import lustre/element.{type Element}
 import lustre/element/html
+import lustre/element/keyed
 import lustre/event
 
-import components/bingo/model.{type Frame, type Scene}
+import components/bingo/model.{type Content, type Frame, type Scene, Link}
 import components/bingo/scenes.{scenes}
-import components/display_v2
-import components/progress_bar
+import components/display_fns
 import utils.{find_next}
+
+const default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶()𝄢𝅘𝅥𝄽#!"
 
 pub fn register() -> Result(Nil, lustre.Error) {
   let component =
@@ -47,7 +53,6 @@ type Msg {
   AutoPlayClicked
   TimeoutStarted(Int)
   TimeoutEnded
-  Clicked
 }
 
 fn init(_) -> #(Model, effect.Effect(Msg)) {
@@ -99,13 +104,6 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
 fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
   case msg {
     Resized -> Ok(#(model, get_cols_effect()))
-    Clicked ->
-      Ok(
-        #(model, {
-          utils.animate_stuff()
-          effect.none()
-        }),
-      )
 
     ColumnsChanged(columns) -> {
       use <- bool.guard(columns == model.columns, Ok(#(model, effect.none())))
@@ -128,7 +126,12 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
     }
 
     TimeoutStarted(id) ->
-      Ok(#(Model(..model, timeout: Some(id)), effect.none()))
+      Ok(
+        #(Model(..model, timeout: Some(id)), {
+          utils.animate_stuff()
+          effect.none()
+        }),
+      )
 
     TimeoutEnded -> {
       use current <- try(model.current)
@@ -188,7 +191,7 @@ fn find_scene(scenes: List(Scene), page: Int) -> Result(Scene, Nil) {
 fn start_timeout(frame: Frame, current_timeout id: Option(Int)) -> Effect(Msg) {
   case id {
     None -> {
-      use dispatch <- effect.from
+      use dispatch, _ <- effect.after_paint
       let id = utils.set_timeout(frame.ms, fn() { dispatch(TimeoutEnded) })
       dispatch(TimeoutStarted(id))
     }
@@ -196,6 +199,7 @@ fn start_timeout(frame: Frame, current_timeout id: Option(Int)) -> Effect(Msg) {
     Some(_) -> {
       // Skip the timeout if there is already one in progress. Otherwise, we get
       // a snowball of transitions/timeouts weee
+      echo "Timeout Skipped"
       effect.none()
     }
   }
@@ -233,13 +237,12 @@ fn view(model: Model) -> Element(Msg) {
       [
         attribute.class("panel"),
         component.part("panel"),
-        event.on_click(Clicked),
       ],
       [
         html.div([attribute.class("matrix"), component.part("matrix")], [
-          display_v2.display(lines, chars, cols: model.columns, rows: 7),
+          display(lines, chars, cols: model.columns, rows: 7),
 
-          progress_bar.element(
+          pagination(
             pages: list.length(model.scenes),
             page: list.fold_until(model.scenes, 1, fn(acc, s) {
               case model.current {
@@ -252,13 +255,168 @@ fn view(model: Model) -> Element(Msg) {
             }),
             cols: model.columns,
             auto_play: model.auto_play,
-            on_auto_play: AutoPlayClicked,
-            on_page: PageClicked,
           ),
         ]),
       ],
     ),
   ])
+}
+
+fn display(
+  lines: List(Content),
+  chars: Option(String),
+  cols cols: Int,
+  rows rows: Int,
+) -> Element(msg) {
+  let sanitized_lines =
+    lines
+    |> utils.zip_longest(list.range(0, rows - 1), _)
+    |> list.filter_map(utils.first_is_some)
+
+  let adjacency_list =
+    utils.to_adjacency_list(case chars {
+      Some(chars) -> chars
+      None -> default_chars
+    })
+
+  let list_data =
+    adjacency_list
+    |> json.dict(function.identity, json.string)
+    |> json.to_string()
+
+  keyed.div(
+    [attribute.class("display"), attribute.data("adjacency-list", list_data)],
+    list.index_map(sanitized_lines, fn(line, line_num) {
+      #(int.to_string(line_num), row(line, row: line_num, cols: cols))
+    }),
+  )
+}
+
+fn row(
+  line: Option(Content),
+  row row_num: Int,
+  cols num_cols: Int,
+) -> Element(msg) {
+  let chars = case line {
+    Some(content) ->
+      content.text
+      |> string.pad_end(num_cols, " ")
+      |> string.slice(0, num_cols)
+
+    None -> string.repeat(" ", num_cols)
+  }
+
+  let children =
+    chars
+    |> string.to_graphemes
+    |> list.index_map(fn(char, idx) {
+      let id = int.to_string(row_num) <> "-" <> int.to_string(idx)
+      #(id, character(id, dest: char, on_click: None))
+    })
+
+  let link_attrs = case line {
+    Some(Link(_, url:)) -> [attribute.href(url), attribute.target("_blank")]
+    _ -> []
+  }
+
+  keyed.element(
+    "a",
+    [attribute.class("row"), component.part("row"), ..link_attrs],
+    children,
+  )
+}
+
+fn character(
+  id id: String,
+  dest dest: String,
+  on_click on_click: Option(msg),
+) -> Element(msg) {
+  html.div(
+    [
+      attribute.id(id),
+      attribute.class("split-flap"),
+      attribute.data("dest", dest),
+      case on_click {
+        Some(m) -> event.on_click(m)
+        None -> attribute.none()
+      },
+    ],
+    [
+      html.div([attribute.class("flap top")], [
+        html.span([attribute.class("flap-content")], []),
+      ]),
+
+      html.div([attribute.class("flap bottom")], [
+        html.span([attribute.class("flap-content")], []),
+      ]),
+
+      html.div([attribute.class("flap flipping-bottom")], [
+        html.span([attribute.class("flap-content")], []),
+      ]),
+    ],
+  )
+}
+
+fn pagination(
+  pages pages: Int,
+  page page: Int,
+  cols cols: Int,
+  auto_play auto_play: Bool,
+) -> Element(Msg) {
+  let empty = string.repeat(" ", cols)
+
+  let dots =
+    list.range(1, pages)
+    |> list.map(fn(idx) {
+      case idx == page {
+        True -> "●"
+        False -> "○"
+      }
+    })
+    |> string.join(" ")
+
+  let dots = case auto_play {
+    True -> "( " <> dots <> " )"
+    False -> "𝄆 " <> dots <> " 𝄇"
+  }
+
+  let chars =
+    dots
+    |> display_fns.center(against: empty)
+    |> string.to_graphemes
+
+  let first_dot_idx =
+    list.fold_until(chars, 0, fn(acc, char) {
+      case char {
+        "○" | "●" -> Stop(acc)
+        _ -> Continue(acc + 1)
+      }
+    })
+
+  keyed.div(
+    [attribute.class("row")],
+    list.index_map(chars, fn(char, idx) {
+      let page = 1 + { { idx - first_dot_idx } / 2 }
+      let id = "pb-" <> int.to_string(idx)
+      #(
+        id,
+        character(
+          id:,
+          dest: char,
+          // char_stack: case char {
+          //   "○" | "●" -> Some("○●")
+          //   "𝄆" | "𝄇" | "(" | ")" -> Some("()𝄆𝄇")
+          //   _ -> None
+          // },
+          on_click: case char {
+            "○" | "●" -> Some(PageClicked(page))
+            "𝄆" | "𝄇" | "(" | ")" -> Some(AutoPlayClicked)
+            _ -> None
+          },
+        ),
+      )
+    }),
+  )
 }
 
 const css = "
@@ -288,5 +446,120 @@ const css = "
     justify-content: space-between;
     height: 100%;
     min-height: fit-content;
+  }
+
+  .display {
+    container-type: inline-size;
+    display: flex;
+    flex-direction: column;
+    gap: 1cqh; 
+    width: 100%;
+    height: 100%;
+    background-color: rgb(40, 40, 40);
+  }
+
+  .row {
+    container-type: inline-size;
+    display: flex;
+    flex-direction: row;
+    gap: 1cqw;
+    cursor: default;
+  }
+
+  .row[href] {
+    cursor: pointer;
+  }
+  
+  .split-flap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 1/1.618; /* golden ratio ;) */
+    display: inline-block;
+    container-type: inline-size;
+  }
+
+  .split-flap::selection {
+    background: white;
+    color: black;
+  }
+
+  .split-flap::after {
+    content: \"\";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 50%;
+    height: 3.5cqw;
+    background: rgb(20, 20, 20);
+    z-index: 20;
+  }
+
+  .flap {
+    position: absolute;
+    width: 100%;
+    height: 50%;
+    font-size: 120cqw;
+    font-weight: 500;
+    color: #d2d1d1;
+    overflow: hidden;
+    user-select: none;
+    border-radius: 5cqw;
+    perspective: 400cqw;
+    background: rgb(40, 40, 40);
+    box-shadow: inset 1cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);
+    z-index: 1;
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .flap-content {
+    position: absolute;
+    width: 100%;
+    height: 200%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    z-index: 0;
+  }
+
+  .flap.top {
+    top: 0;
+    transform-origin: bottom;
+    border-radius: 5cqw;
+    user-select: text;
+    height: 100%;
+  }
+
+  .flap.bottom {
+    bottom: 0;
+    transform-origin: top;
+    border-radius: 0 0 5cqw 5cqw;
+    opacity: 0;
+  }
+
+  .flap.flipping-bottom {
+    pointer-events: none;
+    bottom: 0;
+    transform-origin: top;
+    border-radius: 0 0 5cqw 5cqw;
+    z-index: 10;
+    transform: rotateX(90deg);
+    will-change: transform;
+  }
+  
+  .flap.top .flap-content {
+    top: 0;
+    height: 100%
+  }
+
+  .flap.bottom .flap-content {
+    bottom: 0;
+  }
+
+  .flap.flipping-bottom .flap-content {
+    bottom: 0;
   }
   "
