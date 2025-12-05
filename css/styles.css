@@ -117,6 +117,10 @@ nick-dot-bingo {
   padding: 5cqh 8cqh;
 }
 
+nick-dot-bingo-v2 {
+  padding: 5cqh 8cqh;
+}
+
 @container bingo (aspect-ratio > 16/9) {
   .scene {
     background-size: contain, 100cqw 100%;

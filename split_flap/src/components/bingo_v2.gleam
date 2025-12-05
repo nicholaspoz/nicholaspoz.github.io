@@ -62,7 +62,7 @@ fn init(_) -> #(Model, effect.Effect(Msg)) {
 
   #(
     Model(
-      scenes:,
+      scenes: scenes,
       columns: cols,
       current: state,
       auto_play: True,
