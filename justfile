@@ -1,7 +1,12 @@
-mod split_flap
+# build:
+#     gleam run -m lustre/dev build --outdir=../js
 
-serve: 
-  npx serve .
+# dev:
+#     pwd
+#     watchexec --restart --verbose --wrap-process=session --stop-signal SIGTERM --exts gleam,mjs --ignore build/ --ignore ../js/ --watch src/ -- "just build"
 
-[parallel]
-dev: serve split_flap::dev
+dev:
+    gleam run -m lustre/dev start
+
+build:
+    gleam run -m lustre/dev build

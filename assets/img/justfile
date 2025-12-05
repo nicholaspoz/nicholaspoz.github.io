@@ -1,0 +1,10 @@
+img:
+    magick scene_original.png -resize 300x -blur 0x8 -quality 95 bg-blur.webp
+    magick scene_original.png -resize 1280x -quality 95 -define webp:method=6 bg-1280.webp
+    magick scene_original.png -resize 1920x -quality 95 -define webp:method=6 bg-1920.webp
+    magick scene_original.png -resize 2560x -quality 95 -define webp:method=6 bg-2560.webp
+    magick scene_original.png -resize 3840x -quality 95 -define webp:method=6 bg-3840.webp
+    magick scene_original_top.png -resize 3840x -quality 95 -define webp:method=6 bg-top-3840.webp
+    magick scene_original_top_gutter.png -resize 3840x -quality 95 -define webp:method=6 bg-top-gutter-3840.webp
+    magick scene_original_bottom.png -resize 3840x -quality 95 -define webp:method=6 bg-bottom-3840.webp
+    magick scene_original_bottom_gutter.png -resize 3840x -quality 95 -define webp:method=6 bg-bottom-gutter-3840.webp

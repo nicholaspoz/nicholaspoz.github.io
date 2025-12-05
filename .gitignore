@@ -5,3 +5,4 @@ node_modules/
 *.ez
 **/build
 erl_crash.dump
+**/.lustre
