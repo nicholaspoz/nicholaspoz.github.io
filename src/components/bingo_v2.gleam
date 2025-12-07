@@ -54,8 +54,8 @@ type Msg {
 
 fn init(_) -> #(Model, effect.Effect(Msg)) {
   let cols = 0
-  // let scenes = scenes.scenes(columns)
-  let state = initial_state([])
+  let scenes = scenes(cols)
+  let state = initial_state(scenes)
 
   #(
     Model(
@@ -107,10 +107,6 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
 
     ColumnsChanged(columns) -> {
       use <- bool.guard(columns == model.columns, Ok(#(model, effect.none())))
-      case model.timeout {
-        Some(id) -> browser.clear_timeout(id)
-        None -> Nil
-      }
       let scenes = scenes(columns)
       use initial_state <- try(initial_state(scenes))
       Ok(#(
@@ -121,7 +117,7 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
           current: Ok(initial_state),
           timeout: None,
         ),
-        start_timeout(initial_state.frame, None),
+        start_timeout(initial_state.frame, current_timeout: model.timeout),
       ))
     }
 
@@ -225,32 +221,26 @@ fn view(model: Model) -> Element(Msg) {
     Error(_) -> #([], None)
   }
 
-  html.div(
-    [
-      attribute.class("panel"),
-      component.part("panel"),
-    ],
-    [
-      html.div([attribute.class("matrix"), component.part("matrix")], [
-        display(lines, chars, cols: model.columns, rows: 7),
+  html.div([attribute.class("panel")], [
+    html.div([attribute.class("matrix")], [
+      display(lines, chars, cols: model.columns, rows: 7),
 
-        pagination(
-          pages: list.length(model.scenes),
-          page: list.fold_until(model.scenes, 1, fn(acc, s) {
-            case model.current {
-              Ok(state) if s == state.scene -> {
-                Stop(acc)
-              }
-              Ok(_) -> Continue(acc + 1)
-              Error(_) -> Stop(0)
+      pagination(
+        pages: list.length(model.scenes),
+        page: list.fold_until(model.scenes, 1, fn(acc, s) {
+          case model.current {
+            Ok(state) if s == state.scene -> {
+              Stop(acc)
             }
-          }),
-          cols: model.columns,
-          auto_play: model.auto_play,
-        ),
-      ]),
-    ],
-  )
+            Ok(_) -> Continue(acc + 1)
+            Error(_) -> Stop(0)
+          }
+        }),
+        cols: model.columns,
+        auto_play: model.auto_play,
+      ),
+    ]),
+  ])
 }
 
 fn display(

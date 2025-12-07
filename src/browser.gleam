@@ -1,9 +1,4 @@
-import gleam/dict
 import gleam/dynamic/decode
-import gleam/list
-import gleam/option.{type Option, None, Some}
-import gleam/result
-import gleam/string
 
 @external(javascript, "./split_flap.ffi.mjs", "set_timeout")
 pub fn set_timeout(_delay: Int, _cb: fn() -> a) -> Int {
