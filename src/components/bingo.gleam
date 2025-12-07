@@ -9,6 +9,7 @@ import lustre/effect.{type Effect}
 import lustre/element.{type Element}
 import lustre/element/html
 
+import browser
 import components/bingo/model.{type Frame, type Scene}
 import components/bingo/scenes.{scenes}
 import components/display
@@ -62,14 +63,14 @@ fn init(_) -> #(Model, effect.Effect(Msg)) {
     ),
     {
       use dispatch, root_element <- effect.before_paint
-      utils.on_resize(root_element, fn() { dispatch(Resized) })
+      browser.on_resize(root_element, fn() { dispatch(Resized) })
     },
   )
 }
 
 fn get_cols_effect() -> Effect(Msg) {
   use dispatch, root_element <- effect.before_paint
-  let cols = case utils.measure_orientation(root_element) {
+  let cols = case browser.measure_orientation(root_element) {
     "portrait" -> 15
     _ -> 27
   }
@@ -100,7 +101,7 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
     ColumnsChanged(columns) -> {
       use <- bool.guard(columns == model.columns, Ok(#(model, effect.none())))
       case model.timeout {
-        Some(id) -> utils.clear_timeout(id)
+        Some(id) -> browser.clear_timeout(id)
         None -> Nil
       }
       let scenes = scenes(columns)
@@ -157,7 +158,7 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
       Ok(
         #(Model(..model, timeout: None, auto_play: !model.auto_play), {
           case model.timeout {
-            Some(id) -> utils.clear_timeout(id)
+            Some(id) -> browser.clear_timeout(id)
             None -> Nil
           }
           use dispatch <- effect.from
@@ -179,7 +180,7 @@ fn start_timeout(frame: Frame, current_timeout id: Option(Int)) -> Effect(Msg) {
   case id {
     None -> {
       use dispatch <- effect.from
-      let id = utils.set_timeout(frame.ms, fn() { dispatch(TimeoutEnded) })
+      let id = browser.set_timeout(frame.ms, fn() { dispatch(TimeoutEnded) })
       dispatch(TimeoutStarted(id))
     }
 

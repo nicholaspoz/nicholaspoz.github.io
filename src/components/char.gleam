@@ -12,7 +12,7 @@ import lustre/element.{type Element}
 import lustre/element/html
 import lustre/event
 
-import utils
+import browser
 
 // NOTE: you need to have a music font installed to see this unicode
 pub const default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶()𝄢𝅘𝅥𝄽#!"
@@ -161,7 +161,7 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
         Idle, False, True -> {
           #(Model(..model, state: Flipping), {
             use dispatch <- effect.from
-            utils.set_timeout(model.flip_duration_ms + 20, fn() {
+            browser.set_timeout(model.flip_duration_ms + 20, fn() {
               dispatch(FlipStarted)
             })
             Nil
@@ -178,7 +178,7 @@ fn update(model: Model, msg: Msg) -> #(Model, effect.Effect(Msg)) {
       #(Model(..model, current_char: next, state: Idle), {
         use dispatch <- effect.from
         let jitter = int.random(15)
-        utils.set_timeout(idle_duration_ms + jitter, fn() {
+        browser.set_timeout(idle_duration_ms + jitter, fn() {
           dispatch(FlipEnded)
         })
         Nil

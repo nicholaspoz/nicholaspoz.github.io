@@ -15,10 +15,11 @@ import lustre/element/html
 import lustre/element/keyed
 import lustre/event
 
+import browser
 import components/bingo/model.{type Content, type Frame, type Scene, Link}
 import components/bingo/scenes.{scenes}
 import components/display_fns
-import utils.{find_next}
+import utils
 
 const default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶()𝄢𝅘𝅥𝄽#!"
 
@@ -66,7 +67,7 @@ fn init(_) -> #(Model, effect.Effect(Msg)) {
     ),
     {
       use dispatch, root_element <- effect.before_paint
-      utils.on_resize(root_element, fn() {
+      browser.on_resize(root_element, fn() {
         echo "Resized"
         dispatch(Resized)
       })
@@ -76,7 +77,7 @@ fn init(_) -> #(Model, effect.Effect(Msg)) {
 
 fn get_cols_effect() -> Effect(Msg) {
   use dispatch, root_element <- effect.before_paint
-  let cols = case utils.measure_orientation(root_element) {
+  let cols = case browser.measure_orientation(root_element) {
     "portrait" -> 15
     _ -> 27
   }
@@ -107,7 +108,7 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
     ColumnsChanged(columns) -> {
       use <- bool.guard(columns == model.columns, Ok(#(model, effect.none())))
       case model.timeout {
-        Some(id) -> utils.clear_timeout(id)
+        Some(id) -> browser.clear_timeout(id)
         None -> Nil
       }
       let scenes = scenes(columns)
@@ -127,7 +128,7 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
     TimeoutStarted(id) ->
       Ok(
         #(Model(..model, timeout: Some(id)), {
-          utils.animate()
+          browser.animate()
           effect.none()
         }),
       )
@@ -170,10 +171,10 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
         #(Model(..model, timeout: None, auto_play: !model.auto_play), {
           use dispatch, _ <- effect.after_paint
           case model.timeout {
-            Some(id) -> utils.clear_timeout(id)
+            Some(id) -> browser.clear_timeout(id)
             None -> Nil
           }
-          utils.animate()
+          browser.animate()
           dispatch(TimeoutEnded)
         }),
       )
@@ -192,10 +193,10 @@ fn find_scene(scenes: List(Scene), page: Int) -> Result(Scene, Nil) {
 fn start_timeout(frame: Frame, current_timeout id: Option(Int)) -> Effect(Msg) {
   use dispatch, _ <- effect.after_paint
   case id {
-    Some(id) -> utils.clear_timeout(id)
+    Some(id) -> browser.clear_timeout(id)
     None -> Nil
   }
-  let id = utils.set_timeout(frame.ms, fn() { dispatch(TimeoutEnded) })
+  let id = browser.set_timeout(frame.ms, fn() { dispatch(TimeoutEnded) })
   dispatch(TimeoutStarted(id))
 }
 
@@ -203,12 +204,12 @@ fn find_next_state(
   scenes: List(Scene),
   current: BingoState,
 ) -> Result(BingoState, Nil) {
-  case find_next(current.scene.frames, current.frame) {
+  case utils.find_next(current.scene.frames, current.frame) {
     Ok(frame) -> Ok(BingoState(current.scene, frame))
     Error(_) ->
       lazy_or(
         {
-          use scene <- try(find_next(scenes, current.scene))
+          use scene <- try(utils.find_next(scenes, current.scene))
           use frame <- try(list.first(scene.frames))
           Ok(BingoState(scene, frame))
         },
@@ -412,147 +413,3 @@ fn pagination(
     }),
   )
 }
-// const css = "
-//   :host {
-//     display: block;
-//     container-type: inline-size;
-//     height: 100%;
-//     width: 100%;
-//     min-height: fit-content;
-//   }
-
-//   .panel {
-//     position: relative;
-//     width: 100%;
-//     height: 100%;
-//     min-height: fit-content;
-//     overflow: hidden;
-
-//     display: flex;
-//     flex-direction: column;
-//     justify-content: center;
-//   }
-
-//   .matrix {
-//     display: flex;
-//     flex-direction: column;
-//     justify-content: space-between;
-//     height: 100%;
-//     min-height: fit-content;
-//   }
-
-//   .display {
-//     container-type: inline-size;
-//     display: flex;
-//     flex-direction: column;
-//     gap: 1cqh; 
-//     width: 100%;
-//     height: 100%;
-//     background-color: rgb(40, 40, 40);
-//   }
-
-//   .row {
-//     container-type: inline-size;
-//     display: flex;
-//     flex-direction: row;
-//     gap: 1cqw;
-//     cursor: default;
-//   }
-
-//   .row[href] {
-//     cursor: pointer;
-//   }
-
-//   .split-flap {
-//     position: relative;
-//     width: 100%;
-//     aspect-ratio: 1/1.618; /* golden ratio ;) */
-//     display: inline-block;
-//     container-type: inline-size;
-//   }
-
-//   .split-flap::selection {
-//     background: white;
-//     color: black;
-//   }
-
-//   .split-flap::after {
-//     content: \"\";
-//     position: absolute;
-//     left: 0;
-//     right: 0;
-//     top: 50%;
-//     height: 3.5cqw;
-//     background: rgb(20, 20, 20);
-//     z-index: 20;
-//   }
-
-//   .flap {
-//     position: absolute;
-//     width: 100%;
-//     height: 50%;
-//     font-size: 120cqw;
-//     font-weight: 500;
-//     color: #d2d1d1;
-//     overflow: hidden;
-//     user-select: none;
-//     border-radius: 5cqw;
-//     perspective: 400cqw;
-//     background: rgb(40, 40, 40);
-//     box-shadow: inset 1cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);
-//     z-index: 1;
-
-//     display: flex;
-//     align-items: center;
-//     justify-content: center;
-//   }
-
-//   .flap-content {
-//     position: absolute;
-//     width: 100%;
-//     height: 200%;
-//     display: flex;
-//     align-items: center;
-//     justify-content: center;
-//     text-align: center;
-//     z-index: 0;
-//   }
-
-//   .flap.top {
-//     top: 0;
-//     transform-origin: bottom;
-//     border-radius: 5cqw;
-//     user-select: text;
-//     height: 100%;
-//   }
-
-//   .flap.bottom {
-//     bottom: 0;
-//     transform-origin: top;
-//     border-radius: 0 0 5cqw 5cqw;
-//     opacity: 0;
-//   }
-
-//   .flap.flipping-bottom {
-//     pointer-events: none;
-//     bottom: 0;
-//     transform-origin: top;
-//     border-radius: 0 0 5cqw 5cqw;
-//     z-index: 10;
-//     transform: rotateX(90deg);
-//     will-change: transform;
-//   }
-
-//   .flap.top .flap-content {
-//     top: 0;
-//     height: 100%
-//   }
-
-//   .flap.bottom .flap-content {
-//     bottom: 0;
-//   }
-
-//   .flap.flipping-bottom .flap-content {
-//     bottom: 0;
-//   }
-//   "
