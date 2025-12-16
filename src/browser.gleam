@@ -1,5 +1,7 @@
 import gleam/dynamic/decode
 
+pub type GsapTimeline
+
 @external(javascript, "./browser.ffi.mjs", "set_timeout")
 pub fn set_timeout(_delay: Int, _cb: fn() -> a) -> Int {
   0

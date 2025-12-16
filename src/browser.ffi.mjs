@@ -87,7 +87,7 @@ function getDistance(from, to, adjacencyList) {
  * @param {Record<string, string>} adjacencyList - Map of character transitions
  * @returns {gsap.core.Timeline | null} GSAP timeline or null if no animation needed
  */
-function flip(el, adjacencyList) {
+export function flip(el, adjacencyList) {
   const topContent = el.querySelector(`.top > .flap-content`);
   const bottom = el.querySelector(`.bottom`);
   const bottomContent = bottom.querySelector(`.flap-content`);
@@ -181,7 +181,7 @@ export function animate() {
     });
 
     let i = 0;
-    /** @ts-expect-error displayEls is iterable */
+    /** @ts-expect-error displayEls is iterable somehow */
     for (const el of displayEls) {
       const child = flip(el, adjacencyList);
       if (child) {
