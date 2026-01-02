@@ -1,5 +1,13 @@
 // @ts-check
 
+import {
+  Result$Ok,
+  Result$Error,
+  List$Empty,
+  List$NonEmpty,
+  // @ts-ignore
+} from "./gleam.mjs";
+
 /**
  * Sets a timeout and returns the timer ID
  * @param {number} delay - Delay in milliseconds
@@ -82,7 +90,174 @@ function getDistance(from, to, adjacencyList) {
 }
 
 /**
+ *
+ * @param {string} selector
+ */
+export function doc_query_selector(selector) {
+  const e = document.querySelector(selector);
+  if (e) {
+    return Result$Ok(e);
+  }
+  return Result$Error(undefined); // Error(Nil)
+}
+
+/**
+ *
+ * @param {HTMLElement} el
+ * @param {string} selector
+ */
+export function el_query_selector(el, selector) {
+  const e = el.querySelector(selector);
+  if (e) {
+    return Result$Ok(e);
+  }
+  return Result$Error(undefined); // Error(Nil)
+}
+
+/**
+ * @param {HTMLElement} el
+ * @param {string} selector
+ */
+export function el_query_selector_all(el, selector) {
+  const els = el.querySelectorAll(selector);
+  // @ts-ignore
+  return [...els].reduce((acc, e) => List$NonEmpty(e, acc), new List$Empty());
+}
+
+export function new_timeline() {
+  return gsap.timeline({ paused: true });
+}
+
+/**
+ * @param {gsap.core.Timeline} timeline
+ */
+export function stop_children(timeline) {
+  timeline.pause();
+  timeline.getChildren(true, false, true).forEach((child) => {
+    child.seek(child.nextLabel());
+    child.kill();
+  });
+  timeline.kill();
+}
+
+/**
+ * @param {gsap.core.Timeline} parent
+ * @param {gsap.core.Timeline} child
+ */
+export function add_child(parent, child) {
+  return parent.add(child, 0);
+}
+
+/**
+ * @param {gsap.core.Timeline} timeline
+ */
+export function play(timeline) {
+  return timeline.play();
+}
+
+/** @type {Record<string, gsap.core.Timeline>} */
+let timelines = {};
+
+/** @type {string[]} */
+const selectors = [".display", "#pagination"];
+
+/**
+ * Animates all split-flap displays on the page
+ * @returns {void}
+ */
+export function animate() {
+  for (const selector of selectors) {
+    if (timelines[selector]) {
+      timelines[selector].pause();
+      timelines[selector].getChildren(true, false, true).forEach((child) => {
+        child.seek(child.nextLabel());
+        child.kill();
+      });
+      timelines[selector].kill();
+      delete timelines[selector];
+    }
+
+    timelines[selector] = gsap.timeline({ paused: true });
+
+    /** @type HTMLElement */
+    const display = document.querySelector(selector);
+
+    /** @type {Record<string, string>} */
+    const adjacencyList = JSON.parse(display.dataset.adjacencyList);
+    const displayEls = display.querySelectorAll(".split-flap");
+
+    /** @ts-expect-error displayEls is iterable somehow */
+    for (const el of displayEls) {
+      const child = flip(el, adjacencyList);
+      if (child) {
+        timelines[selector] = timelines[selector].add(child, 0);
+      }
+    }
+
+    timelines[selector].play();
+  }
+}
+
+export function apply_flip(el, adjacencyList) {
+  return flip(el, adjacencyList);
+}
+
+/**
+ *
+ * @param {HTMLElement} el
+ * @returns {string}
+ */
+export function get_destination(el) {
+  return el.dataset.dest || " ";
+}
+
+/**
+ * @param {HTMLElement} el
+ * @returns {string}
+ */
+export function get_text_content(el) {
+  return el.textContent || " ";
+}
+
+/**
+ * @param {HTMLElement} el
+ * @param {string} text
+ */
+export function set_text_content(el, text) {
+  el.textContent = text;
+}
+
+/**
+ * @param {gsap.core.Timeline} tl
+ * @param {HTMLElement} el
+ * @param {any} params
+ * @param {string | number} position
+ */
+export function tl_set(tl, el, params, position) {
+  return tl.set(el, params, position);
+}
+
+/**
+ * @param {gsap.core.Timeline} tl
+ * @param {() => void} cb
+ * @param {string | number} position
+ */
+export function tl_call(tl, cb, position) {
+  return tl.call(cb, position);
+}
+
+/**
+ * @param {gsap.core.Timeline} tl
+ * @param {HTMLElement} el
+ * @param {any} params
+ */
+export function tl_to(tl, el, params) {
+  return tl.to(el, params);
+}
+
+/**
  * Creates a flip animation timeline for a split-flap element
+ *
  * @param {HTMLElement} el - The split-flap element to animate
  * @param {Record<string, string>} adjacencyList - Map of character transitions
  * @returns {gsap.core.Timeline | null} GSAP timeline or null if no animation needed
@@ -112,14 +287,7 @@ export function flip(el, adjacencyList) {
     return null;
   }
 
-  let timeline = gsap
-    .timeline({
-      force3D: true,
-      onInterrupt: () => {
-        console.log("interrupted!");
-      },
-    })
-    .set(bottom, { opacity: 1 }, 0);
+  let timeline = gsap.timeline().set(bottom, { opacity: 1 }, 0);
 
   while (distance > 0) {
     timeline = timeline
@@ -143,53 +311,4 @@ export function flip(el, adjacencyList) {
   timeline = timeline.set(bottom, { opacity: 0 }, ">");
 
   return timeline;
-}
-
-/** @type {Record<string, gsap.core.Timeline>} */
-let timelines = {};
-
-/** @type {string[]} */
-const selectors = [".display", "#pagination"];
-
-/**
- * Animates all split-flap displays on the page
- * @returns {void}
- */
-export function animate() {
-  for (const selector of selectors) {
-    /** @type HTMLElement */
-    const display = document.querySelector(selector);
-
-    /** @type {Record<string, string>} */
-    const adjacencyList = JSON.parse(display.dataset.adjacencyList);
-    /** @type {NodeListOf<HTMLElement>} */
-    const displayEls = display.querySelectorAll(".split-flap");
-
-    if (timelines[selector]) {
-      timelines[selector].pause();
-      timelines[selector].getChildren(true, false, true).forEach((child) => {
-        child.seek(child.nextLabel());
-        child.kill();
-      });
-      timelines[selector].kill();
-      delete timelines[selector];
-    }
-
-    timelines[selector] = gsap.timeline({
-      paused: true,
-      force3D: true,
-    });
-
-    let i = 0;
-    /** @ts-expect-error displayEls is iterable somehow */
-    for (const el of displayEls) {
-      const child = flip(el, adjacencyList);
-      if (child) {
-        timelines[selector] = timelines[selector].add(child, 0);
-      }
-      i++;
-    }
-
-    timelines[selector].play();
-  }
 }

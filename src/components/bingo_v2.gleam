@@ -15,13 +15,13 @@ import lustre/element/html
 import lustre/element/keyed
 import lustre/event
 
-import browser
+import browser.{type GsapTimeline, type HtmlElement}
 import components/bingo/model.{type Content, type Frame, type Scene, Link}
 import components/bingo/scenes.{scenes}
 import components/display_fns
 import utils
 
-const default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶()𝄢𝅘𝅥𝄽#!"
+const default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶()𝄞𝄢𝅘𝅥𝄽#!"
 
 pub fn register() -> Result(Nil, lustre.Error) {
   let app = lustre.application(init, update, view)
