@@ -15,7 +15,7 @@ import lustre/element/html
 import lustre/element/keyed
 import lustre/event
 
-import browser.{type GsapTimeline, type HtmlElement}
+import browser
 import components/bingo/model.{type Content, type Frame, type Scene, Link}
 import components/bingo/scenes.{scenes}
 import components/display_fns
