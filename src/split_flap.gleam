@@ -1,6 +1,6 @@
-import components/bingo_v2
+import components/bingo
 
 pub fn main() {
-  let assert Ok(_) = bingo_v2.register()
+  let assert Ok(_) = bingo.register()
   Nil
 }

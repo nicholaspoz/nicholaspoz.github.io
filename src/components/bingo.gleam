@@ -1,28 +1,32 @@
 import gleam/bool
+import gleam/function
+import gleam/int
+import gleam/json
 import gleam/list.{Continue, Stop}
 import gleam/option.{type Option, None, Some}
 import gleam/result.{lazy_or, try}
+import gleam/string
 import lustre
 import lustre/attribute
 import lustre/component
 import lustre/effect.{type Effect}
 import lustre/element.{type Element}
 import lustre/element/html
+import lustre/element/keyed
+import lustre/event
 
 import browser
-import components/bingo/model.{type Frame, type Scene}
+import components/bingo/model.{type Content, type Frame, type Scene, Link}
 import components/bingo/scenes.{scenes}
-import components/display
-import components/progress_bar
-import utils.{find_next}
+import components/display_fns
+import utils
+
+const default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶()𝄞𝄢𝅘𝅥𝄽#!"
 
 pub fn register() -> Result(Nil, lustre.Error) {
-  let component = lustre.component(init, update, view, [])
-  lustre.register(component, "nick-dot-bingo")
-}
-
-pub fn element() -> Element(msg) {
-  element.element("nick-dot-bingo", [], [])
+  let app = lustre.application(init, update, view)
+  let assert Ok(_) = lustre.start(app, "#app", Nil)
+  Ok(Nil)
 }
 
 type BingoState {
@@ -50,12 +54,12 @@ type Msg {
 
 fn init(_) -> #(Model, effect.Effect(Msg)) {
   let cols = 0
-  let scenes = []
+  let scenes = scenes(cols)
   let state = initial_state(scenes)
 
   #(
     Model(
-      scenes:,
+      scenes: [],
       columns: cols,
       current: state,
       auto_play: True,
@@ -63,7 +67,10 @@ fn init(_) -> #(Model, effect.Effect(Msg)) {
     ),
     {
       use dispatch, root_element <- effect.before_paint
-      browser.on_resize(root_element, fn() { dispatch(Resized) })
+      browser.on_resize(root_element, fn() {
+        echo "Resized"
+        dispatch(Resized)
+      })
     },
   )
 }
@@ -100,10 +107,6 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
 
     ColumnsChanged(columns) -> {
       use <- bool.guard(columns == model.columns, Ok(#(model, effect.none())))
-      case model.timeout {
-        Some(id) -> browser.clear_timeout(id)
-        None -> Nil
-      }
       let scenes = scenes(columns)
       use initial_state <- try(initial_state(scenes))
       Ok(#(
@@ -114,12 +117,17 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
           current: Ok(initial_state),
           timeout: None,
         ),
-        start_timeout(initial_state.frame, None),
+        start_timeout(initial_state.frame, current_timeout: model.timeout),
       ))
     }
 
     TimeoutStarted(id) ->
-      Ok(#(Model(..model, timeout: Some(id)), effect.none()))
+      Ok(
+        #(Model(..model, timeout: Some(id)), {
+          browser.animate()
+          effect.none()
+        }),
+      )
 
     TimeoutEnded -> {
       use current <- try(model.current)
@@ -154,17 +162,19 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
       ))
     }
 
-    AutoPlayClicked ->
+    AutoPlayClicked -> {
       Ok(
         #(Model(..model, timeout: None, auto_play: !model.auto_play), {
+          use dispatch, _ <- effect.after_paint
           case model.timeout {
             Some(id) -> browser.clear_timeout(id)
             None -> Nil
           }
-          use dispatch <- effect.from
+          browser.animate()
           dispatch(TimeoutEnded)
         }),
       )
+    }
   }
 }
 
@@ -177,31 +187,25 @@ fn find_scene(scenes: List(Scene), page: Int) -> Result(Scene, Nil) {
 }
 
 fn start_timeout(frame: Frame, current_timeout id: Option(Int)) -> Effect(Msg) {
+  use dispatch, _ <- effect.after_paint
   case id {
-    None -> {
-      use dispatch <- effect.from
-      let id = browser.set_timeout(frame.ms, fn() { dispatch(TimeoutEnded) })
-      dispatch(TimeoutStarted(id))
-    }
-
-    Some(_) -> {
-      // Skip the timeout if there is already one in progress. Otherwise, we get
-      // a snowball of transitions/timeouts weee
-      effect.none()
-    }
+    Some(id) -> browser.clear_timeout(id)
+    None -> Nil
   }
+  let id = browser.set_timeout(frame.ms, fn() { dispatch(TimeoutEnded) })
+  dispatch(TimeoutStarted(id))
 }
 
 fn find_next_state(
   scenes: List(Scene),
   current: BingoState,
 ) -> Result(BingoState, Nil) {
-  case find_next(current.scene.frames, current.frame) {
+  case utils.find_next(current.scene.frames, current.frame) {
     Ok(frame) -> Ok(BingoState(current.scene, frame))
     Error(_) ->
       lazy_or(
         {
-          use scene <- try(find_next(scenes, current.scene))
+          use scene <- try(utils.find_next(scenes, current.scene))
           use frame <- try(list.first(scene.frames))
           Ok(BingoState(scene, frame))
         },
@@ -217,60 +221,185 @@ fn view(model: Model) -> Element(Msg) {
     Error(_) -> #([], None)
   }
 
-  element.fragment([
-    html.style([], css),
+  html.div([attribute.class("panel")], [
+    html.div([attribute.class("matrix")], [
+      display(lines, chars, cols: model.columns, rows: 7),
 
-    html.div([attribute.class("panel"), component.part("panel")], [
-      html.div([attribute.class("matrix"), component.part("matrix")], [
-        display.element(lines, cols: model.columns, rows: 7, chars: chars),
-
-        progress_bar.element(
-          pages: list.length(model.scenes),
-          page: list.fold_until(model.scenes, 1, fn(acc, s) {
-            case model.current {
-              Ok(state) if s == state.scene -> {
-                Stop(acc)
-              }
-              Ok(_) -> Continue(acc + 1)
-              Error(_) -> Stop(0)
+      pagination(
+        pages: list.length(model.scenes),
+        page: list.fold_until(model.scenes, 1, fn(acc, s) {
+          case model.current {
+            Ok(state) if s == state.scene -> {
+              Stop(acc)
             }
-          }),
-          cols: model.columns,
-          auto_play: model.auto_play,
-          on_auto_play: AutoPlayClicked,
-          on_page: PageClicked,
-        ),
-      ]),
+            Ok(_) -> Continue(acc + 1)
+            Error(_) -> Stop(0)
+          }
+        }),
+        cols: model.columns,
+        auto_play: model.auto_play,
+      ),
     ]),
   ])
 }
 
-const css = "
-  :host {
-    display: block;
-    container-type: inline-size;
-    height: 100%;
-    width: 100%;
-    min-height: fit-content;
+fn display(
+  lines: List(Content),
+  chars: Option(String),
+  cols cols: Int,
+  rows rows: Int,
+) -> Element(msg) {
+  let sanitized_lines =
+    lines
+    |> utils.zip_longest(list.range(0, rows - 1), _)
+    |> list.filter_map(utils.first_is_some)
+
+  let adjacency_list =
+    utils.to_adjacency_list(case chars {
+      Some(chars) -> chars
+      None -> default_chars
+    })
+
+  let list_data =
+    adjacency_list
+    |> json.dict(function.identity, json.string)
+    |> json.to_string()
+
+  keyed.div(
+    [attribute.class("display"), attribute.data("adjacency-list", list_data)],
+    list.index_map(sanitized_lines, fn(line, line_num) {
+      #(int.to_string(line_num), row(line, row: line_num, cols: cols))
+    }),
+  )
+}
+
+fn row(
+  line: Option(Content),
+  row row_num: Int,
+  cols num_cols: Int,
+) -> Element(msg) {
+  let chars = case line {
+    Some(content) ->
+      content.text
+      |> string.pad_end(num_cols, " ")
+      |> string.slice(0, num_cols)
+
+    None -> string.repeat(" ", num_cols)
   }
 
-  .panel {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    min-height: fit-content;
-    overflow: hidden;
+  let children =
+    chars
+    |> string.to_graphemes
+    |> list.index_map(fn(char, idx) {
+      let id = int.to_string(row_num) <> "-" <> int.to_string(idx)
+      #(id, character(id, dest: char, on_click: None))
+    })
 
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
+  let link_attrs = case line {
+    Some(Link(_, url:)) -> [attribute.href(url), attribute.target("_blank")]
+    _ -> []
   }
 
-  .matrix {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    height: 100%;
-    min-height: fit-content;
+  keyed.element(
+    "a",
+    [attribute.class("row"), component.part("row"), ..link_attrs],
+    children,
+  )
+}
+
+fn character(
+  id id: String,
+  dest dest: String,
+  on_click on_click: Option(msg),
+) -> Element(msg) {
+  html.div(
+    [
+      attribute.id(id),
+      attribute.class("split-flap"),
+      attribute.data("dest", dest),
+      case on_click {
+        Some(m) -> event.on_click(m)
+        None -> attribute.none()
+      },
+      case on_click {
+        Some(_) -> attribute.style("cursor", "pointer")
+        None -> attribute.style("cursor", "inherit")
+      },
+    ],
+    [
+      html.div([attribute.class("flap top")], [
+        html.span([attribute.class("flap-content")], []),
+      ]),
+
+      html.div([attribute.class("flap bottom")], [
+        html.span([attribute.class("flap-content")], []),
+      ]),
+
+      html.div([attribute.class("flap flipping-bottom")], [
+        html.span([attribute.class("flap-content")], []),
+      ]),
+    ],
+  )
+}
+
+fn pagination(
+  pages pages: Int,
+  page page: Int,
+  cols cols: Int,
+  auto_play auto_play: Bool,
+) -> Element(Msg) {
+  let empty = string.repeat(" ", cols)
+
+  let dots =
+    list.range(1, pages)
+    |> list.map(fn(idx) {
+      case idx == page {
+        True -> "●"
+        False -> "○"
+      }
+    })
+    |> string.join(" ")
+
+  let dots = case auto_play {
+    True -> "( " <> dots <> " )"
+    False -> "𝄆 " <> dots <> " 𝄇"
   }
-  "
+
+  let chars =
+    dots
+    |> display_fns.center(against: empty)
+    |> string.to_graphemes
+
+  let first_dot_idx =
+    list.fold_until(chars, 0, fn(acc, char) {
+      case char {
+        "○" | "●" -> Stop(acc)
+        _ -> Continue(acc + 1)
+      }
+    })
+
+  let list_data =
+    utils.to_adjacency_list(" ○●()𝄆𝄇")
+    |> json.dict(function.identity, json.string)
+    |> json.to_string()
+
+  keyed.div(
+    [
+      attribute.id("pagination"),
+      attribute.class("row"),
+      attribute.data("adjacency-list", list_data),
+    ],
+    list.index_map(chars, fn(char, idx) {
+      let page = 1 + { { idx - first_dot_idx } / 2 }
+      let id = "pb-" <> int.to_string(idx)
+      #(
+        id,
+        character(id:, dest: char, on_click: case char {
+          "○" | "●" -> Some(PageClicked(page))
+          "𝄆" | "𝄇" | "(" | ")" -> Some(AutoPlayClicked)
+          _ -> None
+        }),
+      )
+    }),
+  )
+}
