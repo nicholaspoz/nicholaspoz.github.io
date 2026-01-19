@@ -6,3 +6,4 @@ node_modules/
 **/build
 erl_crash.dump
 **/.lustre
+js/index.html
