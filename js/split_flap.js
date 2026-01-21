@@ -5104,7 +5104,7 @@ function animate() {
     if (timelines[selector]) {
       timelines[selector].pause();
       timelines[selector].getChildren(true, false, true).forEach((child) => {
-        child.seek(child.nextLabel());
+        child.progress(1);
         child.kill();
       });
       timelines[selector].kill();
@@ -5159,7 +5159,7 @@ function flip(el, adjacencyList) {
       next = adjacencyList[curr];
     }, 0).to(flippingBottom, {
       rotationX: 0,
-      duration: 0.04,
+      duration: 0.05,
       ease: "power1.inOut"
     }).set(flippingBottom, { rotationX: 90 }, ">").addLabel(`${distance}`, ">");
     distance--;

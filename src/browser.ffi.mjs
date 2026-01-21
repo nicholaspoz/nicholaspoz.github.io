@@ -101,7 +101,7 @@ export function animate() {
     if (timelines[selector]) {
       timelines[selector].pause();
       timelines[selector].getChildren(true, false, true).forEach((child) => {
-        child.seek(child.nextLabel());
+        child.progress(1); // Jump to end so character lands on destination
         child.kill();
       });
       timelines[selector].kill();
@@ -142,7 +142,13 @@ function flip(el, adjacencyList) {
   const flippingBottom = el.querySelector(".flipping-bottom");
   const flippingBottomContent = flippingBottom?.querySelector(".flap-content");
 
-  if (!topContent || !bottom || !bottomContent || !flippingBottom || !flippingBottomContent) {
+  if (
+    !topContent ||
+    !bottom ||
+    !bottomContent ||
+    !flippingBottom ||
+    !flippingBottomContent
+  ) {
     return null;
   }
 
@@ -159,7 +165,11 @@ function flip(el, adjacencyList) {
     return " ";
   })();
 
-  distance += getDistance(curr in adjacencyList ? from : " ", destination, adjacencyList);
+  distance += getDistance(
+    curr in adjacencyList ? from : " ",
+    destination,
+    adjacencyList,
+  );
   if (distance === 0) {
     return null;
   }
@@ -177,7 +187,7 @@ function flip(el, adjacencyList) {
       }, 0)
       .to(flippingBottom, {
         rotationX: 0,
-        duration: 0.04,
+        duration: 0.045,
         ease: "power1.inOut",
       })
       .set(flippingBottom, { rotationX: 90 }, ">")
