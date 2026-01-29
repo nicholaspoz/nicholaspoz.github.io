@@ -1,8 +1,8 @@
 import gleam/option.{None, Some}
 import gleam/string
 
-import model.{type Scene, Frame, Link, Scene, Text}
 import display_fns as row
+import model.{type Scene, Frame, Link, Scene, Text}
 
 const linkedin_url = "https://www.linkedin.com/in/nicholaspozoulakis/"
 
@@ -52,7 +52,7 @@ pub fn scenes(columns: Int) -> List(Scene) {
 
   [
     Scene(name: "HOME", chars: None, frames: [
-      Frame(ms: 200, lines: [
+      Frame(ms: 400, lines: [
         Text(nick),
         Text(""),
         Text(""),
@@ -60,7 +60,7 @@ pub fn scenes(columns: Int) -> List(Scene) {
         Text(""),
         Text(""),
       ]),
-      Frame(ms: 200, lines: [
+      Frame(ms: 400, lines: [
         Text(nick),
         Text(""),
         Text(""),
@@ -70,7 +70,7 @@ pub fn scenes(columns: Int) -> List(Scene) {
         Text(""),
       ]),
 
-      Frame(ms: 200, lines: [
+      Frame(ms: 400, lines: [
         Text(nick),
         Text(""),
         Text(""),
@@ -79,7 +79,7 @@ pub fn scenes(columns: Int) -> List(Scene) {
         Text(""),
         Text(bingo),
       ]),
-      Frame(ms: 5000, lines: [
+      Frame(ms: 3000, lines: [
         Text(nick),
         Text(poz),
         Text(""),

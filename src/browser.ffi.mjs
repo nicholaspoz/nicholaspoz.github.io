@@ -19,6 +19,16 @@ export function clear_timeout(id) {
   window.clearTimeout(id);
 }
 
+export function update_flap_height() {
+  const flapHeight =
+    document.querySelector(".split-flap")?.getBoundingClientRect().height ?? 0;
+
+  document.documentElement.style.setProperty(
+    "--flap-height",
+    `${flapHeight}px`,
+  );
+}
+
 /**
  * Measures the orientation of an element
  * @param {HTMLElement | null} root - Root element to measure
@@ -29,7 +39,8 @@ export function measure_orientation(root) {
     width: 0,
     height: 0,
   };
-  const wide = rect.width / rect.height > 1;
+
+  const wide = rect.height / rect.width < 1;
   return wide ? "landscape" : "portrait";
 }
 

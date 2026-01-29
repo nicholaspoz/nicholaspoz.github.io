@@ -1,16 +1,22 @@
-html {
-  box-sizing: border-box;
-  font-size: 16px;
-  font-family: Fragment Mono, Nanum Gothic Coding, Noto Music, monospace;
-  overscroll-behavior: none;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
 *,
 *:before,
 *:after {
   box-sizing: inherit;
+}
+
+html {
+  box-sizing: border-box;
+  font-size: 16px;
+  font-family:
+    Fragment Mono,
+    Nanum Gothic Coding,
+    Noto Music,
+    monospace;
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  --bg-primary: rgb(40, 40, 40);
 }
 
 body,
@@ -39,184 +45,100 @@ img {
 }
 
 body {
+  container-type: size;
+
   width: 100svw;
   height: 100svh;
-  container-type: size;
+
+  background-color: var(--bg-primary);
 
   /* iOS safe area support */
   padding-top: env(safe-area-inset-top);
   padding-bottom: env(safe-area-inset-bottom);
   padding-left: env(safe-area-inset-left);
   padding-right: env(safe-area-inset-right);
-}
-
-body {
-  background-color: rgb(40, 40, 40);
-  overflow: hidden;
+  /*overflow: scroll;*/
 }
 
 #app {
-  container-type: size;
   container-name: bingo;
-  position: relative;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-  padding: 8cqw 13cqh;
-
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  align-items: center;
-
-  background-color: rgb(40, 40, 40);
-}
-
-.board {
-  position: relative;
-  width: 100cqw;
-  height: calc(100cqw * 1400 / 3840);
-  /* min-height: fit-content; */
-  flex: 2 0 auto;
-
-  background-image: url(/img/bg-top-3840.webp),
-    url(/img/bg-top-gutter-3840.webp);
-  background-size: cover, 100cqw 100%;
-  background-position: center top, top;
-  background-repeat: no-repeat, no-repeat;
   container-type: size;
-}
-
-.scene {
   position: relative;
-  width: 100cqw;
-  height: calc(100cqw * 760 / 3840);
-  flex: 1 1 auto;
-  bottom: 0;
+  margin: auto;
 
-  background-image: url(/img/bg-bottom-3840.webp),
-    url(/img/bg-bottom-gutter-3840.webp);
-  background-size: cover, 100cqw 100%;
-  background-position: center bottom, bottom;
-  background-repeat: no-repeat, no-repeat;
-}
-
-.split-flap-void {
-  position: absolute;
-  top: 13.2%;
-  height: 75%;
-  aspect-ratio: 1.612; /* golden ratio, ofc */
-  left: 50%;
-  transform: translateX(-50%);
-  background: rgba(90, 90, 90, 0.13);
-}
-
-nick-dot-bingo {
-  padding: 5cqh 8cqh;
-}
-
-nick-dot-bingo-v2 {
-  padding: 5cqh 8cqh;
-}
-
-@container bingo (aspect-ratio > 16/9) {
-  .scene {
-    background-size: contain, 100cqw 100%;
-  }
-}
-
-@container bingo (aspect-ratio > 2) or (aspect-ratio < 0.8) {
-  .board {
-    width: 100%;
-    height: 100%;
-    background: rgb(40, 40, 40);
-  }
-
-  .scene {
-    display: none;
-  }
-
-  .split-flap-void {
-    display: block;
-    position: relative;
-    top: 0;
-    left: 0;
-    transform: none;
-    width: 100%;
-    height: 100%;
-    aspect-ratio: unset;
-    background: none;
-    padding: 0;
-    overflow-y: scroll;
-  }
-
-  nick-dot-bingo {
-    height: fit-content;
-  }
-
-  @container bingo (aspect-ratio < 0.8) {
-    nick-dot-bingo {
-      padding: 5cqw;
-      height: 100%;
-    }
-
-    .board {
-      overflow-y: hidden;
-    }
-  }
-}
-
-.panel {
-  position: relative;
   width: 100%;
   height: 100%;
   min-height: fit-content;
-  overflow: hidden;
+}
+
+.matrix {
+  container-type: inline-size;
+  position: relative;
 
   display: flex;
   flex-direction: column;
   justify-content: center;
-}
+  gap: var(--flap-height);
 
-.matrix {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  width: 100cqw;
   height: 100%;
   min-height: fit-content;
+  padding: 2cqh 8cqw;
+
+  background-color: var(--bg-primary);
 }
 
 .display {
   container-type: inline-size;
   display: flex;
   flex-direction: column;
-  gap: 1cqh;
+  gap: max(1cqw, 1px);
+
   width: 100%;
-  height: 100%;
+
   background-color: rgb(40, 40, 40);
+}
+
+.pagination {
+  container-type: inline-size;
+  display: flex;
 }
 
 .row {
   container-type: inline-size;
   display: flex;
   flex-direction: row;
-  gap: 1cqw;
+  gap: max(1cqw, 1px);
+
   cursor: default;
+  /*flex-shrink: 0;*/
 }
 
 .row[href] {
   cursor: pointer;
 }
 
+@container bingo (aspect-ratio < 1) {
+  .matrix {
+    padding: 5cqh 5cqw;
+  }
+
+  .display {
+    gap: 1.5cqw;
+  }
+
+  .row {
+    gap: 1.5cqw;
+  }
+}
+
 .split-flap {
+  container-type: inline-size;
+  display: inline-block;
   position: relative;
+
   width: 100%;
   aspect-ratio: 1/1.618; /* golden ratio ;) */
-  display: inline-block;
-  container-type: inline-size;
 }
 
 .split-flap::selection {
@@ -230,17 +152,23 @@ nick-dot-bingo-v2 {
   left: 0;
   right: 0;
   top: 50%;
-  height: 3.5cqw;
+  height: max(3.5cqw, 1px);
   background: rgba(20, 20, 20, 0.9);
   z-index: 20;
 }
 
 .flap {
   position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   width: 100%;
   height: 50%;
+
   font-size: 120cqw;
   font-weight: 500;
+
   color: #d2d1d1;
   overflow: hidden;
   user-select: none;
@@ -249,10 +177,6 @@ nick-dot-bingo-v2 {
   background: rgb(35, 35, 35);
   box-shadow: inset 1cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);
   z-index: 1;
-
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 .flap-content {

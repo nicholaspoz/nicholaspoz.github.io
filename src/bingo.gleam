@@ -66,22 +66,27 @@ fn init(_) -> #(Model, effect.Effect(Msg)) {
       timeout: None,
     ),
     {
-      use dispatch, root_element <- effect.before_paint
-      browser.on_resize(root_element, fn() {
-        echo "Resized"
-        dispatch(Resized)
-      })
+      use dispatch, root_element <- effect.after_paint
+      browser.on_resize(root_element, fn() { dispatch(Resized) })
     },
   )
 }
 
 fn get_cols_effect() -> Effect(Msg) {
-  use dispatch, root_element <- effect.before_paint
-  let cols = case browser.measure_orientation(root_element) {
-    "portrait" -> 15
-    _ -> 27
-  }
-  dispatch(ColumnsChanged(cols))
+  effect.batch([
+    {
+      use _, _ <- effect.after_paint
+      browser.update_flap_height()
+    },
+    {
+      use dispatch, root_element <- effect.before_paint
+      let cols = case browser.measure_orientation(root_element) {
+        "portrait" -> 15
+        _ -> 27
+      }
+      dispatch(ColumnsChanged(cols))
+    },
+  ])
 }
 
 fn initial_state(scenes: List(Scene)) -> Result(BingoState, Nil) {
@@ -221,25 +226,23 @@ fn view(model: Model) -> Element(Msg) {
     Error(_) -> #([], None)
   }
 
-  html.div([attribute.class("panel")], [
-    html.div([attribute.class("matrix")], [
-      display(lines, chars, cols: model.columns, rows: 7),
+  html.div([attribute.class("matrix")], [
+    display(lines, chars, cols: model.columns, rows: 7),
 
-      pagination(
-        pages: list.length(model.scenes),
-        page: list.fold_until(model.scenes, 1, fn(acc, s) {
-          case model.current {
-            Ok(state) if s == state.scene -> {
-              Stop(acc)
-            }
-            Ok(_) -> Continue(acc + 1)
-            Error(_) -> Stop(0)
+    pagination(
+      pages: list.length(model.scenes),
+      page: list.fold_until(model.scenes, 1, fn(acc, s) {
+        case model.current {
+          Ok(state) if s == state.scene -> {
+            Stop(acc)
           }
-        }),
-        cols: model.columns,
-        auto_play: model.auto_play,
-      ),
-    ]),
+          Ok(_) -> Continue(acc + 1)
+          Error(_) -> Stop(0)
+        }
+      }),
+      cols: model.columns,
+      auto_play: model.auto_play,
+    ),
   ])
 }
 
@@ -297,7 +300,7 @@ fn row(
 
   let link_attrs = case line {
     Some(Link(_, url:)) -> [attribute.href(url), attribute.target("_blank")]
-    _ -> []
+    _ -> [attribute.role("div")]
   }
 
   keyed.element(
@@ -386,6 +389,7 @@ fn pagination(
   keyed.div(
     [
       attribute.id("pagination"),
+      attribute.class("pagination"),
       attribute.class("row"),
       attribute.data("adjacency-list", list_data),
     ],

@@ -20,6 +20,9 @@ pub fn clear_timeout(id: Int) -> Nil
 
 // MARK: Layout
 
+@external(javascript, "./browser.ffi.mjs", "update_flap_height")
+pub fn update_flap_height() -> Nil
+
 @external(javascript, "./browser.ffi.mjs", "measure_orientation")
 pub fn measure_orientation(in root: decode.Dynamic) -> String
 
