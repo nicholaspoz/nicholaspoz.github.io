@@ -1,0 +1,224 @@
+*,
+*:before,
+*:after {
+  box-sizing: inherit;
+}
+
+html {
+  box-sizing: border-box;
+  font-size: 16px;
+  font-family:
+    Fragment Mono,
+    Nanum Gothic Coding,
+    Noto Music,
+    monospace;
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  --bg-primary: rgb(40, 40, 40);
+}
+
+body,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+ol,
+ul {
+  margin: 0;
+  padding: 0;
+  font-weight: normal;
+}
+
+ol,
+ul {
+  list-style: none;
+}
+
+body {
+  container-type: size;
+
+  width: 100svw;
+  height: 100svh;
+
+  background-color: var(--bg-primary);
+
+  /* iOS safe area support */
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+  /*overflow: scroll;*/
+}
+
+#app {
+  container-name: bingo;
+  container-type: size;
+  position: relative;
+  margin: auto;
+
+  width: 100%;
+  height: 100%;
+  min-height: fit-content;
+}
+
+.matrix {
+  container-type: inline-size;
+  position: relative;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: var(--flap-height);
+
+  width: 100cqw;
+  height: 100%;
+  min-height: fit-content;
+  padding: 2cqh 8cqw;
+
+  background-color: var(--bg-primary);
+}
+
+.display {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  gap: max(1cqw, 1px);
+
+  width: 100%;
+
+  background-color: rgb(40, 40, 40);
+}
+
+.pagination {
+  container-type: inline-size;
+  display: flex;
+}
+
+.row {
+  container-type: inline-size;
+  display: flex;
+  flex-direction: row;
+  gap: max(1cqw, 1px);
+
+  cursor: default;
+  /*flex-shrink: 0;*/
+}
+
+.row[href] {
+  cursor: pointer;
+}
+
+@container bingo (aspect-ratio < 1) {
+  .matrix {
+    padding: 5cqh 5cqw;
+  }
+
+  .display {
+    gap: 1.5cqw;
+  }
+
+  .row {
+    gap: 1.5cqw;
+  }
+}
+
+.split-flap {
+  container-type: inline-size;
+  display: inline-block;
+  position: relative;
+
+  width: 100%;
+  aspect-ratio: 1/1.618; /* golden ratio ;) */
+}
+
+.split-flap::selection {
+  background: white;
+  color: black;
+}
+
+.split-flap::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: max(3.5cqw, 1px);
+  background: rgba(20, 20, 20, 0.9);
+  z-index: 20;
+}
+
+.flap {
+  position: absolute;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  width: 100%;
+  height: 50%;
+
+  font-size: 120cqw;
+  font-weight: 500;
+
+  color: #d2d1d1;
+  overflow: hidden;
+  user-select: none;
+  border-radius: 5cqw;
+  perspective: 400cqw;
+  background: rgb(35, 35, 35);
+  box-shadow: inset 1cqw -3cqw 10cqw 6cqw rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+.flap-content {
+  position: absolute;
+  width: 100%;
+  height: 200%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  z-index: 0;
+}
+
+.flap.top {
+  top: 0;
+  transform-origin: bottom;
+  border-radius: 5cqw;
+  user-select: text;
+  height: 100%;
+}
+
+.flap.bottom {
+  bottom: 0;
+  transform-origin: top;
+  border-radius: 0 0 5cqw 5cqw;
+  opacity: 0;
+}
+
+.flap.flipping-bottom {
+  pointer-events: none;
+  bottom: 0;
+  transform-origin: top;
+  border-radius: 0 0 5cqw 5cqw;
+  z-index: 10;
+  transform: rotateX(90deg);
+  will-change: transform;
+}
+
+.flap.top .flap-content {
+  top: 0;
+  height: 100%;
+}
+
+.flap.bottom .flap-content {
+  bottom: 0;
+}
+
+.flap.flipping-bottom .flap-content {
+  bottom: 0;
+}
