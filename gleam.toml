@@ -1,0 +1,22 @@
+name = "bingo"
+version = "1.0.0"
+
+target = "javascript"
+
+
+[tools.lustre.html]
+stylesheets = [
+  { href = "/css/styles.css" },
+  { href = "https://fonts.googleapis.com/css2?family=Fragment+Mono:ital@0;1&family=Nanum+Gothic+Coding&family=Noto+Music&display=swap" },
+]
+scripts = [{ src = "/js/gsap.min.js" }, { src = "/js/TextPlugin.min.js" }]
+
+
+[dependencies]
+gleam_stdlib = ">= 0.44.0 and < 2.0.0"
+lustre = ">= 5.3.4 and < 6.0.0"
+gleam_json = ">= 3.0.2 and < 4.0.0"
+
+[dev-dependencies]
+gleeunit = ">= 1.0.0 and < 2.0.0"
+lustre_dev_tools = ">= 2.0.0 and < 3.0.0"

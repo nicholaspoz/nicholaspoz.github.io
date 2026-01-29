@@ -1,7 +1,15 @@
-mod split_flap
+dev:
+    gleam run -m lustre/dev start
 
-serve: 
-  npx serve .
+build:
+    gleam run -m lustre/dev build --no-html
 
-[parallel]
-dev: serve split_flap::dev
+serve:
+    npx serve .
+
+run: build serve
+
+clean:
+    rm -rf dist
+    rm -rf .lustre
+    gleam clean
