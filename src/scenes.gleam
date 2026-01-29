@@ -1,8 +1,8 @@
 import gleam/option.{None, Some}
 import gleam/string
 
-import components/bingo/model.{type Scene, Frame, Link, Scene, Text}
-import components/display_fns as row
+import model.{type Scene, Frame, Link, Scene, Text}
+import display_fns as row
 
 const linkedin_url = "https://www.linkedin.com/in/nicholaspozoulakis/"
 

@@ -16,18 +16,18 @@ import lustre/element/keyed
 import lustre/event
 
 import browser
-import components/bingo/model.{type Content, type Frame, type Scene, Link}
-import components/bingo/scenes.{scenes}
-import components/display_fns
+import display_fns
+import model.{type Content, type Frame, type Scene, Link}
+import scenes.{scenes}
 import utils
 
-const default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶()𝄞𝄢𝅘𝅥𝄽#!"
-
-pub fn register() -> Result(Nil, lustre.Error) {
+pub fn main() -> Result(Nil, lustre.Error) {
   let app = lustre.application(init, update, view)
   let assert Ok(_) = lustre.start(app, "#app", Nil)
   Ok(Nil)
 }
+
+const default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶()𝄞𝄢𝅘𝅥𝄽#!"
 
 type BingoState {
   BingoState(scene: Scene, frame: Frame)

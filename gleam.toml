@@ -1,4 +1,4 @@
-name = "split_flap"
+name = "bingo"
 version = "1.0.0"
 
 target = "javascript"
@@ -6,10 +6,10 @@ target = "javascript"
 
 [tools.lustre.html]
 stylesheets = [
-  { href = "css/styles.css" },
+  { href = "/css/styles.css" },
   { href = "https://fonts.googleapis.com/css2?family=Fragment+Mono:ital@0;1&family=Nanum+Gothic+Coding&family=Noto+Music&display=swap" },
 ]
-scripts = [{ src = "js/gsap.min.js" }, { src = "js/TextPlugin.min.js" }]
+scripts = [{ src = "/js/gsap.min.js" }, { src = "/js/TextPlugin.min.js" }]
 
 
 [dependencies]
