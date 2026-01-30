@@ -10,6 +10,10 @@ export function set_timeout(delay, cb) {
   return window.setTimeout(cb, delay);
 }
 
+export function get_path() {
+  return window.location.pathname;
+}
+
 /**
  * Clears a timeout by its ID
  * @param {number} id - Timer ID to clear
@@ -35,6 +39,7 @@ export function update_flap_height() {
  * @returns {"landscape" | "portrait"} Element orientation
  */
 export function measure_orientation(root) {
+  console.log(root);
   const rect = root?.getBoundingClientRect() || {
     width: 0,
     height: 0,

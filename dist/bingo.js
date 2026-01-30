@@ -5060,6 +5060,9 @@ function on_click(msg) {
 function set_timeout(delay, cb) {
   return window.setTimeout(cb, delay);
 }
+function get_path() {
+  return window.location.pathname;
+}
 function clear_timeout(id2) {
   window.clearTimeout(id2);
 }
@@ -5068,6 +5071,7 @@ function update_flap_height() {
   document.documentElement.style.setProperty("--flap-height", `${flapHeight}px`);
 }
 function measure_orientation(root3) {
+  console.log(root3);
   const rect = root3?.getBoundingClientRect() || {
     width: 0,
     height: 0
@@ -5503,13 +5507,14 @@ class BingoState extends CustomType {
 }
 
 class Model extends CustomType {
-  constructor(scenes2, columns, current, auto_play, timeout) {
+  constructor(scenes2, columns, current, auto_play, timeout, path) {
     super();
     this.scenes = scenes2;
     this.columns = columns;
     this.current = current;
     this.auto_play = auto_play;
     this.timeout = timeout;
+    this.path = path;
   }
 }
 
@@ -5543,18 +5548,19 @@ class TimeoutStarted extends CustomType {
 class TimeoutEnded extends CustomType {
 }
 var default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶()\uD834\uDD1E\uD834\uDD22\uD834\uDD5F\uD834\uDD3D#!";
-function get_cols_effect() {
+function get_cols_effect(model) {
   return batch(toList([
     after_paint((_, _1) => {
       return update_flap_height();
     }),
     before_paint((dispatch2, root_element) => {
       let _block;
-      let $ = measure_orientation(root_element);
-      if ($ === "portrait") {
-        _block = 15;
-      } else {
+      let $ = model.path;
+      let $1 = measure_orientation(root_element);
+      if ($ === "/" && $1 === "landscape") {
         _block = 27;
+      } else {
+        _block = 15;
       }
       let cols = _block;
       return dispatch2(new ColumnsChanged(cols));
@@ -5572,8 +5578,9 @@ function init(_) {
   let cols = 0;
   let scenes$1 = scenes(cols);
   let state = initial_state(scenes$1);
+  let path = get_path();
   return [
-    new Model(toList([]), cols, state, true, new None),
+    new Model(toList([]), cols, state, true, new None, path),
     after_paint((dispatch2, root_element) => {
       return on_resize(root_element, () => {
         return dispatch2(new Resized);
@@ -5625,14 +5632,14 @@ function find_next_state(scenes2, current) {
 }
 function reduce(model, msg) {
   if (msg instanceof Resized) {
-    return new Ok([model, get_cols_effect()]);
+    return new Ok([model, get_cols_effect(model)]);
   } else if (msg instanceof ColumnsChanged) {
     let columns = msg[0];
     return guard(columns === model.columns, new Ok([model, none2()]), () => {
       let scenes$1 = scenes(columns);
       return try$(initial_state(scenes$1), (initial_state2) => {
         return new Ok([
-          new Model(scenes$1, columns, new Ok(initial_state2), model.auto_play, new None),
+          new Model(scenes$1, columns, new Ok(initial_state2), model.auto_play, new None, model.path),
           start_timeout(initial_state2.frame, model.timeout)
         ]);
       });
@@ -5650,14 +5657,14 @@ function reduce(model, msg) {
           }
         });
         return new Ok([
-          new Model(model.scenes, model.columns, next, false, model.timeout),
+          new Model(model.scenes, model.columns, next, false, model.timeout, model.path),
           start_timeout(frame, model.timeout)
         ]);
       });
     });
   } else if (msg instanceof AutoPlayClicked) {
     return new Ok([
-      new Model(model.scenes, model.columns, model.current, !model.auto_play, new None),
+      new Model(model.scenes, model.columns, model.current, !model.auto_play, new None, model.path),
       after_paint((dispatch2, _) => {
         let $ = model.timeout;
         if ($ instanceof Some) {
@@ -5671,7 +5678,7 @@ function reduce(model, msg) {
   } else if (msg instanceof TimeoutStarted) {
     let id2 = msg[0];
     return new Ok([
-      new Model(model.scenes, model.columns, model.current, model.auto_play, new Some(id2)),
+      new Model(model.scenes, model.columns, model.current, model.auto_play, new Some(id2), model.path),
       (() => {
         animate();
         return none2();
@@ -5683,12 +5690,12 @@ function reduce(model, msg) {
         let continue$ = isEqual(current.scene, next.scene) || model.auto_play;
         if (continue$) {
           return new Ok([
-            new Model(model.scenes, model.columns, new Ok(next), model.auto_play, new None),
+            new Model(model.scenes, model.columns, new Ok(next), model.auto_play, new None, model.path),
             start_timeout(next.frame, new None)
           ]);
         } else {
           return new Ok([
-            new Model(model.scenes, model.columns, model.current, model.auto_play, new None),
+            new Model(model.scenes, model.columns, model.current, model.auto_play, new None, model.path),
             none2()
           ]);
         }
@@ -5702,7 +5709,7 @@ function update2(model, msg) {
     let next = $[0];
     return next;
   } else {
-    echo("ERROR", undefined, "src/bingo.gleam", 103);
+    echo("ERROR", undefined, "src/bingo.gleam", 106);
     return [model, none2()];
   }
 }

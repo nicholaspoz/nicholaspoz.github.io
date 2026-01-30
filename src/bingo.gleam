@@ -40,6 +40,7 @@ type Model {
     current: Result(BingoState, Nil),
     auto_play: Bool,
     timeout: Option(Int),
+    path: String,
   )
 }
 
@@ -56,6 +57,7 @@ fn init(_) -> #(Model, effect.Effect(Msg)) {
   let cols = 0
   let scenes = scenes(cols)
   let state = initial_state(scenes)
+  let path = browser.get_path()
 
   #(
     Model(
@@ -64,6 +66,7 @@ fn init(_) -> #(Model, effect.Effect(Msg)) {
       current: state,
       auto_play: True,
       timeout: None,
+      path: path,
     ),
     {
       use dispatch, root_element <- effect.after_paint
@@ -72,7 +75,7 @@ fn init(_) -> #(Model, effect.Effect(Msg)) {
   )
 }
 
-fn get_cols_effect() -> Effect(Msg) {
+fn get_cols_effect(model: Model) -> Effect(Msg) {
   effect.batch([
     {
       use _, _ <- effect.after_paint
@@ -80,9 +83,9 @@ fn get_cols_effect() -> Effect(Msg) {
     },
     {
       use dispatch, root_element <- effect.before_paint
-      let cols = case browser.measure_orientation(root_element) {
-        "portrait" -> 15
-        _ -> 27
+      let cols = case model.path, browser.measure_orientation(root_element) {
+        "/", "landscape" -> 27
+        _, _ -> 15
       }
       dispatch(ColumnsChanged(cols))
     },
@@ -108,7 +111,7 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
 
 fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
   case msg {
-    Resized -> Ok(#(model, get_cols_effect()))
+    Resized -> Ok(#(model, get_cols_effect(model)))
 
     ColumnsChanged(columns) -> {
       use <- bool.guard(columns == model.columns, Ok(#(model, effect.none())))

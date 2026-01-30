@@ -29,6 +29,9 @@ pub fn measure_orientation(in root: decode.Dynamic) -> String
 @external(javascript, "./browser.ffi.mjs", "on_resize")
 pub fn on_resize(root: decode.Dynamic, cb: fn() -> Nil) -> Nil
 
+@external(javascript, "./browser.ffi.mjs", "get_path")
+pub fn get_path() -> String
+
 // MARK: Animation
 
 /// Trigger animation for all split-flap displays on the page.
