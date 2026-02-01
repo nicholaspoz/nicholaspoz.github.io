@@ -12,3 +12,7 @@ pub type Frame {
 pub type Scene {
   Scene(name: String, frames: List(Frame), chars: Option(String))
 }
+
+pub type BingoState {
+  BingoState(scene: Scene, frame: Frame)
+}

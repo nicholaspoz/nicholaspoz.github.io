@@ -1,16 +1,5 @@
-import gleam/dict
 import gleam/dynamic/decode
 import gleam/json
-
-/// Convert an adjacency list to JSON for passing to the display element's data attribute.
-/// The JS animation code reads this to determine character transitions.
-pub fn adjacency_list_to_json(
-  adjacency_list: dict.Dict(String, String),
-) -> json.Json {
-  json.dict(adjacency_list, fn(string) { string }, json.string)
-}
-
-// MARK: Timers
 
 @external(javascript, "./browser.ffi.mjs", "set_timeout")
 pub fn set_timeout(delay: Int, cb: fn() -> a) -> Int
@@ -33,6 +22,9 @@ pub fn on_resize(root: decode.Dynamic, cb: fn() -> Nil) -> Nil
 pub fn get_path() -> String
 
 // MARK: Animation
+
+@external(javascript, "./browser.ffi.mjs", "set_adjacency_list")
+pub fn set_adjacency_list(name: String, adjacency_list: json.Json) -> Nil
 
 /// Trigger animation for all split-flap displays on the page.
 /// This reads each display's `data-adjacency-list` attribute and animates

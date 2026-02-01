@@ -4,11 +4,10 @@ import gleam/int
 import gleam/json
 import gleam/list.{Continue, Stop}
 import gleam/option.{type Option, None, Some}
-import gleam/result.{lazy_or, try}
+import gleam/result.{try}
 import gleam/string
 import lustre
 import lustre/attribute
-import lustre/component
 import lustre/effect.{type Effect}
 import lustre/element.{type Element}
 import lustre/element/html
@@ -17,7 +16,9 @@ import lustre/event
 
 import browser
 import display_fns
-import model.{type Content, type Frame, type Scene, Link}
+import model.{
+  type BingoState, type Content, type Frame, type Scene, BingoState, Link,
+}
 import scenes.{scenes}
 import utils
 
@@ -29,9 +30,9 @@ pub fn main() -> Result(Nil, lustre.Error) {
 
 const default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶()𝄞𝄢𝅘𝅥𝄽#!"
 
-type BingoState {
-  BingoState(scene: Scene, frame: Frame)
-}
+const pagination_chars = " ○●()𝄆𝄇"
+
+// MARK: MODEL
 
 type Model {
   Model(
@@ -56,7 +57,7 @@ type Msg {
 fn init(_) -> #(Model, effect.Effect(Msg)) {
   let cols = 0
   let scenes = scenes(cols)
-  let state = initial_state(scenes)
+  let state = utils.initial_state(scenes)
   let path = browser.get_path()
 
   #(
@@ -68,14 +69,37 @@ fn init(_) -> #(Model, effect.Effect(Msg)) {
       timeout: None,
       path: path,
     ),
-    {
-      use dispatch, root_element <- effect.after_paint
-      browser.on_resize(root_element, fn() { dispatch(Resized) })
-    },
+    effect.batch([
+      set_adjacency_list_effect("pagination", Some(pagination_chars)),
+
+      case state {
+        Ok(state) -> set_adjacency_list_effect("display", state.scene.chars)
+        Error(_) -> effect.none()
+      },
+
+      {
+        use dispatch, root_element <- effect.after_paint
+        browser.on_resize(root_element, fn() { dispatch(Resized) })
+      },
+    ]),
   )
 }
 
-fn get_cols_effect(model: Model) -> Effect(Msg) {
+// MARK: Effects
+
+fn set_adjacency_list_effect(name: String, chars: Option(String)) {
+  let adjacency_list =
+    utils.to_adjacency_list(case chars {
+      Some(chars) -> chars
+      None -> default_chars
+    })
+    |> json.dict(function.identity, json.string)
+
+  use _, _ <- effect.before_paint
+  browser.set_adjacency_list(name, adjacency_list)
+}
+
+fn on_resize_effect(model: Model) -> Effect(Msg) {
   effect.batch([
     {
       use _, _ <- effect.after_paint
@@ -92,11 +116,17 @@ fn get_cols_effect(model: Model) -> Effect(Msg) {
   ])
 }
 
-fn initial_state(scenes: List(Scene)) -> Result(BingoState, Nil) {
-  use first_scene <- try(list.first(scenes))
-  use first_frame <- try(list.first(first_scene.frames))
-  Ok(BingoState(first_scene, first_frame))
+fn start_timeout(frame: Frame, current_timeout id: Option(Int)) -> Effect(Msg) {
+  use dispatch, _ <- effect.after_paint
+  case id {
+    Some(id) -> browser.clear_timeout(id)
+    None -> Nil
+  }
+  let id = browser.set_timeout(frame.ms, fn() { dispatch(TimeoutEnded) })
+  dispatch(TimeoutStarted(id))
 }
+
+// MARK: UPDATE
 
 fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
   case reduce(model, msg) {
@@ -111,12 +141,12 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
 
 fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
   case msg {
-    Resized -> Ok(#(model, get_cols_effect(model)))
+    Resized -> Ok(#(model, on_resize_effect(model)))
 
     ColumnsChanged(columns) -> {
       use <- bool.guard(columns == model.columns, Ok(#(model, effect.none())))
       let scenes = scenes(columns)
-      use initial_state <- try(initial_state(scenes))
+      use initial_state <- try(utils.initial_state(scenes))
       Ok(#(
         Model(
           ..model,
@@ -139,7 +169,7 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
 
     TimeoutEnded -> {
       use current <- try(model.current)
-      use next <- try(find_next_state(model.scenes, current))
+      use next <- try(utils.find_next_state(model.scenes, current))
       // even when paused, continue the current scene to its last frame
       let continue = { current.scene == next.scene } || model.auto_play
 
@@ -148,13 +178,16 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
         True ->
           Ok(#(
             Model(..model, current: Ok(next), timeout: None),
-            start_timeout(next.frame, current_timeout: None),
+            effect.batch([
+              set_adjacency_list_effect("display", next.scene.chars),
+              start_timeout(next.frame, current_timeout: None),
+            ]),
           ))
       }
     }
 
     PageClicked(page) -> {
-      use scene <- try(find_scene(model.scenes, page))
+      use scene <- try(utils.find_scene(model.scenes, page))
       use frame <- try(list.first(scene.frames))
       let next =
         result.map(model.current, fn(current) {
@@ -166,7 +199,14 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
 
       Ok(#(
         Model(..model, auto_play: False, current: next),
-        start_timeout(frame, model.timeout),
+        effect.batch([
+          case next {
+            Ok(state) -> set_adjacency_list_effect("display", state.scene.chars)
+            Error(_) -> effect.none()
+          },
+
+          start_timeout(frame, model.timeout),
+        ]),
       ))
     }
 
@@ -186,42 +226,7 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
   }
 }
 
-fn find_scene(scenes: List(Scene), page: Int) -> Result(Scene, Nil) {
-  case scenes, page {
-    _, 1 -> list.first(scenes)
-    [], _ -> Error(Nil)
-    [_, ..rest], _ -> find_scene(rest, page - 1)
-  }
-}
-
-fn start_timeout(frame: Frame, current_timeout id: Option(Int)) -> Effect(Msg) {
-  use dispatch, _ <- effect.after_paint
-  case id {
-    Some(id) -> browser.clear_timeout(id)
-    None -> Nil
-  }
-  let id = browser.set_timeout(frame.ms, fn() { dispatch(TimeoutEnded) })
-  dispatch(TimeoutStarted(id))
-}
-
-fn find_next_state(
-  scenes: List(Scene),
-  current: BingoState,
-) -> Result(BingoState, Nil) {
-  case utils.find_next(current.scene.frames, current.frame) {
-    Ok(frame) -> Ok(BingoState(current.scene, frame))
-    Error(_) ->
-      lazy_or(
-        {
-          use scene <- try(utils.find_next(scenes, current.scene))
-          use frame <- try(list.first(scene.frames))
-          Ok(BingoState(scene, frame))
-        },
-        // Start over
-        fn() { initial_state(scenes) },
-      )
-  }
-}
+// MARK: VIEW
 
 fn view(model: Model) -> Element(Msg) {
   let #(lines, chars) = case model.current {
@@ -230,7 +235,7 @@ fn view(model: Model) -> Element(Msg) {
   }
 
   html.div([attribute.class("matrix")], [
-    display(lines, chars, cols: model.columns, rows: 7),
+    display(lines, cols: model.columns, rows: 7),
 
     pagination(
       pages: list.length(model.scenes),
@@ -249,37 +254,24 @@ fn view(model: Model) -> Element(Msg) {
   ])
 }
 
-fn display(
-  lines: List(Content),
-  chars: Option(String),
-  cols cols: Int,
-  rows rows: Int,
-) -> Element(msg) {
+fn display(lines: List(Content), cols cols: Int, rows rows: Int) -> Element(msg) {
   let sanitized_lines =
     lines
     |> utils.zip_longest(list.range(0, rows - 1), _)
     |> list.filter_map(utils.first_is_some)
 
-  let adjacency_list =
-    utils.to_adjacency_list(case chars {
-      Some(chars) -> chars
-      None -> default_chars
-    })
-
-  let list_data =
-    adjacency_list
-    |> json.dict(function.identity, json.string)
-    |> json.to_string()
-
-  keyed.div(
-    [attribute.class("display"), attribute.data("adjacency-list", list_data)],
+  keyed.fragment(
     list.index_map(sanitized_lines, fn(line, line_num) {
-      #(int.to_string(line_num), row(line, row: line_num, cols: cols))
+      #(
+        int.to_string(line_num),
+        row("display", line, row: line_num, cols: cols),
+      )
     }),
   )
 }
 
 fn row(
+  name: String,
   line: Option(Content),
   row row_num: Int,
   cols num_cols: Int,
@@ -308,7 +300,7 @@ fn row(
 
   keyed.element(
     "a",
-    [attribute.class("row"), component.part("row"), ..link_attrs],
+    [attribute.class("row"), attribute.data("name", name), ..link_attrs],
     children,
   )
 }
@@ -384,17 +376,11 @@ fn pagination(
       }
     })
 
-  let list_data =
-    utils.to_adjacency_list(" ○●()𝄆𝄇")
-    |> json.dict(function.identity, json.string)
-    |> json.to_string()
-
   keyed.div(
     [
-      attribute.id("pagination"),
+      attribute.data("name", "pagination"),
       attribute.class("pagination"),
       attribute.class("row"),
-      attribute.data("adjacency-list", list_data),
     ],
     list.index_map(chars, fn(char, idx) {
       let page = 1 + { { idx - first_dot_idx } / 2 }

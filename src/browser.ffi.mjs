@@ -39,17 +39,18 @@ export function update_flap_height() {
  * @returns {"landscape" | "portrait"} Element orientation
  */
 export function measure_orientation(root) {
-  console.log(root);
   const rect = root?.getBoundingClientRect() || {
     width: 0,
     height: 0,
   };
 
-  const wide = rect.height / rect.width < 1;
-  return wide ? "landscape" : "portrait";
+  const aspectRatio = rect.height / rect.width < 1;
+  return aspectRatio ? "landscape" : "portrait";
 }
 
-/** @type {ResizeObserver | null} */
+/**
+ * @type {ResizeObserver | null}
+ */
 let observer = null;
 
 /**
@@ -65,6 +66,25 @@ export function on_resize(root, cb) {
   observer = new ResizeObserver(cb);
   observer.observe(root);
 }
+
+/**
+ * Silly hack to fix iOS orientation + resizing issue
+ */
+screen.orientation.addEventListener("change", (event) => {
+  const type = /** @type {ScreenOrientation} */ (event.target).type;
+  if (type.startsWith("portrait")) return;
+
+  setTimeout(() => {
+    window.requestAnimationFrame(() => {
+      document.body.setAttribute("style", "height: 105svh");
+    });
+    setTimeout(() => {
+      window.requestAnimationFrame(() => {
+        document.body.removeAttribute("style");
+      });
+    }, 20);
+  }, 400);
+});
 
 // MARK: GSAP Animation
 
@@ -99,11 +119,24 @@ function getDistance(from, to, adjacencyList) {
   return dist;
 }
 
-/** @type {Record<string, gsap.core.Timeline>} */
+/**
+ * @type {Record<string, gsap.core.Timeline>}
+ */
 let timelines = {};
 
-/** @type {string[]} */
-const selectors = [".display", "#pagination"];
+/**
+ * @type {Record<string, Record<string, string>>}
+ */
+const adjacencyLists = {};
+
+/**
+ * @param {string} name
+ * @param {Record<string, string>} adjacency_list
+ */
+export function set_adjacency_list(name, adjacency_list) {
+  console.log(name, adjacency_list);
+  adjacencyLists[name] = adjacency_list;
+}
 
 /**
  * Animates all split-flap displays on the page.
@@ -112,7 +145,7 @@ const selectors = [".display", "#pagination"];
  * @returns {void}
  */
 export function animate() {
-  for (const selector of selectors) {
+  for (const [selector, adjacencyList] of Object.entries(adjacencyLists)) {
     // Clean up existing timeline for this selector
     if (timelines[selector]) {
       timelines[selector].pause();
@@ -124,16 +157,11 @@ export function animate() {
       delete timelines[selector];
     }
 
-    /** @type {HTMLElement | null} */
-    const display = document.querySelector(selector);
-    if (!display) continue;
-
-    /** @type {Record<string, string>} */
-    const adjacencyList = JSON.parse(display.dataset.adjacencyList || "{}");
-    const splitFlaps = display.querySelectorAll(".split-flap");
-
     timelines[selector] = gsap.timeline({ paused: true });
 
+    const splitFlaps = document.querySelectorAll(
+      `[data-name=${selector}] > .split-flap`,
+    );
     for (const el of splitFlaps) {
       const child = flip(/** @type {HTMLElement} */ (el), adjacencyList);
       if (child) {
@@ -191,6 +219,7 @@ function flip(el, adjacencyList) {
   }
 
   let timeline = gsap.timeline().set(bottom, { opacity: 1 }, 0);
+  const duration = [0.03, 0.045, 0.04, 0.045][Math.floor(Math.random() * 4)];
 
   while (distance > 0) {
     timeline = timeline
@@ -200,10 +229,10 @@ function flip(el, adjacencyList) {
         flippingBottomContent.textContent = next;
         curr = next;
         next = adjacencyList[curr];
-      }, 0)
+      })
       .to(flippingBottom, {
         rotationX: 0,
-        duration: 0.045,
+        duration,
         ease: "power1.inOut",
       })
       .set(flippingBottom, { rotationX: 90 }, ">")

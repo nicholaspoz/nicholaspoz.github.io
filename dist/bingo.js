@@ -2117,9 +2117,6 @@ function lazy_or(first3, second) {
   }
 }
 // build/dev/javascript/gleam_json/gleam_json_ffi.mjs
-function json_to_string(json) {
-  return JSON.stringify(json);
-}
 function object(entries) {
   return Object.fromEntries(entries);
 }
@@ -2128,9 +2125,6 @@ function identity2(x) {
 }
 
 // build/dev/javascript/gleam_json/gleam/json.mjs
-function to_string2(json) {
-  return json_to_string(json);
-}
 function string2(input) {
   return identity2(input);
 }
@@ -2548,14 +2542,14 @@ function do_to_string(loop$path, loop$acc) {
     }
   }
 }
-function to_string3(path) {
+function to_string2(path) {
   return do_to_string(path, toList([]));
 }
 function matches(path, candidates) {
   if (candidates instanceof Empty) {
     return false;
   } else {
-    return do_matches(to_string3(path), candidates);
+    return do_matches(to_string2(path), candidates);
   }
 }
 function event2(path, event3) {
@@ -3952,7 +3946,7 @@ function diff(events, old, new$6) {
 }
 
 // build/dev/javascript/lustre/lustre/vdom/reconciler.ffi.mjs
-var setTimeout = globalThis.setTimeout;
+var setTimeout2 = globalThis.setTimeout;
 var clearTimeout = globalThis.clearTimeout;
 var createElementNS = (ns, name) => document2().createElementNS(ns, name);
 var createTextNode = (data2) => document2().createTextNode(data2);
@@ -4303,7 +4297,7 @@ class Reconciler {
     const debounce = debouncers.get(type);
     if (debounce) {
       clearTimeout(debounce.timeout);
-      debounce.timeout = setTimeout(() => {
+      debounce.timeout = setTimeout2(() => {
         if (event3 === throttles.get(type)?.lastEvent)
           return;
         this.#dispatch(event3, data2);
@@ -4785,9 +4779,6 @@ function new$6(options) {
     return option.apply(config);
   });
 }
-function part(name) {
-  return attribute2("part", name);
-}
 
 // build/dev/javascript/lustre/lustre/runtime/client/spa.ffi.mjs
 class Spa {
@@ -5071,13 +5062,12 @@ function update_flap_height() {
   document.documentElement.style.setProperty("--flap-height", `${flapHeight}px`);
 }
 function measure_orientation(root3) {
-  console.log(root3);
   const rect = root3?.getBoundingClientRect() || {
     width: 0,
     height: 0
   };
-  const wide = rect.height / rect.width < 1;
-  return wide ? "landscape" : "portrait";
+  const aspectRatio = rect.height / rect.width < 1;
+  return aspectRatio ? "landscape" : "portrait";
 }
 var observer = null;
 function on_resize(root3, cb) {
@@ -5087,6 +5077,21 @@ function on_resize(root3, cb) {
   observer = new ResizeObserver(cb);
   observer.observe(root3);
 }
+screen.orientation.addEventListener("change", (event4) => {
+  const type = event4.target.type;
+  if (type.startsWith("portrait"))
+    return;
+  setTimeout(() => {
+    window.requestAnimationFrame(() => {
+      document.body.setAttribute("style", "height: 105svh");
+    });
+    setTimeout(() => {
+      window.requestAnimationFrame(() => {
+        document.body.removeAttribute("style");
+      });
+    }, 20);
+  }, 400);
+});
 gsap.registerPlugin(TextPlugin);
 gsap.config({
   force3D: true
@@ -5109,9 +5114,13 @@ function getDistance(from, to, adjacencyList) {
   return dist;
 }
 var timelines = {};
-var selectors = [".display", "#pagination"];
+var adjacencyLists = {};
+function set_adjacency_list(name, adjacency_list) {
+  console.log(name, adjacency_list);
+  adjacencyLists[name] = adjacency_list;
+}
 function animate() {
-  for (const selector of selectors) {
+  for (const [selector, adjacencyList] of Object.entries(adjacencyLists)) {
     if (timelines[selector]) {
       timelines[selector].pause();
       timelines[selector].getChildren(true, false, true).forEach((child) => {
@@ -5121,12 +5130,8 @@ function animate() {
       timelines[selector].kill();
       delete timelines[selector];
     }
-    const display = document.querySelector(selector);
-    if (!display)
-      continue;
-    const adjacencyList = JSON.parse(display.dataset.adjacencyList || "{}");
-    const splitFlaps = display.querySelectorAll(".split-flap");
     timelines[selector] = gsap.timeline({ paused: true });
+    const splitFlaps = document.querySelectorAll(`[data-name=${selector}] > .split-flap`);
     for (const el of splitFlaps) {
       const child = flip(el, adjacencyList);
       if (child) {
@@ -5161,6 +5166,7 @@ function flip(el, adjacencyList) {
     return null;
   }
   let timeline = gsap.timeline().set(bottom, { opacity: 1 }, 0);
+  const duration = [0.03, 0.045, 0.04, 0.045][Math.floor(Math.random() * 4)];
   while (distance > 0) {
     timeline = timeline.call(() => {
       topContent.textContent = next;
@@ -5168,9 +5174,9 @@ function flip(el, adjacencyList) {
       flippingBottomContent.textContent = next;
       curr = next;
       next = adjacencyList[curr];
-    }, 0).to(flippingBottom, {
+    }).to(flippingBottom, {
       rotationX: 0,
-      duration: 0.045,
+      duration,
       ease: "power1.inOut"
     }).set(flippingBottom, { rotationX: 90 }, ">").addLabel(`${distance}`, ">");
     distance--;
@@ -5227,6 +5233,13 @@ class Scene extends CustomType {
     this.name = name;
     this.frames = frames;
     this.chars = chars;
+  }
+}
+class BingoState extends CustomType {
+  constructor(scene, frame) {
+    super();
+    this.scene = scene;
+    this.frame = frame;
   }
 }
 
@@ -5399,6 +5412,28 @@ function scenes(columns) {
 }
 
 // build/dev/javascript/bingo/utils.mjs
+function find_scene(loop$scenes, loop$page) {
+  while (true) {
+    let scenes2 = loop$scenes;
+    let page = loop$page;
+    if (page === 1) {
+      return first(scenes2);
+    } else if (scenes2 instanceof Empty) {
+      return new Error(undefined);
+    } else {
+      let rest = scenes2.tail;
+      loop$scenes = rest;
+      loop$page = page - 1;
+    }
+  }
+}
+function initial_state(scenes2) {
+  return try$(first(scenes2), (first_scene) => {
+    return try$(first(first_scene.frames), (first_frame) => {
+      return new Ok(new BingoState(first_scene, first_frame));
+    });
+  });
+}
 function find_next(loop$l, loop$current) {
   while (true) {
     let l = loop$l;
@@ -5422,6 +5457,21 @@ function find_next(loop$l, loop$current) {
         }
       }
     }
+  }
+}
+function find_next_state(scenes2, current) {
+  let $ = find_next(current.scene.frames, current.frame);
+  if ($ instanceof Ok) {
+    let frame = $[0];
+    return new Ok(new BingoState(current.scene, frame));
+  } else {
+    return lazy_or(try$(find_next(scenes2, current.scene), (scene) => {
+      return try$(first(scene.frames), (frame) => {
+        return new Ok(new BingoState(scene, frame));
+      });
+    }), () => {
+      return initial_state(scenes2);
+    });
   }
 }
 function zip_longest(list1, list22) {
@@ -5498,14 +5548,6 @@ function to_adjacency_list(chars) {
 // build/dev/javascript/bingo/bingo.mjs
 var FILEPATH = "src/bingo.gleam";
 
-class BingoState extends CustomType {
-  constructor(scene, frame) {
-    super();
-    this.scene = scene;
-    this.frame = frame;
-  }
-}
-
 class Model extends CustomType {
   constructor(scenes2, columns, current, auto_play, timeout, path) {
     super();
@@ -5548,7 +5590,8 @@ class TimeoutStarted extends CustomType {
 class TimeoutEnded extends CustomType {
 }
 var default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶()\uD834\uDD1E\uD834\uDD22\uD834\uDD5F\uD834\uDD3D#!";
-function get_cols_effect(model) {
+var pagination_chars = " ○●()\uD834\uDD06\uD834\uDD07";
+function on_resize_effect(model) {
   return batch(toList([
     after_paint((_, _1) => {
       return update_flap_height();
@@ -5567,42 +5610,6 @@ function get_cols_effect(model) {
     })
   ]));
 }
-function initial_state(scenes2) {
-  return try$(first(scenes2), (first_scene) => {
-    return try$(first(first_scene.frames), (first_frame) => {
-      return new Ok(new BingoState(first_scene, first_frame));
-    });
-  });
-}
-function init(_) {
-  let cols = 0;
-  let scenes$1 = scenes(cols);
-  let state = initial_state(scenes$1);
-  let path = get_path();
-  return [
-    new Model(toList([]), cols, state, true, new None, path),
-    after_paint((dispatch2, root_element) => {
-      return on_resize(root_element, () => {
-        return dispatch2(new Resized);
-      });
-    })
-  ];
-}
-function find_scene(loop$scenes, loop$page) {
-  while (true) {
-    let scenes2 = loop$scenes;
-    let page = loop$page;
-    if (page === 1) {
-      return first(scenes2);
-    } else if (scenes2 instanceof Empty) {
-      return new Error(undefined);
-    } else {
-      let rest = scenes2.tail;
-      loop$scenes = rest;
-      loop$page = page - 1;
-    }
-  }
-}
 function start_timeout(frame, id2) {
   return after_paint((dispatch2, _) => {
     if (id2 instanceof Some) {
@@ -5614,104 +5621,6 @@ function start_timeout(frame, id2) {
     });
     return dispatch2(new TimeoutStarted(id$1));
   });
-}
-function find_next_state(scenes2, current) {
-  let $ = find_next(current.scene.frames, current.frame);
-  if ($ instanceof Ok) {
-    let frame = $[0];
-    return new Ok(new BingoState(current.scene, frame));
-  } else {
-    return lazy_or(try$(find_next(scenes2, current.scene), (scene) => {
-      return try$(first(scene.frames), (frame) => {
-        return new Ok(new BingoState(scene, frame));
-      });
-    }), () => {
-      return initial_state(scenes2);
-    });
-  }
-}
-function reduce(model, msg) {
-  if (msg instanceof Resized) {
-    return new Ok([model, get_cols_effect(model)]);
-  } else if (msg instanceof ColumnsChanged) {
-    let columns = msg[0];
-    return guard(columns === model.columns, new Ok([model, none2()]), () => {
-      let scenes$1 = scenes(columns);
-      return try$(initial_state(scenes$1), (initial_state2) => {
-        return new Ok([
-          new Model(scenes$1, columns, new Ok(initial_state2), model.auto_play, new None, model.path),
-          start_timeout(initial_state2.frame, model.timeout)
-        ]);
-      });
-    });
-  } else if (msg instanceof PageClicked) {
-    let page = msg[0];
-    return try$(find_scene(model.scenes, page), (scene) => {
-      return try$(first(scene.frames), (frame) => {
-        let next = map3(model.current, (current) => {
-          let $ = !isEqual(current.scene, scene);
-          if ($) {
-            return new BingoState(scene, frame);
-          } else {
-            return current;
-          }
-        });
-        return new Ok([
-          new Model(model.scenes, model.columns, next, false, model.timeout, model.path),
-          start_timeout(frame, model.timeout)
-        ]);
-      });
-    });
-  } else if (msg instanceof AutoPlayClicked) {
-    return new Ok([
-      new Model(model.scenes, model.columns, model.current, !model.auto_play, new None, model.path),
-      after_paint((dispatch2, _) => {
-        let $ = model.timeout;
-        if ($ instanceof Some) {
-          let id2 = $[0];
-          clear_timeout(id2);
-        } else {}
-        animate();
-        return dispatch2(new TimeoutEnded);
-      })
-    ]);
-  } else if (msg instanceof TimeoutStarted) {
-    let id2 = msg[0];
-    return new Ok([
-      new Model(model.scenes, model.columns, model.current, model.auto_play, new Some(id2), model.path),
-      (() => {
-        animate();
-        return none2();
-      })()
-    ]);
-  } else {
-    return try$(model.current, (current) => {
-      return try$(find_next_state(model.scenes, current), (next) => {
-        let continue$ = isEqual(current.scene, next.scene) || model.auto_play;
-        if (continue$) {
-          return new Ok([
-            new Model(model.scenes, model.columns, new Ok(next), model.auto_play, new None, model.path),
-            start_timeout(next.frame, new None)
-          ]);
-        } else {
-          return new Ok([
-            new Model(model.scenes, model.columns, model.current, model.auto_play, new None, model.path),
-            none2()
-          ]);
-        }
-      });
-    });
-  }
-}
-function update2(model, msg) {
-  let $ = reduce(model, msg);
-  if ($ instanceof Ok) {
-    let next = $[0];
-    return next;
-  } else {
-    echo("ERROR", undefined, "src/bingo.gleam", 106);
-    return [model, none2()];
-  }
 }
 function character(id2, dest, on_click2) {
   return div(toList([
@@ -5745,7 +5654,7 @@ function character(id2, dest, on_click2) {
     ]))
   ]));
 }
-function row(line, row_num, num_cols) {
+function row(name, line, row_num, num_cols) {
   let _block;
   if (line instanceof Some) {
     let content = line[0];
@@ -5777,7 +5686,19 @@ function row(line, row_num, num_cols) {
     _block$2 = toList([role("div")]);
   }
   let link_attrs = _block$2;
-  return element3("a", prepend(class$("row"), prepend(part("row"), link_attrs)), children);
+  return element3("a", prepend(class$("row"), prepend(data("name", name), link_attrs)), children);
+}
+function display(lines, cols, rows) {
+  let _block;
+  let _pipe = lines;
+  let _pipe$1 = ((_capture) => {
+    return zip_longest(range(0, rows - 1), _capture);
+  })(_pipe);
+  _block = filter_map(_pipe$1, first_is_some);
+  let sanitized_lines = _block;
+  return fragment2(index_map(sanitized_lines, (line, line_num) => {
+    return [to_string(line_num), row("display", line, line_num, cols)];
+  }));
 }
 function pagination(pages, page, cols, auto_play) {
   let empty3 = repeat(" ", cols);
@@ -5814,16 +5735,10 @@ function pagination(pages, page, cols, auto_play) {
       return new Continue(acc + 1);
     }
   });
-  let _block$3;
-  let _pipe$4 = to_adjacency_list(" ○●()\uD834\uDD06\uD834\uDD07");
-  let _pipe$5 = dict2(_pipe$4, identity3, string2);
-  _block$3 = to_string2(_pipe$5);
-  let list_data = _block$3;
   return div2(toList([
-    id("pagination"),
+    data("name", "pagination"),
     class$("pagination"),
-    class$("row"),
-    data("adjacency-list", list_data)
+    class$("row")
   ]), index_map(chars, (char, idx) => {
     let page$1 = 1 + globalThis.Math.trunc((idx - first_dot_idx) / 2);
     let id2 = "pb-" + to_string(idx);
@@ -5849,34 +5764,6 @@ function pagination(pages, page, cols, auto_play) {
     ];
   }));
 }
-function display(lines, chars, cols, rows) {
-  let _block;
-  let _pipe = lines;
-  let _pipe$1 = ((_capture) => {
-    return zip_longest(range(0, rows - 1), _capture);
-  })(_pipe);
-  _block = filter_map(_pipe$1, first_is_some);
-  let sanitized_lines = _block;
-  let adjacency_list = to_adjacency_list((() => {
-    if (chars instanceof Some) {
-      let chars$1 = chars[0];
-      return chars$1;
-    } else {
-      return default_chars;
-    }
-  })());
-  let _block$1;
-  let _pipe$2 = adjacency_list;
-  let _pipe$3 = dict2(_pipe$2, identity3, string2);
-  _block$1 = to_string2(_pipe$3);
-  let list_data = _block$1;
-  return div2(toList([
-    class$("display"),
-    data("adjacency-list", list_data)
-  ]), index_map(sanitized_lines, (line, line_num) => {
-    return [to_string(line_num), row(line, line_num, cols)];
-  }));
-}
 function view(model) {
   let _block;
   let $1 = model.current;
@@ -5893,7 +5780,7 @@ function view(model) {
   lines = $[0];
   chars = $[1];
   return div(toList([class$("matrix")]), toList([
-    display(lines, chars, model.columns, 7),
+    display(lines, model.columns, 7),
     pagination(length(model.scenes), fold_until(model.scenes, 1, (acc, s) => {
       let $2 = model.current;
       if ($2 instanceof Ok) {
@@ -5909,11 +5796,148 @@ function view(model) {
     }), model.columns, model.auto_play)
   ]));
 }
+function set_adjacency_list_effect(name, chars) {
+  let _block;
+  let _pipe = to_adjacency_list((() => {
+    if (chars instanceof Some) {
+      let chars$1 = chars[0];
+      return chars$1;
+    } else {
+      return default_chars;
+    }
+  })());
+  _block = dict2(_pipe, identity3, string2);
+  let adjacency_list = _block;
+  return before_paint((_, _1) => {
+    return set_adjacency_list(name, adjacency_list);
+  });
+}
+function reduce(model, msg) {
+  if (msg instanceof Resized) {
+    return new Ok([model, on_resize_effect(model)]);
+  } else if (msg instanceof ColumnsChanged) {
+    let columns = msg[0];
+    return guard(columns === model.columns, new Ok([model, none2()]), () => {
+      let scenes$1 = scenes(columns);
+      return try$(initial_state(scenes$1), (initial_state2) => {
+        return new Ok([
+          new Model(scenes$1, columns, new Ok(initial_state2), model.auto_play, new None, model.path),
+          start_timeout(initial_state2.frame, model.timeout)
+        ]);
+      });
+    });
+  } else if (msg instanceof PageClicked) {
+    let page = msg[0];
+    return try$(find_scene(model.scenes, page), (scene) => {
+      return try$(first(scene.frames), (frame) => {
+        let next = map3(model.current, (current) => {
+          let $ = !isEqual(current.scene, scene);
+          if ($) {
+            return new BingoState(scene, frame);
+          } else {
+            return current;
+          }
+        });
+        return new Ok([
+          new Model(model.scenes, model.columns, next, false, model.timeout, model.path),
+          batch(toList([
+            (() => {
+              if (next instanceof Ok) {
+                let state = next[0];
+                return set_adjacency_list_effect("display", state.scene.chars);
+              } else {
+                return none2();
+              }
+            })(),
+            start_timeout(frame, model.timeout)
+          ]))
+        ]);
+      });
+    });
+  } else if (msg instanceof AutoPlayClicked) {
+    return new Ok([
+      new Model(model.scenes, model.columns, model.current, !model.auto_play, new None, model.path),
+      after_paint((dispatch2, _) => {
+        let $ = model.timeout;
+        if ($ instanceof Some) {
+          let id2 = $[0];
+          clear_timeout(id2);
+        } else {}
+        animate();
+        return dispatch2(new TimeoutEnded);
+      })
+    ]);
+  } else if (msg instanceof TimeoutStarted) {
+    let id2 = msg[0];
+    return new Ok([
+      new Model(model.scenes, model.columns, model.current, model.auto_play, new Some(id2), model.path),
+      (() => {
+        animate();
+        return none2();
+      })()
+    ]);
+  } else {
+    return try$(model.current, (current) => {
+      return try$(find_next_state(model.scenes, current), (next) => {
+        let continue$ = isEqual(current.scene, next.scene) || model.auto_play;
+        if (continue$) {
+          return new Ok([
+            new Model(model.scenes, model.columns, new Ok(next), model.auto_play, new None, model.path),
+            batch(toList([
+              set_adjacency_list_effect("display", next.scene.chars),
+              start_timeout(next.frame, new None)
+            ]))
+          ]);
+        } else {
+          return new Ok([
+            new Model(model.scenes, model.columns, model.current, model.auto_play, new None, model.path),
+            none2()
+          ]);
+        }
+      });
+    });
+  }
+}
+function update2(model, msg) {
+  let $ = reduce(model, msg);
+  if ($ instanceof Ok) {
+    let next = $[0];
+    return next;
+  } else {
+    echo("ERROR", undefined, "src/bingo.gleam", 136);
+    return [model, none2()];
+  }
+}
+function init(_) {
+  let cols = 0;
+  let scenes$1 = scenes(cols);
+  let state = initial_state(scenes$1);
+  let path = get_path();
+  return [
+    new Model(toList([]), cols, state, true, new None, path),
+    batch(toList([
+      set_adjacency_list_effect("pagination", new Some(pagination_chars)),
+      (() => {
+        if (state instanceof Ok) {
+          let state$1 = state[0];
+          return set_adjacency_list_effect("display", state$1.scene.chars);
+        } else {
+          return none2();
+        }
+      })(),
+      after_paint((dispatch2, root_element) => {
+        return on_resize(root_element, () => {
+          return dispatch2(new Resized);
+        });
+      })
+    ]))
+  ];
+}
 function main() {
   let app = application(init, update2, view);
   let $ = start3(app, "#app", undefined);
   if (!($ instanceof Ok)) {
-    throw makeError("let_assert", FILEPATH, "bingo", 26, "main", "Pattern match failed, no pattern matched the value.", { value: $, start: 648, end: 697, pattern_start: 659, pattern_end: 664 });
+    throw makeError("let_assert", FILEPATH, "bingo", 27, "main", "Pattern match failed, no pattern matched the value.", { value: $, start: 649, end: 698, pattern_start: 660, pattern_end: 665 });
   }
   return new Ok(undefined);
 }

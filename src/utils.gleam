@@ -1,13 +1,47 @@
 import gleam/dict
 import gleam/list
 import gleam/option.{type Option, None, Some}
-import gleam/result
+import gleam/result.{try}
 import gleam/string
 
+import model.{type BingoState, type Scene, BingoState}
+
+pub fn find_scene(scenes: List(Scene), page: Int) -> Result(Scene, Nil) {
+  case scenes, page {
+    _, 1 -> list.first(scenes)
+    [], _ -> Error(Nil)
+    [_, ..rest], _ -> find_scene(rest, page - 1)
+  }
+}
+
+pub fn find_next_state(
+  scenes: List(Scene),
+  current: BingoState,
+) -> Result(BingoState, Nil) {
+  case find_next(current.scene.frames, current.frame) {
+    Ok(frame) -> Ok(BingoState(current.scene, frame))
+    Error(_) ->
+      result.lazy_or(
+        {
+          use scene <- try(find_next(scenes, current.scene))
+          use frame <- try(list.first(scene.frames))
+          Ok(BingoState(scene, frame))
+        },
+        // Start over
+        fn() { initial_state(scenes) },
+      )
+  }
+}
+
+pub fn initial_state(scenes: List(Scene)) -> Result(BingoState, Nil) {
+  use first_scene <- try(list.first(scenes))
+  use first_frame <- try(list.first(first_scene.frames))
+  Ok(BingoState(first_scene, first_frame))
+}
+
 /// Find the item in the list directly after the `current` item.
-/// Will return `Error(Nil)` if the `current` item is the last item, 
+/// Will return `Error(Nil)` if the `current` item is the last item,
 /// or if it is not found in the list.
-/// 
 pub fn find_next(l: List(a), current: a) -> Result(a, Nil) {
   case l {
     [h1, h2, ..rest] -> {

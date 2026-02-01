@@ -59,7 +59,10 @@ body {
   container-name: bingo;
   container-type: size;
   position: relative;
-  margin: auto;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 
   width: 100%;
   height: 100%;
@@ -70,33 +73,24 @@ body {
   container-type: inline-size;
   position: relative;
 
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: var(--flap-height);
-
-  width: 100cqw;
-  height: 100%;
-  min-height: fit-content;
-  padding: 2cqh 8cqw;
-
-  background-color: var(--bg-primary);
-}
-
-.display {
-  container-type: inline-size;
-  display: flex;
-  flex-direction: column;
-  gap: max(1cqw, 1px);
+  display: grid;
+  grid-template-rows: repeat(9, 1fr);
+  grid-template-columns: 1fr;
+  gap: max(1cqh, 1px);
 
   width: 100%;
+  max-height: 100cqh;
+  height: fit-content;
 
-  background-color: rgb(40, 40, 40);
+  padding: 0cqh 8cqw;
+
+  background-color: var(--bg-primary);
 }
 
 .pagination {
   container-type: inline-size;
   display: flex;
+  grid-row-start: 9;
 }
 
 .row {
@@ -104,6 +98,9 @@ body {
   display: flex;
   flex-direction: row;
   gap: max(1cqw, 1px);
+  width: 100cqw;
+  height: 100%;
+  /*max-height: 5cqh;*/
 
   cursor: default;
   /*flex-shrink: 0;*/
@@ -116,10 +113,6 @@ body {
 @container bingo (aspect-ratio < 1) {
   .matrix {
     padding: 5cqh 5cqw;
-  }
-
-  .display {
-    gap: 1.5cqw;
   }
 
   .row {
