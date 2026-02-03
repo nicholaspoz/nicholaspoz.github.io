@@ -165,22 +165,22 @@ https://github.com/nicholaspoz
     <script src="/dist/js/TextPlugin.min.js" type="text/javascript"></script>
     <script type="module" src="/dist/bingo.js"></script>
     <script>
-      if (
-        window.matchMedia("(max-width: 767px) and (orientation: portrait)")
-          .matches
-      ) {
-        const app = document.getElementById("app");
-        const overlay = document.getElementById("iframe-overlay");
-        const observer = new IntersectionObserver(
-          (entries) => {
-            entries.forEach((entry) => {
+      const app = document.getElementById("app");
+      const overlay = document.getElementById("iframe-overlay");
+      const mediaQuery = window.matchMedia(
+        "(max-width: 767px) and (orientation: portrait)",
+      );
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (mediaQuery.matches) {
               overlay.classList.toggle("hidden", !entry.isIntersecting);
-            });
-          },
-          { threshold: 0 },
-        );
-        observer.observe(app);
-      }
+            }
+          });
+        },
+        { threshold: 0 },
+      );
+      observer.observe(app);
     </script>
   </body>
 </html>

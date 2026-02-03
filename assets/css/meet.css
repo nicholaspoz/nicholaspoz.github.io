@@ -20,6 +20,14 @@ iframe {
   height: 100cqh;
 }
 
+#app {
+  padding: 3cqh 3cqw;
+}
+
+.matrix {
+  max-width: 110cqh;
+}
+
 @media (max-width: 767px) and (orientation: portrait) {
   body {
     overflow: scroll;
@@ -36,10 +44,6 @@ iframe {
     display: flex;
     height: 50svh;
     flex-shrink: 0;
-  }
-
-  .matrix {
-    padding: 5cqw;
   }
 
   #goog {

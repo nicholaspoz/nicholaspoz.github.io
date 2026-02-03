@@ -1,16 +1,26 @@
 import gleam/option.{type Option}
 
+pub type Justify {
+  /// Left
+  L(String)
+  /// Center
+  C(String)
+  /// Right
+  R(String)
+}
+
 pub type Content {
-  Text(text: String)
-  Link(text: String, url: String)
+  Text(text: Justify)
+  Link(text: Justify, url: String)
+  EmptyLine
 }
 
 pub type Frame {
-  Frame(lines: List(Content), ms: Int)
+  Frame(ms: Int, lines: List(Content))
 }
 
 pub type Scene {
-  Scene(name: String, frames: List(Frame), chars: Option(String))
+  Scene(name: String, chars: Option(String), frames: List(Frame))
 }
 
 pub type BingoState {

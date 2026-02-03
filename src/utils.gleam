@@ -1,10 +1,37 @@
 import gleam/dict
+import gleam/int
 import gleam/list
-import gleam/option.{type Option, None, Some}
 import gleam/result.{try}
 import gleam/string
 
-import model.{type BingoState, type Scene, BingoState}
+import model.{type BingoState, type Content, type Scene, BingoState, EmptyLine}
+
+pub fn center(text: String, against bg: String) -> String {
+  let len = string.length(bg)
+  let text = string.slice(text, 0, len)
+
+  let middle_idx = string.length(text)
+  let start_idx = int.max(0, { len - middle_idx } / 2)
+  let end_idx = int.max(0, len - start_idx - middle_idx)
+
+  string.slice(bg, 0, start_idx)
+  <> text
+  <> string.slice(bg, start_idx + middle_idx, end_idx)
+}
+
+pub fn left(text: String, against bg: String) -> String {
+  let bg_len = string.length(bg)
+  let text = string.slice(text, 0, bg_len)
+  let text_len = string.length(text)
+  text <> string.slice(bg, text_len, bg_len)
+}
+
+pub fn right(text: String, against bg: String) -> String {
+  let bg_len = string.length(bg)
+  let text = string.slice(text, 0, bg_len)
+  let text_len = string.length(text)
+  string.slice(bg, 0, bg_len - text_len) <> text
+}
 
 pub fn find_scene(scenes: List(Scene), page: Int) -> Result(Scene, Nil) {
   case scenes, page {
@@ -54,38 +81,11 @@ pub fn find_next(l: List(a), current: a) -> Result(a, Nil) {
   }
 }
 
-/// probs a better way to do this
-pub fn zip_longest(
-  list1: List(a),
-  list2: List(b),
-) -> List(#(Option(a), Option(b))) {
-  let #(head1, rest1) = case list1 {
-    [] -> #(None, [])
-    [h, ..rest] -> #(Some(h), rest)
-  }
-
-  let #(head2, rest2) = case list2 {
-    [] -> #(None, [])
-    [h, ..rest] -> #(Some(h), rest)
-  }
-
-  let el = case head1, head2 {
-    None, None -> None
-    Some(h1), None -> Some(#(Some(h1), None))
-    None, Some(h2) -> Some(#(None, Some(h2)))
-    Some(h1), Some(h2) -> Some(#(Some(h1), Some(h2)))
-  }
-
-  case el {
-    None -> []
-    Some(el) -> [el, ..zip_longest(rest1, rest2)]
-  }
-}
-
-pub fn first_is_some(pair: #(Option(a), b)) -> Result(b, Nil) {
-  case pair {
-    #(Some(_), b) -> Ok(b)
-    _ -> Error(Nil)
+pub fn pad_empty_rows(lines: List(Content), rows: Int) -> List(Content) {
+  case rows, lines {
+    0, _ -> []
+    length, [] -> list.repeat(EmptyLine, length)
+    length, [h, ..rest] -> [h, ..pad_empty_rows(rest, length - 1)]
   }
 }
 

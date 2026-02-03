@@ -272,23 +272,6 @@ function structurallyCompatibleObjects(a, b) {
     return false;
   return a.constructor === b.constructor;
 }
-function remainderInt(a, b) {
-  if (b === 0) {
-    return 0;
-  } else {
-    return a % b;
-  }
-}
-function divideInt(a, b) {
-  return Math.trunc(divideFloat(a, b));
-}
-function divideFloat(a, b) {
-  if (b === 0) {
-    return 0;
-  } else {
-    return a / b;
-  }
-}
 function makeError(variant, file, module, line, fn, message, extra) {
   let error = new globalThis.Error(message);
   error.gleam_error = variant;
@@ -1092,34 +1075,6 @@ function first(list) {
     return new Ok(first$1);
   }
 }
-function filter_map_loop(loop$list, loop$fun, loop$acc) {
-  while (true) {
-    let list = loop$list;
-    let fun = loop$fun;
-    let acc = loop$acc;
-    if (list instanceof Empty) {
-      return reverse(acc);
-    } else {
-      let first$1 = list.head;
-      let rest$1 = list.tail;
-      let _block;
-      let $ = fun(first$1);
-      if ($ instanceof Ok) {
-        let first$2 = $[0];
-        _block = prepend(first$2, acc);
-      } else {
-        _block = acc;
-      }
-      let new_acc = _block;
-      loop$list = rest$1;
-      loop$fun = fun;
-      loop$acc = new_acc;
-    }
-  }
-}
-function filter_map(list, fun) {
-  return filter_map_loop(list, fun, toList([]));
-}
 function map_loop(loop$list, loop$fun, loop$acc) {
   while (true) {
     let list = loop$list;
@@ -1599,6 +1554,24 @@ function range_loop(loop$start, loop$stop, loop$acc) {
 function range(start, stop) {
   return range_loop(start, stop, toList([]));
 }
+function repeat_loop(loop$item, loop$times, loop$acc) {
+  while (true) {
+    let item = loop$item;
+    let times = loop$times;
+    let acc = loop$acc;
+    let $ = times <= 0;
+    if ($) {
+      return acc;
+    } else {
+      loop$item = item;
+      loop$times = times - 1;
+      loop$acc = prepend(item, acc);
+    }
+  }
+}
+function repeat(a, times) {
+  return repeat_loop(a, times, toList([]));
+}
 function each(loop$list, loop$f) {
   while (true) {
     let list = loop$list;
@@ -2001,7 +1974,7 @@ function concat_loop(loop$strings, loop$accumulator) {
 function concat2(strings) {
   return concat_loop(strings, "");
 }
-function repeat_loop(loop$times, loop$doubling_acc, loop$acc) {
+function repeat_loop2(loop$times, loop$doubling_acc, loop$acc) {
   while (true) {
     let times = loop$times;
     let doubling_acc = loop$doubling_acc;
@@ -2025,12 +1998,12 @@ function repeat_loop(loop$times, loop$doubling_acc, loop$acc) {
     }
   }
 }
-function repeat(string2, times) {
+function repeat2(string2, times) {
   let $ = times <= 0;
   if ($) {
     return "";
   } else {
-    return repeat_loop(times, string2, "");
+    return repeat_loop2(times, string2, "");
   }
 }
 function join_loop(loop$strings, loop$separator, loop$accumulator) {
@@ -2056,22 +2029,6 @@ function join(strings, separator) {
     let first$1 = strings.head;
     let rest = strings.tail;
     return join_loop(rest, separator, first$1);
-  }
-}
-function padding(size, pad_string) {
-  let pad_string_length = string_length(pad_string);
-  let num_pads = divideInt(size, pad_string_length);
-  let extra = remainderInt(size, pad_string_length);
-  return repeat(pad_string, num_pads) + slice(pad_string, 0, extra);
-}
-function pad_end(string2, desired_length, pad_string) {
-  let current_length = string_length(string2);
-  let to_pad_length = desired_length - current_length;
-  let $ = to_pad_length <= 0;
-  if ($) {
-    return string2;
-  } else {
-    return string2 + padding(to_pad_length, pad_string);
   }
 }
 function first2(string2) {
@@ -5083,7 +5040,7 @@ screen.orientation.addEventListener("change", (event4) => {
     return;
   setTimeout(() => {
     window.requestAnimationFrame(() => {
-      document.body.setAttribute("style", "height: 105svh");
+      document.body.setAttribute("style", "height: 101svh");
     });
     setTimeout(() => {
       window.requestAnimationFrame(() => {
@@ -5092,7 +5049,6 @@ screen.orientation.addEventListener("change", (event4) => {
     }, 20);
   }, 400);
 });
-gsap.registerPlugin(TextPlugin);
 gsap.config({
   force3D: true
 });
@@ -5116,7 +5072,6 @@ function getDistance(from, to, adjacencyList) {
 var timelines = {};
 var adjacencyLists = {};
 function set_adjacency_list(name, adjacency_list) {
-  console.log(name, adjacency_list);
   adjacencyLists[name] = adjacency_list;
 }
 function animate() {
@@ -5130,7 +5085,9 @@ function animate() {
       timelines[selector].kill();
       delete timelines[selector];
     }
-    timelines[selector] = gsap.timeline({ paused: true });
+    timelines[selector] = gsap.timeline({
+      paused: true
+    });
     const splitFlaps = document.querySelectorAll(`[data-name=${selector}] > .split-flap`);
     for (const el of splitFlaps) {
       const child = flip(el, adjacencyList);
@@ -5165,8 +5122,8 @@ function flip(el, adjacencyList) {
   if (distance === 0) {
     return null;
   }
-  let timeline = gsap.timeline().set(bottom, { opacity: 1 }, 0);
   const duration = [0.03, 0.045, 0.04, 0.045][Math.floor(Math.random() * 4)];
+  let timeline = gsap.timeline().set(bottom, { opacity: 1 }, 0);
   while (distance > 0) {
     timeline = timeline.call(() => {
       topContent.textContent = next;
@@ -5177,36 +5134,32 @@ function flip(el, adjacencyList) {
     }).to(flippingBottom, {
       rotationX: 0,
       duration,
-      ease: "power1.inOut"
+      ease: "none"
     }).set(flippingBottom, { rotationX: 90 }, ">").addLabel(`${distance}`, ">");
     distance--;
   }
   timeline = timeline.set(bottom, { opacity: 0 }, ">");
   return timeline;
 }
-
-// build/dev/javascript/bingo/display_fns.mjs
-function center(text3, background) {
-  let len = string_length(background);
-  let text$1 = slice(text3, 0, len);
-  let middle_idx = string_length(text$1);
-  let start_idx = max(0, globalThis.Math.trunc((len - middle_idx) / 2));
-  let end_idx = max(0, len - start_idx - middle_idx);
-  return slice(background, 0, start_idx) + text$1 + slice(background, start_idx + middle_idx, end_idx);
-}
-function left(text3, background) {
-  let bg_len = string_length(background);
-  let text$1 = slice(text3, 0, bg_len);
-  let text_len = string_length(text$1);
-  return text$1 + slice(background, text_len, bg_len);
-}
-function right(text3, background) {
-  let bg_len = string_length(background);
-  let text$1 = slice(text3, 0, bg_len);
-  let text_len = string_length(text$1);
-  return slice(background, 0, bg_len - text_len) + text$1;
-}
 // build/dev/javascript/bingo/model.mjs
+class L extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+}
+class C extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+}
+class R extends CustomType {
+  constructor($0) {
+    super();
+    this[0] = $0;
+  }
+}
 class Text2 extends CustomType {
   constructor(text3) {
     super();
@@ -5220,19 +5173,21 @@ class Link extends CustomType {
     this.url = url;
   }
 }
+class EmptyLine extends CustomType {
+}
 class Frame extends CustomType {
-  constructor(lines, ms) {
+  constructor(ms, lines) {
     super();
-    this.lines = lines;
     this.ms = ms;
+    this.lines = lines;
   }
 }
 class Scene extends CustomType {
-  constructor(name, frames, chars) {
+  constructor(name, chars, frames) {
     super();
     this.name = name;
-    this.frames = frames;
     this.chars = chars;
+    this.frames = frames;
   }
 }
 class BingoState extends CustomType {
@@ -5244,174 +5199,181 @@ class BingoState extends CustomType {
 }
 
 // build/dev/javascript/bingo/scenes.mjs
-var linkedin_url = "https://www.linkedin.com/in/nicholaspozoulakis/";
-var github_url = "https://github.com/nicholaspoz";
-var mailto = "mailto:nicholaspoz@gmail.com";
-function scenes(columns) {
-  let blank_line = repeat(" ", columns);
-  let left2 = (_capture) => {
-    return left(_capture, blank_line);
-  };
-  let center2 = (_capture) => {
-    return center(_capture, blank_line);
-  };
-  let right2 = (_capture) => {
-    return right(_capture, blank_line);
-  };
-  let $ = [
-    left2("NICK"),
-    left2("((POZOULAKIS))"),
-    center2("(DOT)"),
-    right2("BINGO")
-  ];
-  let nick;
-  let poz;
-  let dot;
-  let bingo;
-  nick = $[0];
-  poz = $[1];
-  dot = $[2];
-  bingo = $[3];
-  let $1 = [left2("FREELANCE"), left2("TECHNOLOGIST"), left2("CELLIST")];
-  let freelance;
-  let tech;
-  let cellist;
-  freelance = $1[0];
-  tech = $1[1];
-  cellist = $1[2];
-  let $2 = [
-    center2(" ┏━━━┓ ╻●    "),
-    center2(" ┃   ┃ ┃   ╻●"),
-    center2(" ┃ #●╹ ┗━━━┛ "),
-    center2("●╹           ")
-  ];
-  let notes_1;
-  let notes_2;
-  let notes_3;
-  let notes_4;
-  notes_1 = $2[0];
-  notes_2 = $2[1];
-  notes_3 = $2[2];
-  notes_4 = $2[3];
-  let linked_in = new Link(right2("LINKEDIN ▶"), linkedin_url);
-  let github = new Link(right2("GITHUB ▶"), github_url);
-  let email = new Link(right2("EMAIL ▶"), mailto);
-  let $3 = [
-    center2("         WHAT"),
-    center2("       A     "),
-    center2("  TIME       "),
-    center2("TO           "),
-    center2("   BE        "),
-    center2("      ALIVE  "),
-    center2("            !")
-  ];
-  let what;
-  let a;
-  let time;
-  let to;
-  let be;
-  let alive;
-  let exclaim;
-  what = $3[0];
-  a = $3[1];
-  time = $3[2];
-  to = $3[3];
-  be = $3[4];
-  alive = $3[5];
-  exclaim = $3[6];
-  return toList([
-    new Scene("HOME", toList([
-      new Frame(toList([
-        new Text2(nick),
-        new Text2(""),
-        new Text2(""),
-        new Text2(""),
-        new Text2(""),
-        new Text2("")
-      ]), 400),
-      new Frame(toList([
-        new Text2(nick),
-        new Text2(""),
-        new Text2(""),
-        new Text2(dot),
-        new Text2(""),
-        new Text2(""),
-        new Text2("")
-      ]), 400),
-      new Frame(toList([
-        new Text2(nick),
-        new Text2(""),
-        new Text2(""),
-        new Text2(dot),
-        new Text2(""),
-        new Text2(""),
-        new Text2(bingo)
-      ]), 400),
-      new Frame(toList([
-        new Text2(nick),
-        new Text2(poz),
-        new Text2(""),
-        new Text2(dot),
-        new Text2(""),
-        new Text2(""),
-        new Text2(bingo)
-      ]), 3000)
-    ]), new None),
-    new Scene("TECH", toList([
-      new Frame(toList([
-        new Text2(freelance),
-        new Text2(tech),
-        new Text2(""),
-        new Text2(""),
-        linked_in,
-        github,
-        email
-      ]), 5000)
-    ]), new None),
-    new Scene("MUSIC", toList([
-      new Frame(toList([
-        new Text2(freelance),
-        new Text2(cellist),
-        new Text2(""),
-        new Text2(""),
-        new Text2(""),
-        new Text2(""),
-        email
-      ]), 1000),
-      new Frame(toList([
-        new Text2(freelance),
-        new Text2(cellist),
-        new Text2(notes_1),
-        new Text2(notes_2),
-        new Text2(notes_3),
-        new Text2(notes_4),
-        email
-      ]), 5000)
-    ]), new Some(" ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶#┏━┓┃●╹╻┗┛")),
-    new Scene("!", toList([
-      new Frame(toList([
-        new Text2(what),
-        new Text2(a),
-        new Text2(time),
-        new Text2(to),
-        new Text2(be),
-        new Text2(alive),
-        new Text2("")
-      ]), 2000),
-      new Frame(toList([
-        new Text2(what),
-        new Text2(a),
-        new Text2(time),
-        new Text2(to),
-        new Text2(be),
-        new Text2(alive),
-        new Text2(exclaim)
-      ]), 4500)
-    ]), new None)
-  ]);
-}
+var nick = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("NICK"));
+var poz = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("((POZOULAKIS))"));
+var dot = /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("(DOT)"));
+var bingo = /* @__PURE__ */ new Text2(/* @__PURE__ */ new R("BINGO"));
+var linked_in = /* @__PURE__ */ new Link(/* @__PURE__ */ new R("LINKEDIN ▶"), "https://www.linkedin.com/in/nicholaspozoulakis/");
+var github = /* @__PURE__ */ new Link(/* @__PURE__ */ new R("GITHUB ▶"), "https://github.com/nicholaspoz");
+var email = /* @__PURE__ */ new Link(/* @__PURE__ */ new R("EMAIL ▶"), "mailto:nicholaspoz@gmail.com");
+var home = /* @__PURE__ */ new Scene("HOME", /* @__PURE__ */ new None, /* @__PURE__ */ toList([
+  /* @__PURE__ */ new Frame(1500, /* @__PURE__ */ toList([
+    nick,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    dot,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    bingo
+  ])),
+  /* @__PURE__ */ new Frame(4500, /* @__PURE__ */ toList([
+    nick,
+    poz,
+    /* @__PURE__ */ new EmptyLine,
+    dot,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    bingo
+  ]))
+]));
+var freelance = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("FREELANCE"));
+var engineer = /* @__PURE__ */ new Text2(/* @__PURE__ */ new R("ENGINEER  "));
+var technologist = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("TECHNOLOGIST"));
+var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PURE__ */ toList([
+  /* @__PURE__ */ new Frame(4500, /* @__PURE__ */ toList([
+    freelance,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("SOFTWARE")),
+    engineer,
+    /* @__PURE__ */ new EmptyLine,
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(4500, /* @__PURE__ */ toList([
+    freelance,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("FULL-STACK")),
+    engineer,
+    /* @__PURE__ */ new EmptyLine,
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(4500, /* @__PURE__ */ toList([
+    freelance,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("BACKEND")),
+    engineer,
+    /* @__PURE__ */ new EmptyLine,
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(4500, /* @__PURE__ */ toList([
+    freelance,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("PAYMENTS")),
+    engineer,
+    /* @__PURE__ */ new EmptyLine,
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(4500, /* @__PURE__ */ toList([
+    freelance,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("ACCOUNTING")),
+    engineer,
+    /* @__PURE__ */ new EmptyLine,
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(4500, /* @__PURE__ */ toList([
+    freelance,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("A.I.")),
+    engineer,
+    /* @__PURE__ */ new EmptyLine,
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(6000, /* @__PURE__ */ toList([
+    freelance,
+    technologist,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    linked_in,
+    github,
+    email
+  ]))
+]));
+var cellist = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("CELLIST"));
+var music = /* @__PURE__ */ new Scene("MUSIC", /* @__PURE__ */ new Some(" ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶#┏━┓┃●╹╻┗┛"), /* @__PURE__ */ toList([
+  /* @__PURE__ */ new Frame(1000, /* @__PURE__ */ toList([
+    freelance,
+    cellist,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(6500, /* @__PURE__ */ toList([
+    freelance,
+    cellist,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┏━━━┓ ╻●    ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃   ┃ ┃   ╻●")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃ #●╹ ┗━━━┛ ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("●╹           ")),
+    email
+  ]))
+]));
+var friends = /* @__PURE__ */ new Scene("FRIENDS", /* @__PURE__ */ new None, /* @__PURE__ */ toList([
+  /* @__PURE__ */ new Frame(2000, /* @__PURE__ */ toList([
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("LET'S BE")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("FRIENDS :)"))
+  ])),
+  /* @__PURE__ */ new Frame(7000, /* @__PURE__ */ toList([
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("LET'S BE")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("FRIENDS :)")),
+    /* @__PURE__ */ new EmptyLine,
+    linked_in,
+    github,
+    email
+  ]))
+]));
+var alive = /* @__PURE__ */ new Scene("!", /* @__PURE__ */ new None, /* @__PURE__ */ toList([
+  /* @__PURE__ */ new Frame(2000, /* @__PURE__ */ toList([
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("         WHAT")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("       A     ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("  TIME       ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("TO           ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("   BE        ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("      ALIVE  ")),
+    /* @__PURE__ */ new EmptyLine
+  ])),
+  /* @__PURE__ */ new Frame(4500, /* @__PURE__ */ toList([
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("         WHAT")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("       A     ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("  TIME       ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("TO           ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("   BE        ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("      ALIVE  ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("            !"))
+  ]))
+]));
+var scenes = /* @__PURE__ */ toList([home, tech, music, alive, friends]);
 
 // build/dev/javascript/bingo/utils.mjs
+function center(text3, bg) {
+  let len = string_length(bg);
+  let text$1 = slice(text3, 0, len);
+  let middle_idx = string_length(text$1);
+  let start_idx = max(0, globalThis.Math.trunc((len - middle_idx) / 2));
+  let end_idx = max(0, len - start_idx - middle_idx);
+  return slice(bg, 0, start_idx) + text$1 + slice(bg, start_idx + middle_idx, end_idx);
+}
+function left(text3, bg) {
+  let bg_len = string_length(bg);
+  let text$1 = slice(text3, 0, bg_len);
+  let text_len = string_length(text$1);
+  return text$1 + slice(bg, text_len, bg_len);
+}
+function right(text3, bg) {
+  let bg_len = string_length(bg);
+  let text$1 = slice(text3, 0, bg_len);
+  let text_len = string_length(text$1);
+  return slice(bg, 0, bg_len - text_len) + text$1;
+}
 function find_scene(loop$scenes, loop$page) {
   while (true) {
     let scenes2 = loop$scenes;
@@ -5474,64 +5436,17 @@ function find_next_state(scenes2, current) {
     });
   }
 }
-function zip_longest(list1, list22) {
-  let _block;
-  if (list1 instanceof Empty) {
-    _block = [new None, toList([])];
-  } else {
-    let h = list1.head;
-    let rest = list1.tail;
-    _block = [new Some(h), rest];
-  }
-  let $ = _block;
-  let head1;
-  let rest1;
-  head1 = $[0];
-  rest1 = $[1];
-  let _block$1;
-  if (list22 instanceof Empty) {
-    _block$1 = [new None, toList([])];
-  } else {
-    let h = list22.head;
-    let rest = list22.tail;
-    _block$1 = [new Some(h), rest];
-  }
-  let $1 = _block$1;
-  let head2;
-  let rest2;
-  head2 = $1[0];
-  rest2 = $1[1];
-  let _block$2;
-  if (head1 instanceof Some) {
-    if (head2 instanceof Some) {
-      let h1 = head1[0];
-      let h2 = head2[0];
-      _block$2 = new Some([new Some(h1), new Some(h2)]);
-    } else {
-      let h1 = head1[0];
-      _block$2 = new Some([new Some(h1), new None]);
-    }
-  } else if (head2 instanceof Some) {
-    let h2 = head2[0];
-    _block$2 = new Some([new None, new Some(h2)]);
-  } else {
-    _block$2 = head1;
-  }
-  let el = _block$2;
-  if (el instanceof Some) {
-    let el$1 = el[0];
-    return prepend(el$1, zip_longest(rest1, rest2));
-  } else {
+function pad_empty_rows(lines, rows) {
+  if (rows === 0) {
     return toList([]);
-  }
-}
-function first_is_some(pair) {
-  let $ = pair[0];
-  if ($ instanceof Some) {
-    let b = pair[1];
-    return new Ok(b);
+  } else if (lines instanceof Empty) {
+    let length3 = rows;
+    return repeat(new EmptyLine, length3);
   } else {
-    return new Error(undefined);
+    let length3 = rows;
+    let h = lines.head;
+    let rest = lines.tail;
+    return prepend(h, pad_empty_rows(rest, length3 - 1));
   }
 }
 function to_adjacency_list(chars) {
@@ -5549,9 +5464,10 @@ function to_adjacency_list(chars) {
 var FILEPATH = "src/bingo.gleam";
 
 class Model extends CustomType {
-  constructor(scenes2, columns, current, auto_play, timeout, path) {
+  constructor(scenes2, rows, columns, current, auto_play, timeout, path) {
     super();
     this.scenes = scenes2;
+    this.rows = rows;
     this.columns = columns;
     this.current = current;
     this.auto_play = auto_play;
@@ -5589,7 +5505,7 @@ class TimeoutStarted extends CustomType {
 
 class TimeoutEnded extends CustomType {
 }
-var default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶()\uD834\uDD1E\uD834\uDD22\uD834\uDD5F\uD834\uDD3D#!";
+var default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-'.:▶()\uD834\uDD1E\uD834\uDD22\uD834\uDD5F\uD834\uDD3D!";
 var pagination_chars = " ○●()\uD834\uDD06\uD834\uDD07";
 function on_resize_effect(model) {
   return batch(toList([
@@ -5601,7 +5517,7 @@ function on_resize_effect(model) {
       let $ = model.path;
       let $1 = measure_orientation(root_element);
       if ($ === "/" && $1 === "landscape") {
-        _block = 27;
+        _block = 21;
       } else {
         _block = 15;
       }
@@ -5655,53 +5571,61 @@ function character(id2, dest, on_click2) {
   ]));
 }
 function row(name, line, row_num, num_cols) {
+  let bg = repeat2(" ", num_cols);
   let _block;
-  if (line instanceof Some) {
-    let content = line[0];
-    let _pipe2 = content.text;
-    let _pipe$12 = pad_end(_pipe2, num_cols, " ");
-    _block = slice(_pipe$12, 0, num_cols);
+  if (line instanceof Text2) {
+    let text4 = line.text;
+    _block = [text4, new None];
+  } else if (line instanceof Link) {
+    let text4 = line.text;
+    let url2 = line.url;
+    _block = [text4, new Some(url2)];
   } else {
-    _block = repeat(" ", num_cols);
+    _block = [new C(bg), new None];
   }
-  let chars = _block;
+  let $ = _block;
+  let text3;
+  let url;
+  text3 = $[0];
+  url = $[1];
   let _block$1;
-  let _pipe = chars;
+  if (text3 instanceof L) {
+    let str = text3[0];
+    _block$1 = left(str, bg);
+  } else if (text3 instanceof C) {
+    let str = text3[0];
+    _block$1 = center(str, bg);
+  } else {
+    let str = text3[0];
+    _block$1 = right(str, bg);
+  }
+  let text$1 = _block$1;
+  let _block$2;
+  let _pipe = text$1;
   let _pipe$1 = graphemes(_pipe);
-  _block$1 = index_map(_pipe$1, (char, idx) => {
+  _block$2 = index_map(_pipe$1, (char, idx) => {
     let id2 = to_string(row_num) + "-" + to_string(idx);
     return [id2, character(id2, char, new None)];
   });
-  let children = _block$1;
-  let _block$2;
-  if (line instanceof Some) {
-    let $ = line[0];
-    if ($ instanceof Link) {
-      let url = $.url;
-      _block$2 = toList([href(url), target("_blank")]);
-    } else {
-      _block$2 = toList([role("div")]);
-    }
+  let children = _block$2;
+  let _block$3;
+  if (url instanceof Some) {
+    let url$1 = url[0];
+    _block$3 = toList([href(url$1), target("_blank")]);
   } else {
-    _block$2 = toList([role("div")]);
+    _block$3 = toList([role("div")]);
   }
-  let link_attrs = _block$2;
+  let link_attrs = _block$3;
   return element3("a", prepend(class$("row"), prepend(data("name", name), link_attrs)), children);
 }
 function display(lines, cols, rows) {
-  let _block;
-  let _pipe = lines;
-  let _pipe$1 = ((_capture) => {
-    return zip_longest(range(0, rows - 1), _capture);
-  })(_pipe);
-  _block = filter_map(_pipe$1, first_is_some);
-  let sanitized_lines = _block;
-  return fragment2(index_map(sanitized_lines, (line, line_num) => {
-    return [to_string(line_num), row("display", line, line_num, cols)];
+  let sanitized_lines = pad_empty_rows(lines, rows);
+  return fragment2(index_map(sanitized_lines, (line, row_num) => {
+    return [to_string(row_num), row("display", line, row_num, cols)];
   }));
 }
 function pagination(pages, page, cols, auto_play) {
-  let empty3 = repeat(" ", cols);
+  let empty3 = repeat2(" ", cols);
   let _block;
   let _pipe = range(1, pages);
   let _pipe$1 = map(_pipe, (idx) => {
@@ -5766,25 +5690,20 @@ function pagination(pages, page, cols, auto_play) {
 }
 function view(model) {
   let _block;
-  let $1 = model.current;
-  if ($1 instanceof Ok) {
-    let scene = $1[0].scene;
-    let frame = $1[0].frame;
-    _block = [frame.lines, scene.chars];
+  let $ = model.current;
+  if ($ instanceof Ok) {
+    let lines2 = $[0].frame.lines;
+    _block = lines2;
   } else {
-    _block = [toList([]), new None];
+    _block = toList([]);
   }
-  let $ = _block;
-  let lines;
-  let chars;
-  lines = $[0];
-  chars = $[1];
+  let lines = _block;
   return div(toList([class$("matrix")]), toList([
-    display(lines, model.columns, 7),
+    display(lines, model.columns, model.rows),
     pagination(length(model.scenes), fold_until(model.scenes, 1, (acc, s) => {
-      let $2 = model.current;
-      if ($2 instanceof Ok) {
-        let state = $2[0];
+      let $1 = model.current;
+      if ($1 instanceof Ok) {
+        let state = $1[0];
         if (isEqual(s, state.scene)) {
           return new Stop(acc);
         } else {
@@ -5818,10 +5737,9 @@ function reduce(model, msg) {
   } else if (msg instanceof ColumnsChanged) {
     let columns = msg[0];
     return guard(columns === model.columns, new Ok([model, none2()]), () => {
-      let scenes$1 = scenes(columns);
-      return try$(initial_state(scenes$1), (initial_state2) => {
+      return try$(model.current, (initial_state2) => {
         return new Ok([
-          new Model(scenes$1, columns, new Ok(initial_state2), model.auto_play, new None, model.path),
+          new Model(scenes, model.rows, columns, model.current, model.auto_play, model.timeout, model.path),
           start_timeout(initial_state2.frame, model.timeout)
         ]);
       });
@@ -5839,7 +5757,7 @@ function reduce(model, msg) {
           }
         });
         return new Ok([
-          new Model(model.scenes, model.columns, next, false, model.timeout, model.path),
+          new Model(model.scenes, model.rows, model.columns, next, false, model.timeout, model.path),
           batch(toList([
             (() => {
               if (next instanceof Ok) {
@@ -5856,7 +5774,7 @@ function reduce(model, msg) {
     });
   } else if (msg instanceof AutoPlayClicked) {
     return new Ok([
-      new Model(model.scenes, model.columns, model.current, !model.auto_play, new None, model.path),
+      new Model(model.scenes, model.rows, model.columns, model.current, !model.auto_play, new None, model.path),
       after_paint((dispatch2, _) => {
         let $ = model.timeout;
         if ($ instanceof Some) {
@@ -5870,7 +5788,7 @@ function reduce(model, msg) {
   } else if (msg instanceof TimeoutStarted) {
     let id2 = msg[0];
     return new Ok([
-      new Model(model.scenes, model.columns, model.current, model.auto_play, new Some(id2), model.path),
+      new Model(model.scenes, model.rows, model.columns, model.current, model.auto_play, new Some(id2), model.path),
       (() => {
         animate();
         return none2();
@@ -5882,7 +5800,7 @@ function reduce(model, msg) {
         let continue$ = isEqual(current.scene, next.scene) || model.auto_play;
         if (continue$) {
           return new Ok([
-            new Model(model.scenes, model.columns, new Ok(next), model.auto_play, new None, model.path),
+            new Model(model.scenes, model.rows, model.columns, new Ok(next), model.auto_play, new None, model.path),
             batch(toList([
               set_adjacency_list_effect("display", next.scene.chars),
               start_timeout(next.frame, new None)
@@ -5890,7 +5808,7 @@ function reduce(model, msg) {
           ]);
         } else {
           return new Ok([
-            new Model(model.scenes, model.columns, model.current, model.auto_play, new None, model.path),
+            new Model(model.scenes, model.rows, model.columns, model.current, model.auto_play, new None, model.path),
             none2()
           ]);
         }
@@ -5904,17 +5822,17 @@ function update2(model, msg) {
     let next = $[0];
     return next;
   } else {
-    echo("ERROR", undefined, "src/bingo.gleam", 136);
+    echo("ERROR", undefined, "src/bingo.gleam", 141);
     return [model, none2()];
   }
 }
 function init(_) {
   let cols = 0;
-  let scenes$1 = scenes(cols);
+  let scenes$1 = scenes;
   let state = initial_state(scenes$1);
   let path = get_path();
   return [
-    new Model(toList([]), cols, state, true, new None, path),
+    new Model(scenes$1, 7, cols, state, true, new None, path),
     batch(toList([
       set_adjacency_list_effect("pagination", new Some(pagination_chars)),
       (() => {
@@ -5937,7 +5855,7 @@ function main() {
   let app = application(init, update2, view);
   let $ = start3(app, "#app", undefined);
   if (!($ instanceof Ok)) {
-    throw makeError("let_assert", FILEPATH, "bingo", 27, "main", "Pattern match failed, no pattern matched the value.", { value: $, start: 649, end: 698, pattern_start: 660, pattern_end: 665 });
+    throw makeError("let_assert", FILEPATH, "bingo", 30, "main", "Pattern match failed, no pattern matched the value.", { value: $, start: 726, end: 775, pattern_start: 737, pattern_end: 742 });
   }
   return new Ok(undefined);
 }

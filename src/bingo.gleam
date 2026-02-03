@@ -1,3 +1,6 @@
+/////////////////////////////
+/////////////////////////////
+
 import gleam/bool
 import gleam/function
 import gleam/int
@@ -15,9 +18,9 @@ import lustre/element/keyed
 import lustre/event
 
 import browser
-import display_fns
 import model.{
-  type BingoState, type Content, type Frame, type Scene, BingoState, Link,
+  type BingoState, type Content, type Frame, type Scene, BingoState, C,
+  EmptyLine, Frame, L, Link, R, Text,
 }
 import scenes.{scenes}
 import utils
@@ -28,7 +31,7 @@ pub fn main() -> Result(Nil, lustre.Error) {
   Ok(Nil)
 }
 
-const default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶()𝄞𝄢𝅘𝅥𝄽#!"
+const default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-'.:▶()𝄞𝄢𝅘𝅥𝄽!"
 
 const pagination_chars = " ○●()𝄆𝄇"
 
@@ -37,6 +40,7 @@ const pagination_chars = " ○●()𝄆𝄇"
 type Model {
   Model(
     scenes: List(Scene),
+    rows: Int,
     columns: Int,
     current: Result(BingoState, Nil),
     auto_play: Bool,
@@ -56,13 +60,14 @@ type Msg {
 
 fn init(_) -> #(Model, effect.Effect(Msg)) {
   let cols = 0
-  let scenes = scenes(cols)
+  let scenes = scenes
   let state = utils.initial_state(scenes)
   let path = browser.get_path()
 
   #(
     Model(
-      scenes: [],
+      scenes: scenes,
+      rows: 7,
       columns: cols,
       current: state,
       auto_play: True,
@@ -108,7 +113,7 @@ fn on_resize_effect(model: Model) -> Effect(Msg) {
     {
       use dispatch, root_element <- effect.before_paint
       let cols = case model.path, browser.measure_orientation(root_element) {
-        "/", "landscape" -> 27
+        "/", "landscape" -> 21
         _, _ -> 15
       }
       dispatch(ColumnsChanged(cols))
@@ -145,16 +150,9 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
 
     ColumnsChanged(columns) -> {
       use <- bool.guard(columns == model.columns, Ok(#(model, effect.none())))
-      let scenes = scenes(columns)
-      use initial_state <- try(utils.initial_state(scenes))
+      use initial_state <- try(model.current)
       Ok(#(
-        Model(
-          ..model,
-          scenes: scenes,
-          columns: columns,
-          current: Ok(initial_state),
-          timeout: None,
-        ),
+        Model(..model, scenes: scenes, columns: columns),
         start_timeout(initial_state.frame, current_timeout: model.timeout),
       ))
     }
@@ -229,13 +227,13 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
 // MARK: VIEW
 
 fn view(model: Model) -> Element(Msg) {
-  let #(lines, chars) = case model.current {
-    Ok(BingoState(scene, frame)) -> #(frame.lines, scene.chars)
-    Error(_) -> #([], None)
+  let lines = case model.current {
+    Ok(BingoState(_, Frame(_, lines:))) -> lines
+    Error(_) -> []
   }
 
   html.div([attribute.class("matrix")], [
-    display(lines, cols: model.columns, rows: 7),
+    display(lines, cols: model.columns, rows: model.rows),
 
     pagination(
       pages: list.length(model.scenes),
@@ -255,46 +253,43 @@ fn view(model: Model) -> Element(Msg) {
 }
 
 fn display(lines: List(Content), cols cols: Int, rows rows: Int) -> Element(msg) {
-  let sanitized_lines =
-    lines
-    |> utils.zip_longest(list.range(0, rows - 1), _)
-    |> list.filter_map(utils.first_is_some)
+  let sanitized_lines = utils.pad_empty_rows(lines, rows)
 
   keyed.fragment(
-    list.index_map(sanitized_lines, fn(line, line_num) {
-      #(
-        int.to_string(line_num),
-        row("display", line, row: line_num, cols: cols),
-      )
+    list.index_map(sanitized_lines, fn(line, row_num) {
+      #(int.to_string(row_num), row("display", line, row_num:, cols:))
     }),
   )
 }
 
 fn row(
   name: String,
-  line: Option(Content),
-  row row_num: Int,
+  line: Content,
+  row_num row_num: Int,
   cols num_cols: Int,
 ) -> Element(msg) {
-  let chars = case line {
-    Some(content) ->
-      content.text
-      |> string.pad_end(num_cols, " ")
-      |> string.slice(0, num_cols)
-
-    None -> string.repeat(" ", num_cols)
+  let bg = string.repeat(" ", num_cols)
+  let #(text, url) = case line {
+    Text(text:) -> #(text, None)
+    Link(text:, url:) -> #(text, Some(url))
+    EmptyLine -> #(C(bg), None)
+  }
+  let text = case text {
+    L(str) -> utils.left(str, bg)
+    C(str) -> utils.center(str, bg)
+    R(str) -> utils.right(str, bg)
   }
 
   let children =
-    chars
+    text
     |> string.to_graphemes
     |> list.index_map(fn(char, idx) {
       let id = int.to_string(row_num) <> "-" <> int.to_string(idx)
       #(id, character(id, dest: char, on_click: None))
     })
 
-  let link_attrs = case line {
-    Some(Link(_, url:)) -> [attribute.href(url), attribute.target("_blank")]
+  let link_attrs = case url {
+    Some(url) -> [attribute.href(url), attribute.target("_blank")]
     _ -> [attribute.role("div")]
   }
 
@@ -365,7 +360,7 @@ fn pagination(
 
   let chars =
     dots
-    |> display_fns.center(against: empty)
+    |> utils.center(against: empty)
     |> string.to_graphemes
 
   let first_dot_idx =

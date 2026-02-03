@@ -1,151 +1,241 @@
 import gleam/option.{None, Some}
-import gleam/string
 
-import display_fns as row
-import model.{type Scene, Frame, Link, Scene, Text}
+import model.{C, EmptyLine, Frame, L, Link, R, Scene, Text}
 
-const linkedin_url = "https://www.linkedin.com/in/nicholaspozoulakis/"
+const nick = Text(L("NICK"))
 
-const github_url = "https://github.com/nicholaspoz"
+const poz = Text(L("((POZOULAKIS))"))
 
-const mailto = "mailto:nicholaspoz@gmail.com"
+const dot = Text(C("(DOT)"))
 
-pub fn scenes(columns: Int) -> List(Scene) {
-  let blank_line = string.repeat(" ", columns)
-  let left = row.left(_, against: blank_line)
-  let center = row.center(_, against: blank_line)
-  let right = row.right(_, against: blank_line)
+const bingo = Text(R("BINGO"))
 
-  let #(nick, poz, dot, bingo) = #(
-    left("NICK"),
-    left("((POZOULAKIS))"),
-    center("(DOT)"),
-    right("BINGO"),
-  )
+const linked_in = Link(
+  text: R("LINKEDIN ▶"),
+  url: "https://www.linkedin.com/in/nicholaspozoulakis/",
+)
 
-  let #(freelance, tech, cellist) = #(
-    left("FREELANCE"),
-    left("TECHNOLOGIST"),
-    left("CELLIST"),
-  )
+const github = Link(text: R("GITHUB ▶"), url: "https://github.com/nicholaspoz")
 
-  let #(notes_1, notes_2, notes_3, notes_4) = #(
-    center(" ┏━━━┓ ╻●    "),
-    center(" ┃   ┃ ┃   ╻●"),
-    center(" ┃ #●╹ ┗━━━┛ "),
-    center("●╹           "),
-  )
+const email = Link(text: R("EMAIL ▶"), url: "mailto:nicholaspoz@gmail.com")
 
-  let linked_in = Link(text: right("LINKEDIN ▶"), url: linkedin_url)
-  let github = Link(text: right("GITHUB ▶"), url: github_url)
-  let email = Link(text: right("EMAIL ▶"), url: mailto)
+const home = Scene(
+  name: "HOME",
+  chars: None,
+  frames: [
+    Frame(
+      ms: 1500,
+      lines: [
+        nick,
+        EmptyLine,
+        EmptyLine,
+        dot,
+        EmptyLine,
+        EmptyLine,
+        bingo,
+      ],
+    ),
+    Frame(
+      ms: 4500,
+      lines: [
+        nick,
+        poz,
+        EmptyLine,
+        dot,
+        EmptyLine,
+        EmptyLine,
+        bingo,
+      ],
+    ),
+  ],
+)
 
-  let #(what, a, time, to, be, alive, exclaim) = #(
-    center("         WHAT"),
-    center("       A     "),
-    center("  TIME       "),
-    center("TO           "),
-    center("   BE        "),
-    center("      ALIVE  "),
-    center("            !"),
-  )
+const freelance = Text(L("FREELANCE"))
 
-  [
-    Scene(name: "HOME", chars: None, frames: [
-      Frame(ms: 400, lines: [
-        Text(nick),
-        Text(""),
-        Text(""),
-        Text(""),
-        Text(""),
-        Text(""),
-      ]),
-      Frame(ms: 400, lines: [
-        Text(nick),
-        Text(""),
-        Text(""),
-        Text(dot),
-        Text(""),
-        Text(""),
-        Text(""),
-      ]),
+const engineer = Text(R("ENGINEER  "))
 
-      Frame(ms: 400, lines: [
-        Text(nick),
-        Text(""),
-        Text(""),
-        Text(dot),
-        Text(""),
-        Text(""),
-        Text(bingo),
-      ]),
-      Frame(ms: 3000, lines: [
-        Text(nick),
-        Text(poz),
-        Text(""),
-        Text(dot),
-        Text(""),
-        Text(""),
-        Text(bingo),
-      ]),
-    ]),
+const technologist = Text(L("TECHNOLOGIST"))
 
-    Scene(name: "TECH", chars: None, frames: [
-      Frame(ms: 5000, lines: [
-        Text(freelance),
-        Text(tech),
-        Text(""),
-        Text(""),
+const tech = Scene(
+  name: "TECH",
+  chars: None,
+  frames: [
+    Frame(
+      ms: 4500,
+      lines: [
+        freelance,
+        Text(C("SOFTWARE")),
+        engineer,
+        EmptyLine,
         linked_in,
         github,
         email,
-      ]),
-    ]),
-
-    Scene(
-      name: "MUSIC",
-      chars: Some(" ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶#┏━┓┃●╹╻┗┛"),
-      frames: [
-        Frame(ms: 1000, lines: [
-          Text(freelance),
-          Text(cellist),
-          Text(""),
-          Text(""),
-          Text(""),
-          Text(""),
-          email,
-        ]),
-        Frame(ms: 5000, lines: [
-          Text(freelance),
-          Text(cellist),
-          Text(notes_1),
-          Text(notes_2),
-          Text(notes_3),
-          Text(notes_4),
-          email,
-        ]),
       ],
     ),
+    Frame(
+      ms: 4500,
+      lines: [
+        freelance,
+        Text(C("FULL-STACK")),
+        engineer,
+        EmptyLine,
+        linked_in,
+        github,
+        email,
+      ],
+    ),
+    Frame(
+      ms: 4500,
+      lines: [
+        freelance,
+        Text(C("BACKEND")),
+        engineer,
+        EmptyLine,
+        linked_in,
+        github,
+        email,
+      ],
+    ),
+    Frame(
+      ms: 4500,
+      lines: [
+        freelance,
+        Text(C("PAYMENTS")),
+        engineer,
+        EmptyLine,
+        linked_in,
+        github,
+        email,
+      ],
+    ),
+    Frame(
+      ms: 4500,
+      lines: [
+        freelance,
+        Text(C("ACCOUNTING")),
+        engineer,
+        EmptyLine,
+        linked_in,
+        github,
+        email,
+      ],
+    ),
+    Frame(
+      ms: 4500,
+      lines: [
+        freelance,
+        Text(C("A.I.")),
+        engineer,
+        EmptyLine,
+        linked_in,
+        github,
+        email,
+      ],
+    ),
+    Frame(
+      ms: 6000,
+      lines: [
+        freelance,
+        technologist,
+        EmptyLine,
+        EmptyLine,
+        linked_in,
+        github,
+        email,
+      ],
+    ),
+  ],
+)
 
-    Scene(name: "!", chars: None, frames: [
-      Frame(ms: 2000, lines: [
-        Text(what),
-        Text(a),
-        Text(time),
-        Text(to),
-        Text(be),
-        Text(alive),
-        Text(""),
-      ]),
-      Frame(ms: 4500, lines: [
-        Text(what),
-        Text(a),
-        Text(time),
-        Text(to),
-        Text(be),
-        Text(alive),
-        Text(exclaim),
-      ]),
-    ]),
-  ]
-}
+const cellist = Text(L("CELLIST"))
+
+const music = Scene(
+  name: "MUSIC",
+  chars: Some(" ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶#┏━┓┃●╹╻┗┛"),
+  frames: [
+    Frame(
+      ms: 1000,
+      lines: [
+        freelance,
+        cellist,
+        EmptyLine,
+        EmptyLine,
+        EmptyLine,
+        EmptyLine,
+        email,
+      ],
+    ),
+    Frame(
+      ms: 6500,
+      lines: [
+        freelance,
+        cellist,
+        Text(C(" ┏━━━┓ ╻●    ")),
+        Text(C(" ┃   ┃ ┃   ╻●")),
+        Text(C(" ┃ #●╹ ┗━━━┛ ")),
+        Text(C("●╹           ")),
+        email,
+      ],
+    ),
+  ],
+)
+
+const friends = Scene(
+  name: "FRIENDS",
+  chars: None,
+  frames: [
+    Frame(
+      ms: 2000,
+      lines: [
+        EmptyLine,
+        Text(L("LET'S BE")),
+        Text(C("FRIENDS :)")),
+      ],
+    ),
+    Frame(
+      ms: 7000,
+      lines: [
+        EmptyLine,
+        Text(L("LET'S BE")),
+        Text(C("FRIENDS :)")),
+        EmptyLine,
+        linked_in,
+        github,
+        email,
+      ],
+    ),
+  ],
+)
+
+const alive = Scene(
+  name: "!",
+  chars: None,
+  frames: [
+    Frame(
+      ms: 2000,
+      lines: [
+        Text(C("         WHAT")),
+        Text(C("       A     ")),
+        Text(C("  TIME       ")),
+        Text(C("TO           ")),
+        Text(C("   BE        ")),
+        Text(C("      ALIVE  ")),
+        EmptyLine,
+      ],
+    ),
+    Frame(
+      ms: 4500,
+      lines: [
+        Text(C("         WHAT")),
+        Text(C("       A     ")),
+        Text(C("  TIME       ")),
+        Text(C("TO           ")),
+        Text(C("   BE        ")),
+        Text(C("      ALIVE  ")),
+        Text(C("            !")),
+      ],
+    ),
+  ],
+)
+
+pub const scenes = [home, tech, music, alive, friends]

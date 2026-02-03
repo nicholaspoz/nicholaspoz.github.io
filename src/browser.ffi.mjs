@@ -76,7 +76,7 @@ screen.orientation.addEventListener("change", (event) => {
 
   setTimeout(() => {
     window.requestAnimationFrame(() => {
-      document.body.setAttribute("style", "height: 105svh");
+      document.body.setAttribute("style", "height: 101svh");
     });
     setTimeout(() => {
       window.requestAnimationFrame(() => {
@@ -88,7 +88,7 @@ screen.orientation.addEventListener("change", (event) => {
 
 // MARK: GSAP Animation
 
-gsap.registerPlugin(TextPlugin);
+// gsap.registerPlugin(TextPlugin);
 gsap.config({
   force3D: true,
 });
@@ -134,7 +134,6 @@ const adjacencyLists = {};
  * @param {Record<string, string>} adjacency_list
  */
 export function set_adjacency_list(name, adjacency_list) {
-  console.log(name, adjacency_list);
   adjacencyLists[name] = adjacency_list;
 }
 
@@ -157,7 +156,9 @@ export function animate() {
       delete timelines[selector];
     }
 
-    timelines[selector] = gsap.timeline({ paused: true });
+    timelines[selector] = gsap.timeline({
+      paused: true,
+    });
 
     const splitFlaps = document.querySelectorAll(
       `[data-name=${selector}] > .split-flap`,
@@ -218,8 +219,8 @@ function flip(el, adjacencyList) {
     return null;
   }
 
-  let timeline = gsap.timeline().set(bottom, { opacity: 1 }, 0);
   const duration = [0.03, 0.045, 0.04, 0.045][Math.floor(Math.random() * 4)];
+  let timeline = gsap.timeline().set(bottom, { opacity: 1 }, 0);
 
   while (distance > 0) {
     timeline = timeline
@@ -233,7 +234,7 @@ function flip(el, adjacencyList) {
       .to(flippingBottom, {
         rotationX: 0,
         duration,
-        ease: "power1.inOut",
+        ease: "none",
       })
       .set(flippingBottom, { rotationX: 90 }, ">")
       .addLabel(`${distance}`, ">");
