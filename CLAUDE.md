@@ -9,22 +9,23 @@ This is a personal website (nick.bingo) featuring an interactive split-flap disp
 ## Architecture
 
 - `src/` - Gleam source code
-  - `split_flap.gleam` - Entry point
-  - `browser.gleam` - Browser FFI (timers, resize observer, GSAP animation trigger)
-  - `components/bingo.gleam` - Main app component (scenes, pagination, auto-play)
-  - `components/bingo/` - Scene definitions and model types
-  - `components/display_fns.gleam` - Display helper functions
+  - `bingo.gleam` - Entry point and main Lustre app (scenes, pagination, auto-play)
+  - `scenes.gleam` - Scene definitions (content and timing)
+  - `model.gleam` - Type definitions
+  - `browser.gleam` - Browser FFI bindings (timers, resize observer)
+  - `browser.ffi.mjs` - JavaScript FFI implementation (GSAP animation logic)
   - `utils.gleam` - Utility functions
-- `src/browser.ffi.mjs` - JavaScript FFI implementation (GSAP animation logic)
-- `js/` - Static JS assets (GSAP) + Gleam build output
-- `css/` - Stylesheets
-- `img/` - Images
+- `assets/` - Source assets (css, img, js) used by Lustre dev tools
+- `dist/` - Build output
+  - `bingo.js` - Compiled Gleam application
+  - `css/`, `img/`, `js/` - Static assets
 - `index.html` - Main page
+- `meet.html` - Meeting scheduler page
 
 ## Common Commands
 
 ```bash
-# Build the Gleam project (outputs to js/)
+# Build the Gleam project (outputs to dist/)
 just build
 
 # Start Lustre dev server
