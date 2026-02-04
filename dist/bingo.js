@@ -5141,9 +5141,9 @@ function animate_flips(el, adjacencyList) {
   const { next, distance } = resolveFlipDistance(current, destination, adjacencyList);
   if (distance === 0)
     return null;
-  const timeline = gsap.timeline({ smoothChildTiming: true });
+  const timeline = gsap.timeline({ smoothChildTiming: true, paused: true });
   buildFlipFrames(timeline, elements, current, next, distance, adjacencyList, randomFlipDuration());
-  timeline.set(elements.bottom, { opacity: 0 }, ">");
+  timeline.set(elements.bottomContent, { text: destination }, ">");
   return timeline;
 }
 function animate() {
@@ -5155,6 +5155,7 @@ function animate() {
       const child = animate_flips(el, adjacencyList);
       if (child) {
         timelines[selector].add(child, 0);
+        child.paused(false);
       }
     }
     timelines[selector].play();
@@ -5246,12 +5247,12 @@ var home = /* @__PURE__ */ new Scene("HOME", /* @__PURE__ */ new None, /* @__PUR
   ]))
 ]));
 var freelance = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("FREELANCE"));
-var engineer = /* @__PURE__ */ new Text2(/* @__PURE__ */ new R("ENGINEER  "));
+var engineer = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("  ENGINEER"));
 var technologist = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("TECHNOLOGIST"));
 var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PURE__ */ toList([
   /* @__PURE__ */ new Frame(4500, /* @__PURE__ */ toList([
     freelance,
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("SOFTWARE")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("  SOFTWARE")),
     engineer,
     /* @__PURE__ */ new EmptyLine,
     linked_in,
@@ -5260,7 +5261,7 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
   ])),
   /* @__PURE__ */ new Frame(4500, /* @__PURE__ */ toList([
     freelance,
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("FULL-STACK")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("  FULL-STACK")),
     engineer,
     /* @__PURE__ */ new EmptyLine,
     linked_in,
@@ -5269,7 +5270,7 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
   ])),
   /* @__PURE__ */ new Frame(4500, /* @__PURE__ */ toList([
     freelance,
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("BACKEND")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("  BACKEND")),
     engineer,
     /* @__PURE__ */ new EmptyLine,
     linked_in,
@@ -5278,7 +5279,7 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
   ])),
   /* @__PURE__ */ new Frame(4500, /* @__PURE__ */ toList([
     freelance,
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("PAYMENTS")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("  PAYMENTS")),
     engineer,
     /* @__PURE__ */ new EmptyLine,
     linked_in,
@@ -5287,7 +5288,7 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
   ])),
   /* @__PURE__ */ new Frame(4500, /* @__PURE__ */ toList([
     freelance,
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("ACCOUNTING")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("  ACCOUNTING")),
     engineer,
     /* @__PURE__ */ new EmptyLine,
     linked_in,
@@ -5296,7 +5297,7 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
   ])),
   /* @__PURE__ */ new Frame(4500, /* @__PURE__ */ toList([
     freelance,
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("A.I.")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("  A.I.")),
     engineer,
     /* @__PURE__ */ new EmptyLine,
     linked_in,

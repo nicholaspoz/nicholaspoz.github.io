@@ -210,7 +210,7 @@ body {
 }
 
 .flap.bottom .flap-content {
-  bottom: 0;
+  bottom: calc(-1 * min(1cqh, 1px));
 }
 
 .flap.flipping-bottom .flap-content {

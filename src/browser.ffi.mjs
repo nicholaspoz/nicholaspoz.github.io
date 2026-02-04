@@ -291,7 +291,8 @@ function animate_flips(el, adjacencyList) {
   );
   if (distance === 0) return null;
 
-  const timeline = gsap.timeline({ smoothChildTiming: true });
+  const timeline = gsap.timeline({ smoothChildTiming: true, paused: true });
+
   buildFlipFrames(
     timeline,
     elements,
@@ -301,7 +302,8 @@ function animate_flips(el, adjacencyList) {
     adjacencyList,
     randomFlipDuration(),
   );
-  timeline.set(elements.bottom, { opacity: 0 }, ">");
+
+  timeline.set(elements.bottomContent, { text: destination }, ">");
 
   return timeline;
 }
@@ -327,6 +329,7 @@ export function animate() {
       );
       if (child) {
         timelines[selector].add(child, 0);
+        child.paused(false);
       }
     }
 

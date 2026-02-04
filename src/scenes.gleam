@@ -52,7 +52,7 @@ const home = Scene(
 
 const freelance = Text(L("FREELANCE"))
 
-const engineer = Text(R("ENGINEER  "))
+const engineer = Text(L("  ENGINEER"))
 
 const technologist = Text(L("TECHNOLOGIST"))
 
@@ -64,7 +64,7 @@ const tech = Scene(
       ms: 4500,
       lines: [
         freelance,
-        Text(C("SOFTWARE")),
+        Text(L("  SOFTWARE")),
         engineer,
         EmptyLine,
         linked_in,
@@ -76,7 +76,7 @@ const tech = Scene(
       ms: 4500,
       lines: [
         freelance,
-        Text(C("FULL-STACK")),
+        Text(L("  FULL-STACK")),
         engineer,
         EmptyLine,
         linked_in,
@@ -88,7 +88,7 @@ const tech = Scene(
       ms: 4500,
       lines: [
         freelance,
-        Text(C("BACKEND")),
+        Text(L("  BACKEND")),
         engineer,
         EmptyLine,
         linked_in,
@@ -100,7 +100,7 @@ const tech = Scene(
       ms: 4500,
       lines: [
         freelance,
-        Text(C("PAYMENTS")),
+        Text(L("  PAYMENTS")),
         engineer,
         EmptyLine,
         linked_in,
@@ -112,7 +112,7 @@ const tech = Scene(
       ms: 4500,
       lines: [
         freelance,
-        Text(C("ACCOUNTING")),
+        Text(L("  ACCOUNTING")),
         engineer,
         EmptyLine,
         linked_in,
@@ -124,7 +124,7 @@ const tech = Scene(
       ms: 4500,
       lines: [
         freelance,
-        Text(C("A.I.")),
+        Text(L("  A.I.")),
         engineer,
         EmptyLine,
         linked_in,
