@@ -5049,56 +5049,40 @@ screen.orientation.addEventListener("change", (event4) => {
     }, 20);
   }, 400);
 });
-gsap.config({
-  force3D: true
-});
-function getDistance(from, to, adjacencyList) {
-  if (!from || !to) {
-    console.error("Invalid characters", { from, to });
-    return 0;
-  }
-  if (!(from in adjacencyList) || !(to in adjacencyList)) {
-    console.error("Invalid list", { adjacencyList, from, to });
-    return 0;
-  }
-  let dist = 0;
-  let current = from;
-  while (current !== to) {
-    current = adjacencyList[current];
-    dist++;
-  }
-  return dist;
-}
+gsap.config({ force3D: true });
+var FLIP_DURATIONS = [0.03, 0.04, 0.045, 0.045];
+var FALLBACK_CHAR = " ";
 var timelines = {};
 var adjacencyLists = {};
 function set_adjacency_list(name, adjacency_list) {
   adjacencyLists[name] = adjacency_list;
 }
-function animate() {
-  for (const [selector, adjacencyList] of Object.entries(adjacencyLists)) {
-    if (timelines[selector]) {
-      timelines[selector].pause();
-      timelines[selector].getChildren(true, false, true).forEach((child) => {
-        child.progress(1);
-        child.kill();
-      });
-      timelines[selector].kill();
-      delete timelines[selector];
-    }
-    timelines[selector] = gsap.timeline({
-      paused: true
-    });
-    const splitFlaps = document.querySelectorAll(`[data-name=${selector}] > .split-flap`);
-    for (const el of splitFlaps) {
-      const child = flip(el, adjacencyList);
-      if (child) {
-        timelines[selector] = timelines[selector].add(child, 0);
-      }
-    }
-    timelines[selector].play();
+function getDistance(from, to, adjacencyList) {
+  if (!from || !to || !(from in adjacencyList) || !(to in adjacencyList)) {
+    console.error("Invalid distance calculation", { from, to, adjacencyList });
+    return 0;
   }
+  let distance = 0;
+  let current = from;
+  while (current !== to) {
+    current = adjacencyList[current];
+    distance++;
+  }
+  return distance;
 }
-function flip(el, adjacencyList) {
+function resolveFlipDistance(current, destination, adjacencyList) {
+  if (current in adjacencyList) {
+    return {
+      next: adjacencyList[current],
+      distance: getDistance(current, destination, adjacencyList)
+    };
+  }
+  return {
+    next: FALLBACK_CHAR,
+    distance: 1 + getDistance(FALLBACK_CHAR, destination, adjacencyList)
+  };
+}
+function getFlipElements(el) {
   const topContent = el.querySelector(".top > .flap-content");
   const bottom = el.querySelector(".bottom");
   const bottomContent = bottom?.querySelector(".flap-content");
@@ -5107,39 +5091,74 @@ function flip(el, adjacencyList) {
   if (!topContent || !bottom || !bottomContent || !flippingBottom || !flippingBottomContent) {
     return null;
   }
-  const destination = el.dataset.dest || " ";
-  let distance = 0;
-  let curr = topContent.textContent || " ";
-  const from = curr;
-  let next = (() => {
-    if (curr in adjacencyList) {
-      return adjacencyList[curr];
-    }
-    distance = 1;
-    return " ";
-  })();
-  distance += getDistance(curr in adjacencyList ? from : " ", destination, adjacencyList);
-  if (distance === 0) {
+  return {
+    topContent,
+    bottom,
+    bottomContent,
+    flippingBottom,
+    flippingBottomContent
+  };
+}
+function buildFlipFrames(timeline, elements, current, next, distance, adjacencyList, duration) {
+  const { topContent, bottomContent, flippingBottom, flippingBottomContent } = elements;
+  for (let i = distance;i > 0; i--) {
+    const currChar = current;
+    const nextChar = next;
+    timeline.call(() => {
+      topContent.textContent = nextChar;
+      bottomContent.textContent = currChar;
+      flippingBottomContent.textContent = nextChar;
+    }, [], ">").to(flippingBottom, { rotationX: 0, duration, ease: "none" }, ">").call(() => {
+      bottomContent.textContent = nextChar;
+    }, [], ">").set(flippingBottom, { rotationX: 90 }, ">").addLabel(`flip-${i}`, ">");
+    current = next;
+    next = adjacencyList[current];
+  }
+}
+function randomFlipDuration() {
+  return FLIP_DURATIONS[Math.floor(Math.random() * FLIP_DURATIONS.length)];
+}
+function cleanupTimeline(selector) {
+  const timeline = timelines[selector];
+  if (!timeline)
+    return;
+  timeline.pause();
+  timeline.getChildren(true, false, true).forEach((child) => {
+    const nextLabel = child.nextLabel();
+    if (nextLabel)
+      child.seek(nextLabel);
+    child.kill();
+  });
+  timeline.kill();
+  delete timelines[selector];
+}
+function animate_flips(el, adjacencyList) {
+  const elements = getFlipElements(el);
+  if (!elements)
     return null;
-  }
-  const duration = [0.03, 0.045, 0.04, 0.045][Math.floor(Math.random() * 4)];
-  let timeline = gsap.timeline().set(bottom, { opacity: 1 }, 0);
-  while (distance > 0) {
-    timeline = timeline.call(() => {
-      topContent.textContent = next;
-      bottomContent.textContent = curr;
-      flippingBottomContent.textContent = next;
-      curr = next;
-      next = adjacencyList[curr];
-    }).to(flippingBottom, {
-      rotationX: 0,
-      duration,
-      ease: "none"
-    }).set(flippingBottom, { rotationX: 90 }, ">").addLabel(`${distance}`, ">");
-    distance--;
-  }
-  timeline = timeline.set(bottom, { opacity: 0 }, ">");
+  const destination = el.dataset.dest || FALLBACK_CHAR;
+  const current = elements.topContent.textContent || FALLBACK_CHAR;
+  const { next, distance } = resolveFlipDistance(current, destination, adjacencyList);
+  if (distance === 0)
+    return null;
+  const timeline = gsap.timeline({ smoothChildTiming: true });
+  buildFlipFrames(timeline, elements, current, next, distance, adjacencyList, randomFlipDuration());
+  timeline.set(elements.bottom, { opacity: 0 }, ">");
   return timeline;
+}
+function animate() {
+  for (const [selector, adjacencyList] of Object.entries(adjacencyLists)) {
+    cleanupTimeline(selector);
+    timelines[selector] = gsap.timeline({ paused: true });
+    const splitFlaps = document.querySelectorAll(`[data-name=${selector}] > .split-flap`);
+    for (const el of splitFlaps) {
+      const child = animate_flips(el, adjacencyList);
+      if (child) {
+        timelines[selector].add(child, 0);
+      }
+    }
+    timelines[selector].play();
+  }
 }
 // build/dev/javascript/bingo/model.mjs
 class L extends CustomType {

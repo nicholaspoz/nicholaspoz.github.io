@@ -88,45 +88,15 @@ screen.orientation.addEventListener("change", (event) => {
 
 // MARK: GSAP Animation
 
-// gsap.registerPlugin(TextPlugin);
-gsap.config({
-  force3D: true,
-});
+gsap.config({ force3D: true });
 
-/**
- * Calculates distance between two characters in the adjacency list
- * @param {string} from - Starting character
- * @param {string} to - Destination character
- * @param {Record<string, string>} adjacencyList - Map of character to next character
- * @returns {number} Distance between characters
- */
-function getDistance(from, to, adjacencyList) {
-  if (!from || !to) {
-    console.error("Invalid characters", { from, to });
-    return 0;
-  }
-  if (!(from in adjacencyList) || !(to in adjacencyList)) {
-    console.error("Invalid list", { adjacencyList, from, to });
-    return 0;
-  }
+const FLIP_DURATIONS = [0.03, 0.04, 0.045, 0.045];
+const FALLBACK_CHAR = " ";
 
-  let dist = 0;
-  let current = from;
-  while (current !== to) {
-    current = adjacencyList[current];
-    dist++;
-  }
-  return dist;
-}
-
-/**
- * @type {Record<string, gsap.core.Timeline>}
- */
+/** @type {Record<string, gsap.core.Timeline>} */
 let timelines = {};
 
-/**
- * @type {Record<string, Record<string, string>>}
- */
+/** @type {Record<string, Record<string, string>>} */
 const adjacencyLists = {};
 
 /**
@@ -138,49 +108,64 @@ export function set_adjacency_list(name, adjacency_list) {
 }
 
 /**
- * Animates all split-flap displays on the page.
- * Reads each display's `data-adjacency-list` attribute and animates
- * each character to its `data-dest` destination.
- * @returns {void}
+ * Calculates distance between two characters in the adjacency list
+ * @param {string} from - Starting character
+ * @param {string} to - Destination character
+ * @param {Record<string, string>} adjacencyList - Map of character to next character
+ * @returns {number} Distance between characters
  */
-export function animate() {
-  for (const [selector, adjacencyList] of Object.entries(adjacencyLists)) {
-    // Clean up existing timeline for this selector
-    if (timelines[selector]) {
-      timelines[selector].pause();
-      timelines[selector].getChildren(true, false, true).forEach((child) => {
-        child.progress(1); // Jump to end so character lands on destination
-        child.kill();
-      });
-      timelines[selector].kill();
-      delete timelines[selector];
-    }
-
-    timelines[selector] = gsap.timeline({
-      paused: true,
-    });
-
-    const splitFlaps = document.querySelectorAll(
-      `[data-name=${selector}] > .split-flap`,
-    );
-    for (const el of splitFlaps) {
-      const child = flip(/** @type {HTMLElement} */ (el), adjacencyList);
-      if (child) {
-        timelines[selector] = timelines[selector].add(child, 0);
-      }
-    }
-
-    timelines[selector].play();
+function getDistance(from, to, adjacencyList) {
+  if (!from || !to || !(from in adjacencyList) || !(to in adjacencyList)) {
+    console.error("Invalid distance calculation", { from, to, adjacencyList });
+    return 0;
   }
+
+  let distance = 0;
+  let current = from;
+  while (current !== to) {
+    current = adjacencyList[current];
+    distance++;
+  }
+  return distance;
 }
 
 /**
- * Creates a flip animation timeline for a split-flap element
- * @param {HTMLElement} el - The split-flap element to animate
- * @param {Record<string, string>} adjacencyList - Map of character transitions
- * @returns {gsap.core.Timeline | null} GSAP timeline or null if no animation needed
+ * Resolves the first "next" character and calculates total flip distance. If
+ * current char is unknown, manufactures a flip from current → fallback first.
+ *
+ * @param {string} current - Current displayed character
+ * @param {string} destination - Target character
+ * @param {Record<string, string>} adjacencyList - Character transition map
+ * @returns {{ next: string, distance: number }} First next char and total distance
  */
-function flip(el, adjacencyList) {
+function resolveFlipDistance(current, destination, adjacencyList) {
+  if (current in adjacencyList) {
+    return {
+      next: adjacencyList[current],
+      distance: getDistance(current, destination, adjacencyList),
+    };
+  }
+  // Unknown char: flip to fallback first, then continue from there
+  return {
+    next: FALLBACK_CHAR,
+    distance: 1 + getDistance(FALLBACK_CHAR, destination, adjacencyList),
+  };
+}
+
+/**
+ * Gets required DOM elements from a split-flap element
+ *
+ * @param {HTMLElement} el - The split-flap element
+ * @returns {FlipElements | null} DOM elements or null if incomplete
+ * @typedef {{
+ *   topContent: Element,
+ *   bottom: Element,
+ *   bottomContent: Element,
+ *   flippingBottom: Element,
+ *   flippingBottomContent: Element
+ * }} FlipElements
+ */
+function getFlipElements(el) {
   const topContent = el.querySelector(".top > .flap-content");
   const bottom = el.querySelector(".bottom");
   const bottomContent = bottom?.querySelector(".flap-content");
@@ -197,51 +182,154 @@ function flip(el, adjacencyList) {
     return null;
   }
 
-  const destination = el.dataset.dest || " ";
-  let distance = 0;
-  let curr = topContent.textContent || " ";
-  const from = curr;
+  return {
+    topContent,
+    bottom,
+    bottomContent,
+    flippingBottom,
+    flippingBottomContent,
+  };
+}
 
-  let next = (() => {
-    if (curr in adjacencyList) {
-      return adjacencyList[curr];
-    }
-    distance = 1;
-    return " ";
-  })();
+/**
+ * Builds flip animation frames on the timeline
+ *
+ * @param {gsap.core.Timeline} timeline - Timeline to build on
+ * @param {FlipElements} elements - DOM elements to animate
+ * @param {string} current - Current displayed character
+ * @param {string} next - First character to flip to
+ * @param {number} distance - Number of flips
+ * @param {Record<string, string>} adjacencyList - Character transition map
+ * @param {number} duration - Duration per flip
+ */
+function buildFlipFrames(
+  timeline,
+  elements,
+  current,
+  next,
+  distance,
+  adjacencyList,
+  duration,
+) {
+  const { topContent, bottomContent, flippingBottom, flippingBottomContent } =
+    elements;
 
-  distance += getDistance(
-    curr in adjacencyList ? from : " ",
+  for (let i = distance; i > 0; i--) {
+    const currChar = current;
+    const nextChar = next;
+
+    timeline
+      .call(
+        () => {
+          topContent.textContent = nextChar;
+          bottomContent.textContent = currChar;
+          flippingBottomContent.textContent = nextChar;
+        },
+        [],
+        ">",
+      )
+      .to(flippingBottom, { rotationX: 0, duration, ease: "none" }, ">")
+      .call(
+        () => {
+          bottomContent.textContent = nextChar;
+        },
+        [],
+        ">",
+      )
+      .set(flippingBottom, { rotationX: 90 }, ">")
+      .addLabel(`flip-${i}`, ">");
+
+    current = next;
+    next = adjacencyList[current];
+  }
+}
+
+function randomFlipDuration() {
+  return FLIP_DURATIONS[Math.floor(Math.random() * FLIP_DURATIONS.length)];
+}
+
+/**
+ * Cleans up an existing timeline, jumping children to completion
+ *
+ * @param {string} selector - Timeline selector key
+ */
+function cleanupTimeline(selector) {
+  const timeline = timelines[selector];
+  if (!timeline) return;
+
+  timeline.pause();
+  timeline
+    .getChildren(true, false, true)
+    .forEach((/** @type {gsap.core.Timeline} */ child) => {
+      const nextLabel = child.nextLabel();
+      if (nextLabel) child.seek(nextLabel);
+
+      child.kill();
+    });
+  timeline.kill();
+  delete timelines[selector];
+}
+
+/**
+ * Creates a flip animation timeline for a split-flap element
+ *
+ * @param {HTMLElement} el - The split-flap element to animate
+ * @param {Record<string, string>} adjacencyList - Map of character transitions
+ * @returns {gsap.core.Timeline | null} GSAP timeline or null if no animation needed
+ */
+function animate_flips(el, adjacencyList) {
+  const elements = getFlipElements(el);
+  if (!elements) return null;
+
+  const destination = el.dataset.dest || FALLBACK_CHAR;
+  const current = elements.topContent.textContent || FALLBACK_CHAR;
+
+  const { next, distance } = resolveFlipDistance(
+    current,
     destination,
     adjacencyList,
   );
-  if (distance === 0) {
-    return null;
-  }
+  if (distance === 0) return null;
 
-  const duration = [0.03, 0.045, 0.04, 0.045][Math.floor(Math.random() * 4)];
-  let timeline = gsap.timeline().set(bottom, { opacity: 1 }, 0);
+  const timeline = gsap.timeline({ smoothChildTiming: true });
+  buildFlipFrames(
+    timeline,
+    elements,
+    current,
+    next,
+    distance,
+    adjacencyList,
+    randomFlipDuration(),
+  );
+  timeline.set(elements.bottom, { opacity: 0 }, ">");
 
-  while (distance > 0) {
-    timeline = timeline
-      .call(() => {
-        topContent.textContent = next;
-        bottomContent.textContent = curr;
-        flippingBottomContent.textContent = next;
-        curr = next;
-        next = adjacencyList[curr];
-      })
-      .to(flippingBottom, {
-        rotationX: 0,
-        duration,
-        ease: "none",
-      })
-      .set(flippingBottom, { rotationX: 90 }, ">")
-      .addLabel(`${distance}`, ">");
-
-    distance--;
-  }
-
-  timeline = timeline.set(bottom, { opacity: 0 }, ">");
   return timeline;
+}
+
+/**
+ * Animates all split-flap displays on the page.
+ *
+ * @returns {void}
+ */
+export function animate() {
+  for (const [selector, adjacencyList] of Object.entries(adjacencyLists)) {
+    cleanupTimeline(selector);
+
+    timelines[selector] = gsap.timeline({ paused: true });
+
+    const splitFlaps = document.querySelectorAll(
+      `[data-name=${selector}] > .split-flap`,
+    );
+    for (const el of splitFlaps) {
+      const child = animate_flips(
+        /** @type {HTMLElement} */ (el),
+        adjacencyList,
+      );
+      if (child) {
+        timelines[selector].add(child, 0);
+      }
+    }
+
+    timelines[selector].play();
+  }
 }
