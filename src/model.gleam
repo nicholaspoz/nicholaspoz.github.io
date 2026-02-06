@@ -12,6 +12,9 @@ pub type Justify {
 pub type Content {
   Text(text: Justify)
   Link(text: Justify, url: String)
+  BoxTitle(text: String)
+  BoxContent(text: String)
+  BoxBottom
   EmptyLine
 }
 

@@ -1,14 +1,22 @@
 import gleam/option.{None, Some}
 
-import model.{C, EmptyLine, Frame, L, Link, R, Scene, Text}
+import model.{
+  BoxBottom, BoxContent, BoxTitle, C, EmptyLine, Frame, L, Link, R, Scene, Text,
+}
 
-const nick = Text(L("NICK"))
+const hello = Text(L("HELLO"))
 
-const poz = Text(L("((POZOULAKIS))"))
+const i_am = Text(L("I'M NICK"))
+
+const welcome = Text(L("WELCOME TO"))
+
+const nick = Text(L("    NICK"))
+
+const poz = Text(L("    POZOULAKIS"))
 
 const dot = Text(C("(DOT)"))
 
-const bingo = Text(R("BINGO"))
+const bingo = Text(R("BINGO    "))
 
 const linked_in = Link(
   text: R("LINKEDIN ▶"),
@@ -24,25 +32,59 @@ const home = Scene(
   chars: None,
   frames: [
     Frame(
-      ms: 1500,
+      ms: 1000,
       lines: [
+        EmptyLine,
+        hello,
+      ],
+    ),
+    Frame(
+      ms: 3000,
+      lines: [
+        EmptyLine,
+        hello,
+        i_am,
+        poz,
+      ],
+    ),
+    Frame(
+      ms: 500,
+      lines: [
+        welcome,
+        EmptyLine,
+        nick,
+      ],
+    ),
+    Frame(
+      ms: 500,
+      lines: [
+        welcome,
+        EmptyLine,
         nick,
         EmptyLine,
+        dot,
+      ],
+    ),
+    Frame(
+      ms: 1500,
+      lines: [
+        welcome,
+        EmptyLine,
+        nick,
         EmptyLine,
         dot,
-        EmptyLine,
         EmptyLine,
         bingo,
       ],
     ),
     Frame(
-      ms: 4500,
+      ms: 2500,
       lines: [
+        EmptyLine,
+        EmptyLine,
         nick,
-        poz,
         EmptyLine,
         dot,
-        EmptyLine,
         EmptyLine,
         bingo,
       ],
@@ -52,92 +94,113 @@ const home = Scene(
 
 const freelance = Text(L("FREELANCE"))
 
-const engineer = Text(L("  ENGINEER"))
+const engineer = BoxContent("ENGINEER")
 
-const technologist = Text(L("TECHNOLOGIST"))
+const technologist = BoxTitle("TECHNOLOGIST")
 
 const tech = Scene(
   name: "TECH",
   chars: None,
   frames: [
     Frame(
-      ms: 4500,
+      ms: 1500,
       lines: [
-        freelance,
-        Text(L("  SOFTWARE")),
-        engineer,
-        EmptyLine,
-        linked_in,
-        github,
-        email,
-      ],
-    ),
-    Frame(
-      ms: 4500,
-      lines: [
-        freelance,
-        Text(L("  FULL-STACK")),
-        engineer,
-        EmptyLine,
-        linked_in,
-        github,
-        email,
-      ],
-    ),
-    Frame(
-      ms: 4500,
-      lines: [
-        freelance,
-        Text(L("  BACKEND")),
-        engineer,
-        EmptyLine,
-        linked_in,
-        github,
-        email,
-      ],
-    ),
-    Frame(
-      ms: 4500,
-      lines: [
-        freelance,
-        Text(L("  PAYMENTS")),
-        engineer,
-        EmptyLine,
-        linked_in,
-        github,
-        email,
-      ],
-    ),
-    Frame(
-      ms: 4500,
-      lines: [
-        freelance,
-        Text(L("  ACCOUNTING")),
-        engineer,
-        EmptyLine,
-        linked_in,
-        github,
-        email,
-      ],
-    ),
-    Frame(
-      ms: 4500,
-      lines: [
-        freelance,
-        Text(L("  A.I.")),
-        engineer,
-        EmptyLine,
-        linked_in,
-        github,
-        email,
-      ],
-    ),
-    Frame(
-      ms: 6000,
-      lines: [
-        freelance,
         technologist,
+        BoxContent(""),
+        BoxContent(""),
+        BoxContent(""),
+        BoxContent(""),
+        BoxBottom,
         EmptyLine,
+        linked_in,
+        github,
+        email,
+      ],
+    ),
+    Frame(
+      ms: 4500,
+      lines: [
+        technologist,
+        BoxContent(""),
+        BoxContent("SOFTWARE"),
+        engineer,
+        BoxContent(""),
+        BoxBottom,
+        EmptyLine,
+        linked_in,
+        github,
+        email,
+      ],
+    ),
+    Frame(
+      ms: 4500,
+      lines: [
+        technologist,
+        BoxContent(""),
+        BoxContent("FULL-STACK"),
+        engineer,
+        BoxContent(""),
+        BoxBottom,
+        EmptyLine,
+        linked_in,
+        github,
+        email,
+      ],
+    ),
+    Frame(
+      ms: 4500,
+      lines: [
+        technologist,
+        BoxContent(""),
+        BoxContent("BACKEND"),
+        engineer,
+        BoxContent(""),
+        BoxBottom,
+        EmptyLine,
+        linked_in,
+        github,
+        email,
+      ],
+    ),
+    Frame(
+      ms: 4500,
+      lines: [
+        technologist,
+        BoxContent(""),
+        BoxContent("PAYMENTS"),
+        engineer,
+        BoxContent(""),
+        BoxBottom,
+        EmptyLine,
+        linked_in,
+        github,
+        email,
+      ],
+    ),
+    Frame(
+      ms: 4500,
+      lines: [
+        technologist,
+        BoxContent(""),
+        BoxContent("ACCOUNTING"),
+        engineer,
+        BoxContent(""),
+        BoxBottom,
+        EmptyLine,
+        linked_in,
+        github,
+        email,
+      ],
+    ),
+    Frame(
+      ms: 4500,
+      lines: [
+        technologist,
+        BoxContent(""),
+        BoxContent("A.I."),
+        engineer,
+        BoxContent(""),
+        BoxBottom,
         EmptyLine,
         linked_in,
         github,
@@ -151,7 +214,7 @@ const cellist = Text(L("CELLIST"))
 
 const music = Scene(
   name: "MUSIC",
-  chars: Some(" ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶#┏━┓┃●╹╻┗┛"),
+  chars: Some(" ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶#┏━┓┗┛┃●╹╻"),
   frames: [
     Frame(
       ms: 1000,
@@ -188,16 +251,20 @@ const friends = Scene(
       ms: 2000,
       lines: [
         EmptyLine,
+        EmptyLine,
         Text(L("LET'S BE")),
-        Text(C("FRIENDS :)")),
+        Text(C("FRIENDS!")),
       ],
     ),
     Frame(
       ms: 7000,
       lines: [
         EmptyLine,
+        EmptyLine,
         Text(L("LET'S BE")),
-        Text(C("FRIENDS :)")),
+        Text(C("FRIENDS!")),
+        EmptyLine,
+        EmptyLine,
         EmptyLine,
         linked_in,
         github,

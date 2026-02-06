@@ -19,8 +19,8 @@ import lustre/event
 
 import browser
 import model.{
-  type BingoState, type Content, type Frame, type Scene, BingoState, C,
-  EmptyLine, Frame, L, Link, R, Text,
+  type BingoState, type Content, type Frame, type Scene, BingoState, BoxBottom,
+  BoxContent, BoxTitle, C, EmptyLine, Frame, L, Link, R, Text,
 }
 import scenes.{scenes}
 import utils
@@ -31,7 +31,7 @@ pub fn main() -> Result(Nil, lustre.Error) {
   Ok(Nil)
 }
 
-const default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-'.:▶()𝄞𝄢𝅘𝅥𝄽!"
+const default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-',.▶()┏━┓┗┛┃!"
 
 const pagination_chars = " ○●()𝄆𝄇"
 
@@ -42,7 +42,7 @@ type Model {
     scenes: List(Scene),
     rows: Int,
     columns: Int,
-    current: Result(BingoState, Nil),
+    current: BingoState,
     auto_play: Bool,
     timeout: Option(Int),
     path: String,
@@ -51,7 +51,7 @@ type Model {
 
 type Msg {
   Resized
-  ColumnsChanged(Int)
+  // ColumnsChanged(Int)
   PageClicked(Int)
   AutoPlayClicked
   TimeoutStarted(Int)
@@ -59,7 +59,6 @@ type Msg {
 }
 
 fn init(_) -> #(Model, effect.Effect(Msg)) {
-  let cols = 0
   let scenes = scenes
   let state = utils.initial_state(scenes)
   let path = browser.get_path()
@@ -67,8 +66,8 @@ fn init(_) -> #(Model, effect.Effect(Msg)) {
   #(
     Model(
       scenes: scenes,
-      rows: 7,
-      columns: cols,
+      rows: 10,
+      columns: 19,
       current: state,
       auto_play: True,
       timeout: None,
@@ -76,16 +75,12 @@ fn init(_) -> #(Model, effect.Effect(Msg)) {
     ),
     effect.batch([
       set_adjacency_list_effect("pagination", Some(pagination_chars)),
-
-      case state {
-        Ok(state) -> set_adjacency_list_effect("display", state.scene.chars)
-        Error(_) -> effect.none()
-      },
-
+      set_adjacency_list_effect("display", state.scene.chars),
       {
         use dispatch, root_element <- effect.after_paint
         browser.on_resize(root_element, fn() { dispatch(Resized) })
       },
+      start_timeout(state.frame, None),
     ]),
   )
 }
@@ -104,22 +99,27 @@ fn set_adjacency_list_effect(name: String, chars: Option(String)) {
   browser.set_adjacency_list(name, adjacency_list)
 }
 
-fn on_resize_effect(model: Model) -> Effect(Msg) {
-  effect.batch([
-    {
-      use _, _ <- effect.after_paint
-      browser.update_flap_height()
-    },
-    {
-      use dispatch, root_element <- effect.before_paint
-      let cols = case model.path, browser.measure_orientation(root_element) {
-        "/", "landscape" -> 21
-        _, _ -> 15
-      }
-      dispatch(ColumnsChanged(cols))
-    },
-  ])
+fn on_resize_effect() -> Effect(Msg) {
+  use _, _ <- effect.after_paint
+  browser.update_flap_height()
 }
+
+// fn on_resize_effect(model: Model) -> Effect(Msg) {
+//   effect.batch([
+//     {
+//       use _, _ <- effect.after_paint
+//       browser.update_flap_height()
+//     },
+//     {
+//       use dispatch, root_element <- effect.before_paint
+//       let cols = case model.path, browser.measure_orientation(root_element) {
+//         "/", "landscape" -> 21
+//         _, _ -> 15
+//       }
+//       dispatch(ColumnsChanged(cols))
+//     },
+//   ])
+// }
 
 fn start_timeout(frame: Frame, current_timeout id: Option(Int)) -> Effect(Msg) {
   use dispatch, _ <- effect.after_paint
@@ -146,17 +146,16 @@ fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
 
 fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
   case msg {
-    Resized -> Ok(#(model, on_resize_effect(model)))
+    Resized -> Ok(#(model, on_resize_effect()))
 
-    ColumnsChanged(columns) -> {
-      use <- bool.guard(columns == model.columns, Ok(#(model, effect.none())))
-      use initial_state <- try(model.current)
-      Ok(#(
-        Model(..model, scenes: scenes, columns: columns),
-        start_timeout(initial_state.frame, current_timeout: model.timeout),
-      ))
-    }
-
+    // ColumnsChanged(columns) -> {
+    //   use <- bool.guard(columns == model.columns, Ok(#(model, effect.none())))
+    //   use state <- try(model.current)
+    //   Ok(#(
+    //     Model(..model, scenes: scenes, columns: 17),
+    //     start_timeout(state.frame, current_timeout: model.timeout),
+    //   ))
+    // }
     TimeoutStarted(id) ->
       Ok(
         #(Model(..model, timeout: Some(id)), {
@@ -166,16 +165,15 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
       )
 
     TimeoutEnded -> {
-      use current <- try(model.current)
-      use next <- try(utils.find_next_state(model.scenes, current))
+      use next <- try(utils.find_next_state(model.scenes, model.current))
       // even when paused, continue the current scene to its last frame
-      let continue = { current.scene == next.scene } || model.auto_play
+      let continue = { model.current.scene == next.scene } || model.auto_play
 
       case continue {
         False -> Ok(#(Model(..model, timeout: None), effect.none()))
         True ->
           Ok(#(
-            Model(..model, current: Ok(next), timeout: None),
+            Model(..model, current: next, timeout: None),
             effect.batch([
               set_adjacency_list_effect("display", next.scene.chars),
               start_timeout(next.frame, current_timeout: None),
@@ -187,21 +185,15 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
     PageClicked(page) -> {
       use scene <- try(utils.find_scene(model.scenes, page))
       use frame <- try(list.first(scene.frames))
-      let next =
-        result.map(model.current, fn(current) {
-          case current.scene != scene {
-            True -> BingoState(scene, frame)
-            False -> current
-          }
-        })
+      let next = case model.current.scene != scene {
+        True -> BingoState(scene, frame)
+        False -> model.current
+      }
 
       Ok(#(
         Model(..model, auto_play: False, current: next),
         effect.batch([
-          case next {
-            Ok(state) -> set_adjacency_list_effect("display", state.scene.chars)
-            Error(_) -> effect.none()
-          },
+          set_adjacency_list_effect("display", next.scene.chars),
 
           start_timeout(frame, model.timeout),
         ]),
@@ -227,29 +219,34 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
 // MARK: VIEW
 
 fn view(model: Model) -> Element(Msg) {
-  let lines = case model.current {
-    Ok(BingoState(_, Frame(_, lines:))) -> lines
-    Error(_) -> []
-  }
+  let lines = model.current.frame.lines
 
-  html.div([attribute.class("matrix")], [
-    display(lines, cols: model.columns, rows: model.rows),
+  // +1 for pagination row
+  let total_rows = model.rows + 2
 
-    pagination(
-      pages: list.length(model.scenes),
-      page: list.fold_until(model.scenes, 1, fn(acc, s) {
-        case model.current {
-          Ok(state) if s == state.scene -> {
-            Stop(acc)
+  html.div(
+    [
+      attribute.class("matrix"),
+      attribute.style("--rows", int.to_string(total_rows)),
+      attribute.style("--cols", int.to_string(model.columns)),
+    ],
+    [
+      display(lines, cols: model.columns, rows: model.rows),
+      html.div([attribute.class("row")], []),
+
+      pagination(
+        pages: list.length(model.scenes),
+        page: list.fold_until(model.scenes, 1, fn(acc, s) {
+          case model.current.scene == s {
+            True -> Stop(acc)
+            False -> Continue(acc + 1)
           }
-          Ok(_) -> Continue(acc + 1)
-          Error(_) -> Stop(0)
-        }
-      }),
-      cols: model.columns,
-      auto_play: model.auto_play,
-    ),
-  ])
+        }),
+        cols: model.columns,
+        auto_play: model.auto_play,
+      ),
+    ],
+  )
 }
 
 fn display(lines: List(Content), cols cols: Int, rows rows: Int) -> Element(msg) {
@@ -269,15 +266,27 @@ fn row(
   cols num_cols: Int,
 ) -> Element(msg) {
   let bg = string.repeat(" ", num_cols)
-  let #(text, url) = case line {
-    Text(text:) -> #(text, None)
-    Link(text:, url:) -> #(text, Some(url))
-    EmptyLine -> #(C(bg), None)
-  }
-  let text = case text {
-    L(str) -> utils.left(str, bg)
-    C(str) -> utils.center(str, bg)
-    R(str) -> utils.right(str, bg)
+  let text = case line {
+    Text(text:) | Link(_, text:) -> {
+      case text {
+        L(str) -> utils.left(str, bg)
+        C(str) -> utils.center(str, bg)
+        R(str) -> utils.right(str, bg)
+      }
+    }
+
+    BoxTitle(text:) -> {
+      { utils.left("┏" <> text, string.repeat("━", num_cols - 1) <> "┓") }
+    }
+    BoxContent(text:) -> {
+      let bg = "┃" <> string.repeat(" ", num_cols - 2) <> "┃"
+      utils.left("┃ " <> text, bg)
+    }
+
+    BoxBottom -> {
+      "┗" <> string.repeat("━", num_cols - 2) <> "┛"
+    }
+    EmptyLine -> bg
   }
 
   let children =
@@ -288,8 +297,8 @@ fn row(
       #(id, character(id, dest: char, on_click: None))
     })
 
-  let link_attrs = case url {
-    Some(url) -> [attribute.href(url), attribute.target("_blank")]
+  let link_attrs = case line {
+    Link(_, url:) -> [attribute.href(url), attribute.target("_blank")]
     _ -> [attribute.role("div")]
   }
 
