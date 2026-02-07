@@ -13,7 +13,7 @@ pub type Content {
   Text(text: Justify)
   Link(text: Justify, url: String)
   BoxTitle(text: String)
-  BoxContent(text: String)
+  BoxContent(text: Justify)
   BoxBottom
   EmptyLine
 }

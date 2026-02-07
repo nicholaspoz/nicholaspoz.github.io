@@ -219,25 +219,17 @@ function buildFlipFrames(
     const nextChar = next;
 
     timeline
-      .call(
-        () => {
-          topContent.textContent = nextChar;
-          bottomContent.textContent = currChar;
-          flippingBottomContent.textContent = nextChar;
-        },
-        [],
-        ">",
-      )
-      .to(flippingBottom, { rotationX: 0, duration, ease: "none" }, ">")
-      .call(
-        () => {
-          bottomContent.textContent = nextChar;
-        },
-        [],
-        ">",
-      )
-      .set(flippingBottom, { rotationX: 90 }, ">")
-      .addLabel(`flip-${i}`, ">");
+      .set(topContent, { text: nextChar })
+      .set(bottomContent, { text: currChar })
+      .set(flippingBottomContent, { text: nextChar })
+      .to(flippingBottom, {
+        rotationX: 0,
+        duration,
+        ease: "none",
+      })
+      .set(flippingBottom, { rotationX: 90 })
+      .set(bottomContent, { text: nextChar })
+      .addLabel(`flip-${i}`);
 
     current = next;
     next = adjacencyList[current];
@@ -261,12 +253,13 @@ function cleanupTimeline(selector) {
   timeline
     .getChildren(true, false, true)
     .forEach((/** @type {gsap.core.Timeline} */ child) => {
-      const nextLabel = child.nextLabel();
-      if (nextLabel) child.seek(nextLabel);
-
+      child.pause();
+      // const nextLabel = child.nextLabel();
+      // if(nextLabel)child.seek(nextLabel);
+      child.progress(1);
       child.kill();
     });
-  timeline.kill();
+  // timeline.kill();
   delete timelines[selector];
 }
 
@@ -291,7 +284,10 @@ function animate_flips(el, adjacencyList) {
   );
   if (distance === 0) return null;
 
-  const timeline = gsap.timeline({ smoothChildTiming: true, paused: true });
+  const timeline = gsap.timeline({
+    smoothChildTiming: true,
+    paused: true,
+  });
 
   buildFlipFrames(
     timeline,
@@ -303,7 +299,9 @@ function animate_flips(el, adjacencyList) {
     randomFlipDuration(),
   );
 
-  timeline.set(elements.bottomContent, { text: destination }, ">");
+  timeline.addLabel("end");
+
+  // timeline.set(elements.bottomContent, { text: destination }, ">");
 
   return timeline;
 }

@@ -1,7 +1,3 @@
-/////////////////////////////
-/////////////////////////////
-
-import gleam/bool
 import gleam/function
 import gleam/int
 import gleam/json
@@ -51,7 +47,6 @@ type Model {
 
 type Msg {
   Resized
-  // ColumnsChanged(Int)
   PageClicked(Int)
   AutoPlayClicked
   TimeoutStarted(Int)
@@ -88,6 +83,8 @@ fn init(_) -> #(Model, effect.Effect(Msg)) {
 // MARK: Effects
 
 fn set_adjacency_list_effect(name: String, chars: Option(String)) {
+  use _, _ <- effect.before_paint
+
   let adjacency_list =
     utils.to_adjacency_list(case chars {
       Some(chars) -> chars
@@ -95,7 +92,6 @@ fn set_adjacency_list_effect(name: String, chars: Option(String)) {
     })
     |> json.dict(function.identity, json.string)
 
-  use _, _ <- effect.before_paint
   browser.set_adjacency_list(name, adjacency_list)
 }
 
@@ -104,30 +100,15 @@ fn on_resize_effect() -> Effect(Msg) {
   browser.update_flap_height()
 }
 
-// fn on_resize_effect(model: Model) -> Effect(Msg) {
-//   effect.batch([
-//     {
-//       use _, _ <- effect.after_paint
-//       browser.update_flap_height()
-//     },
-//     {
-//       use dispatch, root_element <- effect.before_paint
-//       let cols = case model.path, browser.measure_orientation(root_element) {
-//         "/", "landscape" -> 21
-//         _, _ -> 15
-//       }
-//       dispatch(ColumnsChanged(cols))
-//     },
-//   ])
-// }
-
 fn start_timeout(frame: Frame, current_timeout id: Option(Int)) -> Effect(Msg) {
   use dispatch, _ <- effect.after_paint
+
   case id {
     Some(id) -> browser.clear_timeout(id)
     None -> Nil
   }
   let id = browser.set_timeout(frame.ms, fn() { dispatch(TimeoutEnded) })
+  browser.animate()
   dispatch(TimeoutStarted(id))
 }
 
@@ -148,24 +129,12 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
   case msg {
     Resized -> Ok(#(model, on_resize_effect()))
 
-    // ColumnsChanged(columns) -> {
-    //   use <- bool.guard(columns == model.columns, Ok(#(model, effect.none())))
-    //   use state <- try(model.current)
-    //   Ok(#(
-    //     Model(..model, scenes: scenes, columns: 17),
-    //     start_timeout(state.frame, current_timeout: model.timeout),
-    //   ))
-    // }
     TimeoutStarted(id) ->
-      Ok(
-        #(Model(..model, timeout: Some(id)), {
-          browser.animate()
-          effect.none()
-        }),
-      )
+      Ok(#(Model(..model, timeout: Some(id)), effect.none()))
 
     TimeoutEnded -> {
       use next <- try(utils.find_next_state(model.scenes, model.current))
+
       // even when paused, continue the current scene to its last frame
       let continue = { model.current.scene == next.scene } || model.auto_play
 
@@ -194,7 +163,6 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
         Model(..model, auto_play: False, current: next),
         effect.batch([
           set_adjacency_list_effect("display", next.scene.chars),
-
           start_timeout(frame, model.timeout),
         ]),
       ))
@@ -208,7 +176,6 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
             Some(id) -> browser.clear_timeout(id)
             None -> Nil
           }
-          browser.animate()
           dispatch(TimeoutEnded)
         }),
       )
@@ -278,14 +245,22 @@ fn row(
     BoxTitle(text:) -> {
       { utils.left("┏" <> text, string.repeat("━", num_cols - 1) <> "┓") }
     }
+
     BoxContent(text:) -> {
-      let bg = "┃" <> string.repeat(" ", num_cols - 2) <> "┃"
-      utils.left("┃ " <> text, bg)
+      // let bg = "┃ " <> string.repeat(" ", num_cols - 4) <> " ┃"
+      let bg = string.repeat(" ", num_cols - 4)
+      let text = case text {
+        L(str) -> utils.left(str, bg)
+        C(str) -> utils.center(str, bg)
+        R(str) -> utils.right(str, bg)
+      }
+      "┃ " <> text <> " ┃"
     }
 
     BoxBottom -> {
       "┗" <> string.repeat("━", num_cols - 2) <> "┛"
     }
+
     EmptyLine -> bg
   }
 

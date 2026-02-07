@@ -107,7 +107,7 @@ const freelance = Text(L("FREELANCE"))
 
 const technologist = BoxTitle("TECHNOLOGIST")
 
-const empty_box = BoxContent("")
+const empty_box = BoxContent(L(""))
 
 const tech = Scene(
   name: "TECH",
@@ -154,8 +154,8 @@ const tech = Scene(
       lines: [
         technologist,
         empty_box,
-        BoxContent("SOFTWARE"),
-        BoxContent("ENGINEERING"),
+        BoxContent(L("SOFTWARE")),
+        BoxContent(L("ENGINEERING")),
         empty_box,
         BoxBottom,
         EmptyLine,
@@ -169,8 +169,8 @@ const tech = Scene(
       lines: [
         technologist,
         empty_box,
-        BoxContent("SOFTWARE"),
-        BoxContent("ARCHITECTURE"),
+        BoxContent(L("SOFTWARE")),
+        BoxContent(L("ARCHITECTURE")),
         empty_box,
         BoxBottom,
         EmptyLine,
@@ -184,8 +184,8 @@ const tech = Scene(
       lines: [
         technologist,
         empty_box,
-        BoxContent("FULL-STACK"),
-        BoxContent("APPLICATIONS"),
+        BoxContent(R("FULL-STACK")),
+        BoxContent(R("APPLICATIONS")),
         empty_box,
         BoxBottom,
         EmptyLine,
@@ -199,8 +199,8 @@ const tech = Scene(
       lines: [
         technologist,
         empty_box,
-        BoxContent("WEB & MOBILE"),
-        BoxContent("APPLICATIONS"),
+        BoxContent(R("WEB & MOBILE")),
+        BoxContent(R("APPLICATIONS")),
         empty_box,
         BoxBottom,
         EmptyLine,
@@ -214,8 +214,8 @@ const tech = Scene(
       lines: [
         technologist,
         empty_box,
-        BoxContent("A.I. & AGENTIC"),
-        BoxContent("SYSTEMS"),
+        BoxContent(C("A.I. & AGENTIC")),
+        BoxContent(C("SYSTEMS")),
         empty_box,
         BoxBottom,
         EmptyLine,
@@ -229,8 +229,8 @@ const tech = Scene(
       lines: [
         technologist,
         empty_box,
-        BoxContent("BACKEND"),
-        BoxContent("SYSTEMS"),
+        BoxContent(C("BACKEND")),
+        BoxContent(C("SYSTEMS")),
         empty_box,
         BoxBottom,
         EmptyLine,
@@ -244,8 +244,8 @@ const tech = Scene(
       lines: [
         technologist,
         empty_box,
-        BoxContent("PAYMENTS"),
-        BoxContent("SYSTEMS"),
+        BoxContent(C("PAYMENTS")),
+        BoxContent(C("SYSTEMS")),
         empty_box,
         BoxBottom,
         EmptyLine,
@@ -259,8 +259,8 @@ const tech = Scene(
       lines: [
         technologist,
         empty_box,
-        BoxContent("ACCOUNTING"),
-        BoxContent("SYSTEMS"),
+        BoxContent(L("ACCOUNTING")),
+        BoxContent(L("SYSTEMS")),
         empty_box,
         BoxBottom,
         EmptyLine,
@@ -274,8 +274,8 @@ const tech = Scene(
       lines: [
         technologist,
         empty_box,
-        BoxContent("ACCOUNTING"),
-        BoxContent("ENTHUSIAST"),
+        BoxContent(L("ACCOUNTING")),
+        BoxContent(L("ENTHUSIAST")),
         empty_box,
         BoxBottom,
         EmptyLine,
@@ -289,8 +289,8 @@ const tech = Scene(
       lines: [
         technologist,
         empty_box,
-        BoxContent("ACCOUNTING"),
-        BoxContent("ENTHUSIAST!"),
+        BoxContent(L("ACCOUNTING")),
+        BoxContent(L("ENTHUSIAST!")),
         empty_box,
         BoxBottom,
         EmptyLine,

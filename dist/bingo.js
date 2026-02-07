@@ -2114,6 +2114,10 @@ function dict2(dict3, keys2, values2) {
   }));
 }
 
+// build/dev/javascript/gleam_stdlib/gleam/function.mjs
+function identity3(x) {
+  return x;
+}
 // build/dev/javascript/gleam_stdlib/gleam/bool.mjs
 function guard(requirement, consequence, alternative) {
   if (requirement) {
@@ -2121,11 +2125,6 @@ function guard(requirement, consequence, alternative) {
   } else {
     return alternative();
   }
-}
-
-// build/dev/javascript/gleam_stdlib/gleam/function.mjs
-function identity3(x) {
-  return x;
 }
 // build/dev/javascript/lustre/lustre/internals/constants.ffi.mjs
 var document2 = () => globalThis?.document;
@@ -5116,13 +5115,11 @@ function buildFlipFrames(timeline, elements, current, next, distance, adjacencyL
   for (let i = distance;i > 0; i--) {
     const currChar = current;
     const nextChar = next;
-    timeline.call(() => {
-      topContent.textContent = nextChar;
-      bottomContent.textContent = currChar;
-      flippingBottomContent.textContent = nextChar;
-    }, [], ">").to(flippingBottom, { rotationX: 0, duration, ease: "none" }, ">").call(() => {
-      bottomContent.textContent = nextChar;
-    }, [], ">").set(flippingBottom, { rotationX: 90 }, ">").addLabel(`flip-${i}`, ">");
+    timeline.set(topContent, { text: nextChar }).set(bottomContent, { text: currChar }).set(flippingBottomContent, { text: nextChar }).to(flippingBottom, {
+      rotationX: 0,
+      duration,
+      ease: "none"
+    }).set(flippingBottom, { rotationX: 90 }).set(bottomContent, { text: nextChar }).addLabel(`flip-${i}`);
     current = next;
     next = adjacencyList[current];
   }
@@ -5136,12 +5133,10 @@ function cleanupTimeline(selector) {
     return;
   timeline.pause();
   timeline.getChildren(true, false, true).forEach((child) => {
-    const nextLabel = child.nextLabel();
-    if (nextLabel)
-      child.seek(nextLabel);
+    child.pause();
+    child.progress(1);
     child.kill();
   });
-  timeline.kill();
   delete timelines[selector];
 }
 function animate_flips(el, adjacencyList) {
@@ -5153,9 +5148,12 @@ function animate_flips(el, adjacencyList) {
   const { next, distance } = resolveFlipDistance(current, destination, adjacencyList);
   if (distance === 0)
     return null;
-  const timeline = gsap.timeline({ smoothChildTiming: true, paused: true });
+  const timeline = gsap.timeline({
+    smoothChildTiming: true,
+    paused: true
+  });
   buildFlipFrames(timeline, elements, current, next, distance, adjacencyList, randomFlipDuration());
-  timeline.set(elements.bottomContent, { text: destination }, ">");
+  timeline.addLabel("end");
   return timeline;
 }
 function animate() {
@@ -5297,7 +5295,7 @@ var home = /* @__PURE__ */ new Scene("HOME", /* @__PURE__ */ new None, /* @__PUR
 ]));
 var freelance = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("FREELANCE"));
 var technologist = /* @__PURE__ */ new BoxTitle("TECHNOLOGIST");
-var empty_box = /* @__PURE__ */ new BoxContent("");
+var empty_box = /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L(""));
 var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PURE__ */ toList([
   /* @__PURE__ */ new Frame(500, /* @__PURE__ */ toList([
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new L(" TECHNOLOGIST"))
@@ -5329,8 +5327,8 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
   /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
     technologist,
     empty_box,
-    /* @__PURE__ */ new BoxContent("SOFTWARE"),
-    /* @__PURE__ */ new BoxContent("ENGINEERING"),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("SOFTWARE")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("ENGINEERING")),
     empty_box,
     /* @__PURE__ */ new BoxBottom,
     /* @__PURE__ */ new EmptyLine,
@@ -5341,8 +5339,8 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
   /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
     technologist,
     empty_box,
-    /* @__PURE__ */ new BoxContent("SOFTWARE"),
-    /* @__PURE__ */ new BoxContent("ARCHITECTURE"),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("SOFTWARE")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("ARCHITECTURE")),
     empty_box,
     /* @__PURE__ */ new BoxBottom,
     /* @__PURE__ */ new EmptyLine,
@@ -5353,8 +5351,8 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
   /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
     technologist,
     empty_box,
-    /* @__PURE__ */ new BoxContent("FULL-STACK"),
-    /* @__PURE__ */ new BoxContent("APPLICATIONS"),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new R("FULL-STACK")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new R("APPLICATIONS")),
     empty_box,
     /* @__PURE__ */ new BoxBottom,
     /* @__PURE__ */ new EmptyLine,
@@ -5365,8 +5363,8 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
   /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
     technologist,
     empty_box,
-    /* @__PURE__ */ new BoxContent("WEB & MOBILE"),
-    /* @__PURE__ */ new BoxContent("APPLICATIONS"),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new R("WEB & MOBILE")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new R("APPLICATIONS")),
     empty_box,
     /* @__PURE__ */ new BoxBottom,
     /* @__PURE__ */ new EmptyLine,
@@ -5377,8 +5375,8 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
   /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
     technologist,
     empty_box,
-    /* @__PURE__ */ new BoxContent("A.I. & AGENTIC"),
-    /* @__PURE__ */ new BoxContent("SYSTEMS"),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("A.I. & AGENTIC")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("SYSTEMS")),
     empty_box,
     /* @__PURE__ */ new BoxBottom,
     /* @__PURE__ */ new EmptyLine,
@@ -5389,8 +5387,8 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
   /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
     technologist,
     empty_box,
-    /* @__PURE__ */ new BoxContent("BACKEND"),
-    /* @__PURE__ */ new BoxContent("SYSTEMS"),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("BACKEND")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("SYSTEMS")),
     empty_box,
     /* @__PURE__ */ new BoxBottom,
     /* @__PURE__ */ new EmptyLine,
@@ -5401,8 +5399,8 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
   /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
     technologist,
     empty_box,
-    /* @__PURE__ */ new BoxContent("PAYMENTS"),
-    /* @__PURE__ */ new BoxContent("SYSTEMS"),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("PAYMENTS")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("SYSTEMS")),
     empty_box,
     /* @__PURE__ */ new BoxBottom,
     /* @__PURE__ */ new EmptyLine,
@@ -5413,8 +5411,8 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
   /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
     technologist,
     empty_box,
-    /* @__PURE__ */ new BoxContent("ACCOUNTING"),
-    /* @__PURE__ */ new BoxContent("SYSTEMS"),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("ACCOUNTING")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("SYSTEMS")),
     empty_box,
     /* @__PURE__ */ new BoxBottom,
     /* @__PURE__ */ new EmptyLine,
@@ -5425,8 +5423,8 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
   /* @__PURE__ */ new Frame(3000, /* @__PURE__ */ toList([
     technologist,
     empty_box,
-    /* @__PURE__ */ new BoxContent("ACCOUNTING"),
-    /* @__PURE__ */ new BoxContent("ENTHUSIAST"),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("ACCOUNTING")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("ENTHUSIAST")),
     empty_box,
     /* @__PURE__ */ new BoxBottom,
     /* @__PURE__ */ new EmptyLine,
@@ -5437,8 +5435,8 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
   /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
     technologist,
     empty_box,
-    /* @__PURE__ */ new BoxContent("ACCOUNTING"),
-    /* @__PURE__ */ new BoxContent("ENTHUSIAST!"),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("ACCOUNTING")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("ENTHUSIAST!")),
     empty_box,
     /* @__PURE__ */ new BoxBottom,
     /* @__PURE__ */ new EmptyLine,
@@ -5699,6 +5697,7 @@ function start_timeout(frame, id2) {
     let id$1 = set_timeout(frame.ms, () => {
       return dispatch2(new TimeoutEnded);
     });
+    animate();
     return dispatch2(new TimeoutStarted(id$1));
   });
 }
@@ -5766,8 +5765,20 @@ function row(name, line, row_num, num_cols) {
     _block = left("┏" + text4, repeat2("━", num_cols - 1) + "┓");
   } else if (line instanceof BoxContent) {
     let text4 = line.text;
-    let bg$1 = "┃" + repeat2(" ", num_cols - 2) + "┃";
-    _block = left("┃ " + text4, bg$1);
+    let bg$1 = repeat2(" ", num_cols - 4);
+    let _block$12;
+    if (text4 instanceof L) {
+      let str = text4[0];
+      _block$12 = left(str, bg$1);
+    } else if (text4 instanceof C) {
+      let str = text4[0];
+      _block$12 = center(str, bg$1);
+    } else {
+      let str = text4[0];
+      _block$12 = right(str, bg$1);
+    }
+    let text$1 = _block$12;
+    _block = "┃ " + text$1 + " ┃";
   } else if (line instanceof BoxBottom) {
     _block = "┗" + repeat2("━", num_cols - 2) + "┛";
   } else {
@@ -5883,18 +5894,18 @@ function view(model) {
   ]));
 }
 function set_adjacency_list_effect(name, chars) {
-  let _block;
-  let _pipe = to_adjacency_list((() => {
-    if (chars instanceof Some) {
-      let chars$1 = chars[0];
-      return chars$1;
-    } else {
-      return default_chars;
-    }
-  })());
-  _block = dict2(_pipe, identity3, string2);
-  let adjacency_list = _block;
   return before_paint((_, _1) => {
+    let _block;
+    let _pipe = to_adjacency_list((() => {
+      if (chars instanceof Some) {
+        let chars$1 = chars[0];
+        return chars$1;
+      } else {
+        return default_chars;
+      }
+    })());
+    _block = dict2(_pipe, identity3, string2);
+    let adjacency_list = _block;
     return set_adjacency_list(name, adjacency_list);
   });
 }
@@ -5931,7 +5942,6 @@ function reduce(model, msg) {
           let id2 = $[0];
           clear_timeout(id2);
         } else {}
-        animate();
         return dispatch2(new TimeoutEnded);
       })
     ]);
@@ -5939,10 +5949,7 @@ function reduce(model, msg) {
     let id2 = msg[0];
     return new Ok([
       new Model(model.scenes, model.rows, model.columns, model.current, model.auto_play, new Some(id2), model.path),
-      (() => {
-        animate();
-        return none2();
-      })()
+      none2()
     ]);
   } else {
     return try$(find_next_state(model.scenes, model.current), (next) => {
@@ -5970,7 +5977,7 @@ function update2(model, msg) {
     let next = $[0];
     return next;
   } else {
-    echo("ERROR", undefined, "src/bingo.gleam", 141);
+    echo("ERROR", undefined, "src/bingo.gleam", 122);
     return [model, none2()];
   }
 }
@@ -5996,7 +6003,7 @@ function main() {
   let app = application(init, update2, view);
   let $ = start3(app, "#app", undefined);
   if (!($ instanceof Ok)) {
-    throw makeError("let_assert", FILEPATH2, "bingo", 30, "main", "Pattern match failed, no pattern matched the value.", { value: $, start: 759, end: 808, pattern_start: 770, pattern_end: 775 });
+    throw makeError("let_assert", FILEPATH2, "bingo", 26, "main", "Pattern match failed, no pattern matched the value.", { value: $, start: 680, end: 729, pattern_start: 691, pattern_end: 696 });
   }
   return new Ok(undefined);
 }
