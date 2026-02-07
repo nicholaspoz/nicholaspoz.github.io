@@ -5246,7 +5246,7 @@ class BingoState extends CustomType {
 
 // build/dev/javascript/bingo/scenes.mjs
 var nick = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("    NICK"));
-var poz = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L(" POZOULAKIS'"));
+var poz = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("    POZOULAKIS'"));
 var dot = /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("(DOT)"));
 var bingo = /* @__PURE__ */ new Text2(/* @__PURE__ */ new R("BINGO    "));
 var linked_in = /* @__PURE__ */ new Link(/* @__PURE__ */ new R("LINKEDIN ▶"), "https://www.linkedin.com/in/nicholaspozoulakis/");
@@ -5255,34 +5255,31 @@ var email = /* @__PURE__ */ new Link(/* @__PURE__ */ new R("EMAIL ▶"), "mailto
 var home = /* @__PURE__ */ new Scene("HOME", /* @__PURE__ */ new None, /* @__PURE__ */ toList([
   /* @__PURE__ */ new Frame(500, /* @__PURE__ */ toList([/* @__PURE__ */ new EmptyLine])),
   /* @__PURE__ */ new Frame(500, /* @__PURE__ */ toList([
-    /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L(" WELCOME"))
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("    WELCOME")),
+    /* @__PURE__ */ new EmptyLine
   ])),
   /* @__PURE__ */ new Frame(300, /* @__PURE__ */ toList([
-    /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L(" WELCOME TO"))
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("    WELCOME TO")),
+    /* @__PURE__ */ new EmptyLine
   ])),
   /* @__PURE__ */ new Frame(300, /* @__PURE__ */ toList([
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("    WELCOME TO")),
     /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L(" WELCOME TO")),
-    /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L(" NICK"))
+    nick
   ])),
   /* @__PURE__ */ new Frame(300, /* @__PURE__ */ toList([
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("    WELCOME TO")),
     /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L(" WELCOME TO")),
-    /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L(" NICK")),
+    nick,
     poz
   ])),
   /* @__PURE__ */ new Frame(2000, /* @__PURE__ */ toList([
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("    WELCOME TO")),
     /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L(" WELCOME TO")),
-    /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L(" NICK")),
+    nick,
     poz,
     /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L(" WEBSITE"))
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("    WEBSITE"))
   ])),
   /* @__PURE__ */ new Frame(3000, /* @__PURE__ */ toList([
     /* @__PURE__ */ new EmptyLine,

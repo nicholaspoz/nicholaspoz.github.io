@@ -12,7 +12,7 @@ import model.{
 
 const nick = Text(L("    NICK"))
 
-const poz = Text(L(" POZOULAKIS'"))
+const poz = Text(L("    POZOULAKIS'"))
 
 const dot = Text(C("(DOT)"))
 
@@ -41,46 +41,43 @@ const home = Scene(
     Frame(
       ms: 500,
       lines: [
+        Text(L("    WELCOME")),
         EmptyLine,
-        Text(L(" WELCOME")),
       ],
     ),
     Frame(
       ms: 300,
       lines: [
+        Text(L("    WELCOME TO")),
         EmptyLine,
-        Text(L(" WELCOME TO")),
       ],
     ),
     Frame(
       ms: 300,
       lines: [
+        Text(L("    WELCOME TO")),
         EmptyLine,
-        Text(L(" WELCOME TO")),
-        EmptyLine,
-        Text(L(" NICK")),
+        nick,
       ],
     ),
     Frame(
       ms: 300,
       lines: [
+        Text(L("    WELCOME TO")),
         EmptyLine,
-        Text(L(" WELCOME TO")),
-        EmptyLine,
-        Text(L(" NICK")),
+        nick,
         poz,
       ],
     ),
     Frame(
       ms: 2000,
       lines: [
+        Text(L("    WELCOME TO")),
         EmptyLine,
-        Text(L(" WELCOME TO")),
-        EmptyLine,
-        Text(L(" NICK")),
+        nick,
         poz,
         EmptyLine,
-        Text(L(" WEBSITE")),
+        Text(L("    WEBSITE")),
       ],
     ),
 
