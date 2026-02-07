@@ -5062,7 +5062,7 @@ screen.orientation.addEventListener("change", (event4) => {
   }, 400);
 });
 gsap.config({ force3D: true });
-var FLIP_DURATIONS = [0.03, 0.032, 0.034, 0.036];
+var FLIP_DURATIONS = [0.028, 0.03, 0.032, 0.034];
 var FALLBACK_CHAR = " ";
 var timelines = {};
 var adjacencyLists = {};
@@ -5245,128 +5245,204 @@ class BingoState extends CustomType {
 }
 
 // build/dev/javascript/bingo/scenes.mjs
-var hello = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("HELLO"));
-var i_am = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("I'M NICK"));
-var welcome = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("WELCOME TO"));
 var nick = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("    NICK"));
-var poz = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("    POZOULAKIS"));
+var poz = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L(" POZOULAKIS'"));
 var dot = /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("(DOT)"));
 var bingo = /* @__PURE__ */ new Text2(/* @__PURE__ */ new R("BINGO    "));
 var linked_in = /* @__PURE__ */ new Link(/* @__PURE__ */ new R("LINKEDIN ▶"), "https://www.linkedin.com/in/nicholaspozoulakis/");
 var github = /* @__PURE__ */ new Link(/* @__PURE__ */ new R("GITHUB ▶"), "https://github.com/nicholaspoz");
 var email = /* @__PURE__ */ new Link(/* @__PURE__ */ new R("EMAIL ▶"), "mailto:nicholaspoz@gmail.com");
 var home = /* @__PURE__ */ new Scene("HOME", /* @__PURE__ */ new None, /* @__PURE__ */ toList([
-  /* @__PURE__ */ new Frame(1000, /* @__PURE__ */ toList([/* @__PURE__ */ new EmptyLine, hello])),
-  /* @__PURE__ */ new Frame(3000, /* @__PURE__ */ toList([/* @__PURE__ */ new EmptyLine, hello, i_am, poz])),
-  /* @__PURE__ */ new Frame(500, /* @__PURE__ */ toList([welcome, /* @__PURE__ */ new EmptyLine, nick])),
+  /* @__PURE__ */ new Frame(500, /* @__PURE__ */ toList([/* @__PURE__ */ new EmptyLine])),
   /* @__PURE__ */ new Frame(500, /* @__PURE__ */ toList([
-    welcome,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L(" WELCOME"))
+  ])),
+  /* @__PURE__ */ new Frame(300, /* @__PURE__ */ toList([
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L(" WELCOME TO"))
+  ])),
+  /* @__PURE__ */ new Frame(300, /* @__PURE__ */ toList([
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L(" WELCOME TO")),
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L(" NICK"))
+  ])),
+  /* @__PURE__ */ new Frame(300, /* @__PURE__ */ toList([
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L(" WELCOME TO")),
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L(" NICK")),
+    poz
+  ])),
+  /* @__PURE__ */ new Frame(2000, /* @__PURE__ */ toList([
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L(" WELCOME TO")),
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L(" NICK")),
+    poz,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L(" WEBSITE"))
+  ])),
+  /* @__PURE__ */ new Frame(3000, /* @__PURE__ */ toList([
+    /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new EmptyLine,
     nick,
     /* @__PURE__ */ new EmptyLine,
-    dot
+    dot,
+    /* @__PURE__ */ new EmptyLine,
+    bingo
   ])),
   /* @__PURE__ */ new Frame(1500, /* @__PURE__ */ toList([
-    welcome,
     /* @__PURE__ */ new EmptyLine,
-    nick,
-    /* @__PURE__ */ new EmptyLine,
-    dot,
-    /* @__PURE__ */ new EmptyLine,
-    bingo
-  ])),
-  /* @__PURE__ */ new Frame(2500, /* @__PURE__ */ toList([
-    /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new EmptyLine,
-    nick,
-    /* @__PURE__ */ new EmptyLine,
-    dot,
-    /* @__PURE__ */ new EmptyLine,
-    bingo
+    /* @__PURE__ */ new EmptyLine
   ]))
 ]));
 var freelance = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("FREELANCE"));
-var engineer = /* @__PURE__ */ new BoxContent("ENGINEER");
 var technologist = /* @__PURE__ */ new BoxTitle("TECHNOLOGIST");
+var empty_box = /* @__PURE__ */ new BoxContent("");
 var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PURE__ */ toList([
-  /* @__PURE__ */ new Frame(1500, /* @__PURE__ */ toList([
+  /* @__PURE__ */ new Frame(500, /* @__PURE__ */ toList([
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L(" TECHNOLOGIST"))
+  ])),
+  /* @__PURE__ */ new Frame(500, /* @__PURE__ */ toList([
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L(" TECHNOLOGIST")),
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(1250, /* @__PURE__ */ toList([
     technologist,
-    /* @__PURE__ */ new BoxContent(""),
-    /* @__PURE__ */ new BoxContent(""),
-    /* @__PURE__ */ new BoxContent(""),
-    /* @__PURE__ */ new BoxContent(""),
+    empty_box,
+    empty_box,
+    empty_box,
+    empty_box,
     /* @__PURE__ */ new BoxBottom,
     /* @__PURE__ */ new EmptyLine,
     linked_in,
     github,
     email
   ])),
-  /* @__PURE__ */ new Frame(4500, /* @__PURE__ */ toList([
+  /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
     technologist,
-    /* @__PURE__ */ new BoxContent(""),
+    empty_box,
     /* @__PURE__ */ new BoxContent("SOFTWARE"),
-    engineer,
-    /* @__PURE__ */ new BoxContent(""),
+    /* @__PURE__ */ new BoxContent("ENGINEERING"),
+    empty_box,
     /* @__PURE__ */ new BoxBottom,
     /* @__PURE__ */ new EmptyLine,
     linked_in,
     github,
     email
   ])),
-  /* @__PURE__ */ new Frame(4500, /* @__PURE__ */ toList([
+  /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
     technologist,
-    /* @__PURE__ */ new BoxContent(""),
+    empty_box,
+    /* @__PURE__ */ new BoxContent("SOFTWARE"),
+    /* @__PURE__ */ new BoxContent("ARCHITECTURE"),
+    empty_box,
+    /* @__PURE__ */ new BoxBottom,
+    /* @__PURE__ */ new EmptyLine,
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
+    technologist,
+    empty_box,
     /* @__PURE__ */ new BoxContent("FULL-STACK"),
-    engineer,
-    /* @__PURE__ */ new BoxContent(""),
+    /* @__PURE__ */ new BoxContent("APPLICATIONS"),
+    empty_box,
     /* @__PURE__ */ new BoxBottom,
     /* @__PURE__ */ new EmptyLine,
     linked_in,
     github,
     email
   ])),
-  /* @__PURE__ */ new Frame(4500, /* @__PURE__ */ toList([
+  /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
     technologist,
-    /* @__PURE__ */ new BoxContent(""),
+    empty_box,
+    /* @__PURE__ */ new BoxContent("WEB & MOBILE"),
+    /* @__PURE__ */ new BoxContent("APPLICATIONS"),
+    empty_box,
+    /* @__PURE__ */ new BoxBottom,
+    /* @__PURE__ */ new EmptyLine,
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
+    technologist,
+    empty_box,
+    /* @__PURE__ */ new BoxContent("A.I. & AGENTIC"),
+    /* @__PURE__ */ new BoxContent("SYSTEMS"),
+    empty_box,
+    /* @__PURE__ */ new BoxBottom,
+    /* @__PURE__ */ new EmptyLine,
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
+    technologist,
+    empty_box,
     /* @__PURE__ */ new BoxContent("BACKEND"),
-    engineer,
-    /* @__PURE__ */ new BoxContent(""),
+    /* @__PURE__ */ new BoxContent("SYSTEMS"),
+    empty_box,
     /* @__PURE__ */ new BoxBottom,
     /* @__PURE__ */ new EmptyLine,
     linked_in,
     github,
     email
   ])),
-  /* @__PURE__ */ new Frame(4500, /* @__PURE__ */ toList([
+  /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
     technologist,
-    /* @__PURE__ */ new BoxContent(""),
+    empty_box,
     /* @__PURE__ */ new BoxContent("PAYMENTS"),
-    engineer,
-    /* @__PURE__ */ new BoxContent(""),
+    /* @__PURE__ */ new BoxContent("SYSTEMS"),
+    empty_box,
     /* @__PURE__ */ new BoxBottom,
     /* @__PURE__ */ new EmptyLine,
     linked_in,
     github,
     email
   ])),
-  /* @__PURE__ */ new Frame(4500, /* @__PURE__ */ toList([
+  /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
     technologist,
-    /* @__PURE__ */ new BoxContent(""),
+    empty_box,
     /* @__PURE__ */ new BoxContent("ACCOUNTING"),
-    engineer,
-    /* @__PURE__ */ new BoxContent(""),
+    /* @__PURE__ */ new BoxContent("SYSTEMS"),
+    empty_box,
     /* @__PURE__ */ new BoxBottom,
     /* @__PURE__ */ new EmptyLine,
     linked_in,
     github,
     email
   ])),
-  /* @__PURE__ */ new Frame(4500, /* @__PURE__ */ toList([
+  /* @__PURE__ */ new Frame(3000, /* @__PURE__ */ toList([
     technologist,
-    /* @__PURE__ */ new BoxContent(""),
-    /* @__PURE__ */ new BoxContent("A.I."),
-    engineer,
-    /* @__PURE__ */ new BoxContent(""),
+    empty_box,
+    /* @__PURE__ */ new BoxContent("ACCOUNTING"),
+    /* @__PURE__ */ new BoxContent("ENTHUSIAST"),
+    empty_box,
+    /* @__PURE__ */ new BoxBottom,
+    /* @__PURE__ */ new EmptyLine,
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
+    technologist,
+    empty_box,
+    /* @__PURE__ */ new BoxContent("ACCOUNTING"),
+    /* @__PURE__ */ new BoxContent("ENTHUSIAST!"),
+    empty_box,
     /* @__PURE__ */ new BoxBottom,
     /* @__PURE__ */ new EmptyLine,
     linked_in,
@@ -5376,6 +5452,18 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
 ]));
 var cellist = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("CELLIST"));
 var music = /* @__PURE__ */ new Scene("MUSIC", /* @__PURE__ */ new Some(" ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶#┏━┓┗┛┃●╹╻"), /* @__PURE__ */ toList([
+  /* @__PURE__ */ new Frame(500, /* @__PURE__ */ toList([
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    linked_in,
+    github,
+    email
+  ])),
   /* @__PURE__ */ new Frame(1000, /* @__PURE__ */ toList([
     freelance,
     cellist,
@@ -5383,30 +5471,36 @@ var music = /* @__PURE__ */ new Scene("MUSIC", /* @__PURE__ */ new Some(" ABCDEF
     /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    linked_in,
+    github,
     email
   ])),
   /* @__PURE__ */ new Frame(6500, /* @__PURE__ */ toList([
     freelance,
     cellist,
+    /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┏━━━┓ ╻●    ")),
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃   ┃ ┃   ╻●")),
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃ #●╹ ┗━━━┛ ")),
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("●╹           ")),
+    linked_in,
+    github,
     email
   ]))
 ]));
 var friends = /* @__PURE__ */ new Scene("FRIENDS", /* @__PURE__ */ new None, /* @__PURE__ */ toList([
-  /* @__PURE__ */ new Frame(2000, /* @__PURE__ */ toList([
+  /* @__PURE__ */ new Frame(1500, /* @__PURE__ */ toList([
     /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("LET'S BE")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("FRIENDS!"))
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("    LET'S BE")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new R("FRIENDS!    "))
   ])),
   /* @__PURE__ */ new Frame(7000, /* @__PURE__ */ toList([
     /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("LET'S BE")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("FRIENDS!")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("    LET'S BE")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new R("FRIENDS!    ")),
     /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new EmptyLine,
@@ -5415,27 +5509,7 @@ var friends = /* @__PURE__ */ new Scene("FRIENDS", /* @__PURE__ */ new None, /* 
     email
   ]))
 ]));
-var alive = /* @__PURE__ */ new Scene("!", /* @__PURE__ */ new None, /* @__PURE__ */ toList([
-  /* @__PURE__ */ new Frame(2000, /* @__PURE__ */ toList([
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("         WHAT")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("       A     ")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("  TIME       ")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("TO           ")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("   BE        ")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("      ALIVE  ")),
-    /* @__PURE__ */ new EmptyLine
-  ])),
-  /* @__PURE__ */ new Frame(4500, /* @__PURE__ */ toList([
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("         WHAT")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("       A     ")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("  TIME       ")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("TO           ")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("   BE        ")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("      ALIVE  ")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("            !"))
-  ]))
-]));
-var scenes = /* @__PURE__ */ toList([home, tech, music, alive, friends]);
+var scenes = /* @__PURE__ */ toList([home, tech, music, friends]);
 
 // build/dev/javascript/bingo/utils.mjs
 var FILEPATH = "src/utils.gleam";
@@ -5612,7 +5686,7 @@ class TimeoutStarted extends CustomType {
 
 class TimeoutEnded extends CustomType {
 }
-var default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-',.▶()┏━┓┗┛┃!";
+var default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-'&.▶()┏━┓┗┛┃!";
 var pagination_chars = " ○●()\uD834\uDD06\uD834\uDD07";
 function on_resize_effect() {
   return after_paint((_, _1) => {

@@ -90,7 +90,7 @@ screen.orientation.addEventListener("change", (event) => {
 
 gsap.config({ force3D: true });
 
-const FLIP_DURATIONS = [0.03, 0.032, 0.034, 0.036];
+const FLIP_DURATIONS = [0.028, 0.03, 0.032, 0.034];
 const FALLBACK_CHAR = " ";
 
 /** @type {Record<string, gsap.core.Timeline>} */

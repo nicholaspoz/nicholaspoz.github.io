@@ -31,7 +31,7 @@ pub fn main() -> Result(Nil, lustre.Error) {
   Ok(Nil)
 }
 
-const default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-',.▶()┏━┓┗┛┃!"
+const default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-'&.▶()┏━┓┗┛┃!"
 
 const pagination_chars = " ○●()𝄆𝄇"
 
