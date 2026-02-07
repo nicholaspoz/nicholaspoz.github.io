@@ -32,7 +32,7 @@ const home = Scene(
   chars: None,
   frames: [
     Frame(
-      ms: 500,
+      ms: 1000,
       lines: [
         EmptyLine,
       ],
@@ -41,21 +41,21 @@ const home = Scene(
     Frame(
       ms: 500,
       lines: [
-        Text(L("    WELCOME")),
+        Text(C("WELCOME    ")),
         EmptyLine,
       ],
     ),
     Frame(
       ms: 300,
       lines: [
-        Text(L("    WELCOME TO")),
+        Text(C("WELCOME TO ")),
         EmptyLine,
       ],
     ),
     Frame(
       ms: 300,
       lines: [
-        Text(L("    WELCOME TO")),
+        Text(C("WELCOME TO ")),
         EmptyLine,
         nick,
       ],
@@ -63,7 +63,7 @@ const home = Scene(
     Frame(
       ms: 300,
       lines: [
-        Text(L("    WELCOME TO")),
+        Text(C("WELCOME TO ")),
         EmptyLine,
         nick,
         poz,
@@ -72,7 +72,7 @@ const home = Scene(
     Frame(
       ms: 2000,
       lines: [
-        Text(L("    WELCOME TO")),
+        Text(C("WELCOME TO ")),
         EmptyLine,
         nick,
         poz,
