@@ -96,12 +96,16 @@ const FALLBACK_CHAR = " ";
 /** @type {Record<string, Record<string, string>>} */
 const adjacencyLists = {};
 
+/** @type {Map<string, NodeListOf<Element>>} */
+const selectorCache = new Map();
+
 /**
  * @param {string} name
  * @param {Record<string, string>} adjacency_list
  */
 export function set_adjacency_list(name, adjacency_list) {
   adjacencyLists[name] = adjacency_list;
+  selectorCache.delete(name);
 }
 
 /**
@@ -172,6 +176,7 @@ function createModule(el) {
   /** @type {Record<string, string>} */
   let adjacencyList = {};
   let flipping = false;
+  let duration = randomFlipDuration();
   const elements = getFlipElements(el);
 
   if (!elements) return { setTarget() {} };
@@ -184,21 +189,17 @@ function createModule(el) {
   // Make sure we start out at 90 from the get-go
   resetRotation(90);
 
-  const tween = gsap.to(
-    flippingBottom,
-    // { rotationX: 90 },
-    {
-      rotationX: 0,
-      duration: randomFlipDuration(),
-      ease: "none",
-      paused: true,
-      onComplete() {
-        bottomContent.textContent = flippingBottomContent.textContent;
-        resetRotation(90);
-        flipLoop();
-      },
+  const tween = gsap.to(flippingBottom, {
+    paused: true,
+    duration,
+    rotationX: 0,
+    ease: "none",
+    onComplete() {
+      bottomContent.textContent = flippingBottomContent.textContent;
+      resetRotation(90);
+      flipLoop();
     },
-  );
+  });
 
   /**
    * @param {string} char
@@ -207,6 +208,7 @@ function createModule(el) {
   function setTarget(char, adjList) {
     targetChar = char;
     adjacencyList = adjList;
+    duration = randomFlipDuration();
     if (!flipping) flipLoop();
   }
 
@@ -229,7 +231,6 @@ function createModule(el) {
     flippingBottomContent.textContent = nextChar;
     currentChar = nextChar;
 
-    tween.duration(randomFlipDuration());
     tween.invalidate().restart();
   }
 
@@ -243,9 +244,13 @@ function createModule(el) {
  */
 export function animate() {
   for (const [selector, adjacencyList] of Object.entries(adjacencyLists)) {
-    const splitFlaps = document.querySelectorAll(
-      `[data-name=${selector}] > .split-flap`,
-    );
+    let splitFlaps = selectorCache.get(selector);
+    if (!splitFlaps) {
+      splitFlaps = document.querySelectorAll(
+        `[data-name=${selector}] > .split-flap`,
+      );
+      selectorCache.set(selector, splitFlaps);
+    }
 
     for (const el of splitFlaps) {
       const htmlEl = /** @type {HTMLElement} */ (el);

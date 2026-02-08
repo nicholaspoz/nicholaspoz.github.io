@@ -5064,8 +5064,10 @@ gsap.config({ force3D: true });
 var FLIP_DURATIONS = [0.026, 0.028, 0.03, 0.032, 0.034];
 var FALLBACK_CHAR = " ";
 var adjacencyLists = {};
+var selectorCache = new Map;
 function set_adjacency_list(name, adjacency_list) {
   adjacencyLists[name] = adjacency_list;
+  selectorCache.delete(name);
 }
 function getFlipElements(el) {
   const topContent = el.querySelector(".top > .flap-content");
@@ -5086,6 +5088,7 @@ function createModule(el) {
   let targetChar = currentChar;
   let adjacencyList = {};
   let flipping = false;
+  let duration = randomFlipDuration();
   const elements = getFlipElements(el);
   if (!elements)
     return { setTarget() {} };
@@ -5093,10 +5096,10 @@ function createModule(el) {
   const resetRotation = gsap.quickSetter(flippingBottom, "rotationX");
   resetRotation(90);
   const tween = gsap.to(flippingBottom, {
-    rotationX: 0,
-    duration: randomFlipDuration(),
-    ease: "none",
     paused: true,
+    duration,
+    rotationX: 0,
+    ease: "none",
     onComplete() {
       bottomContent.textContent = flippingBottomContent.textContent;
       resetRotation(90);
@@ -5106,6 +5109,7 @@ function createModule(el) {
   function setTarget(char, adjList) {
     targetChar = char;
     adjacencyList = adjList;
+    duration = randomFlipDuration();
     if (!flipping)
       flipLoop();
   }
@@ -5124,14 +5128,17 @@ function createModule(el) {
     bottomContent.textContent = currentChar;
     flippingBottomContent.textContent = nextChar;
     currentChar = nextChar;
-    tween.duration(randomFlipDuration());
     tween.invalidate().restart();
   }
   return { setTarget };
 }
 function animate() {
   for (const [selector, adjacencyList] of Object.entries(adjacencyLists)) {
-    const splitFlaps = document.querySelectorAll(`[data-name=${selector}] > .split-flap`);
+    let splitFlaps = selectorCache.get(selector);
+    if (!splitFlaps) {
+      splitFlaps = document.querySelectorAll(`[data-name=${selector}] > .split-flap`);
+      selectorCache.set(selector, splitFlaps);
+    }
     for (const el of splitFlaps) {
       const htmlEl = el;
       const dest = htmlEl.dataset.dest || FALLBACK_CHAR;
@@ -5218,7 +5225,7 @@ class BingoState extends CustomType {
 
 // build/dev/javascript/bingo/scenes.mjs
 var nick = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("    NICK"));
-var poz = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("    POZOULAKIS'"));
+var poz = /* @__PURE__ */ new Text2(/* @__PURE__ */ new R("POZOULAKIS'  "));
 var dot = /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("(DOT)"));
 var bingo = /* @__PURE__ */ new Text2(/* @__PURE__ */ new R("BINGO    "));
 var linked_in = /* @__PURE__ */ new Link(/* @__PURE__ */ new R("LINKEDIN ▶"), "https://www.linkedin.com/in/nicholaspozoulakis/");
@@ -5227,12 +5234,10 @@ var email = /* @__PURE__ */ new Link(/* @__PURE__ */ new R("EMAIL ▶"), "mailto
 var home = /* @__PURE__ */ new Scene("HOME", /* @__PURE__ */ new None, /* @__PURE__ */ toList([
   /* @__PURE__ */ new Frame(1000, /* @__PURE__ */ toList([/* @__PURE__ */ new EmptyLine])),
   /* @__PURE__ */ new Frame(500, /* @__PURE__ */ toList([
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("WELCOME    ")),
-    /* @__PURE__ */ new EmptyLine
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("WELCOME    "))
   ])),
   /* @__PURE__ */ new Frame(300, /* @__PURE__ */ toList([
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("WELCOME TO ")),
-    /* @__PURE__ */ new EmptyLine
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("WELCOME TO "))
   ])),
   /* @__PURE__ */ new Frame(300, /* @__PURE__ */ toList([
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("WELCOME TO ")),
@@ -5243,15 +5248,17 @@ var home = /* @__PURE__ */ new Scene("HOME", /* @__PURE__ */ new None, /* @__PUR
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("WELCOME TO ")),
     /* @__PURE__ */ new EmptyLine,
     nick,
+    /* @__PURE__ */ new EmptyLine,
     poz
   ])),
   /* @__PURE__ */ new Frame(2000, /* @__PURE__ */ toList([
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("WELCOME TO ")),
     /* @__PURE__ */ new EmptyLine,
     nick,
+    /* @__PURE__ */ new EmptyLine,
     poz,
     /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("    WEBSITE"))
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("   WEBSITE"))
   ])),
   /* @__PURE__ */ new Frame(3000, /* @__PURE__ */ toList([
     /* @__PURE__ */ new EmptyLine,
@@ -5266,26 +5273,14 @@ var home = /* @__PURE__ */ new Scene("HOME", /* @__PURE__ */ new None, /* @__PUR
 var technologist = /* @__PURE__ */ new BoxTitle("TECHNOLOGIST");
 var empty_box = /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L(""));
 var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PURE__ */ toList([
-  /* @__PURE__ */ new Frame(1500, /* @__PURE__ */ toList([
+  /* @__PURE__ */ new Frame(1000, /* @__PURE__ */ toList([
     /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new EmptyLine
   ])),
-  /* @__PURE__ */ new Frame(500, /* @__PURE__ */ toList([
+  /* @__PURE__ */ new Frame(750, /* @__PURE__ */ toList([
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new L(" TECHNOLOGIST"))
   ])),
-  /* @__PURE__ */ new Frame(500, /* @__PURE__ */ toList([
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L(" TECHNOLOGIST")),
-    /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new EmptyLine,
-    linked_in,
-    github,
-    email
-  ])),
-  /* @__PURE__ */ new Frame(1250, /* @__PURE__ */ toList([
+  /* @__PURE__ */ new Frame(1200, /* @__PURE__ */ toList([
     technologist,
     empty_box,
     empty_box,
@@ -5393,11 +5388,11 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
     github,
     email
   ])),
-  /* @__PURE__ */ new Frame(1600, /* @__PURE__ */ toList([
+  /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
     technologist,
     empty_box,
-    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("ACCOUNTING")),
-    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("SYSTEMS")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("ACCOUNTING")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("SYSTEMS")),
     empty_box,
     /* @__PURE__ */ new BoxBottom,
     /* @__PURE__ */ new EmptyLine,
@@ -5408,9 +5403,9 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
   /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
     technologist,
     empty_box,
-    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("ACCOUNTING")),
-    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("SYSTEMS")),
-    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("ENTHUSIAST!")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("ACCOUNTING")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("SYSTEMS")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("ENTHUSIAST")),
     /* @__PURE__ */ new BoxBottom,
     /* @__PURE__ */ new EmptyLine,
     linked_in,
@@ -5444,9 +5439,9 @@ var music = /* @__PURE__ */ new Scene("MUSIC", /* @__PURE__ */ new Some(" ABCDEF
     github,
     email
   ])),
-  /* @__PURE__ */ new Frame(2500, /* @__PURE__ */ toList([
+  /* @__PURE__ */ new Frame(3000, /* @__PURE__ */ toList([
     cellist,
-    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("(FREELANCE) ")),
     /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┏━━━┓ ╻●    ")),
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃   ┃ ┃   ╻●")),
@@ -5456,10 +5451,10 @@ var music = /* @__PURE__ */ new Scene("MUSIC", /* @__PURE__ */ new Some(" ABCDEF
     github,
     email
   ])),
-  /* @__PURE__ */ new Frame(3000, /* @__PURE__ */ toList([
+  /* @__PURE__ */ new Frame(2500, /* @__PURE__ */ toList([
     cellist,
     /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("(FREELANCE)")),
+    /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┏━━━┓ ╻●    ")),
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃   ┃ ┃   ╻●")),
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃ #●╹ ┗━━━┛ ")),
@@ -5485,9 +5480,9 @@ var music = /* @__PURE__ */ new Scene("MUSIC", /* @__PURE__ */ new Some(" ABCDEF
     /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┏━━━┓ ╻●    ")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃   ┃ ┃   ╻●")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("M┃O D┃E┃R N╻●")),
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃ #●╹ ┗━━━┛ ")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("●╹(MODERN)   ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("●╹           ")),
     linked_in,
     github,
     email
@@ -5504,7 +5499,7 @@ var music = /* @__PURE__ */ new Scene("MUSIC", /* @__PURE__ */ new Some(" ABCDEF
     github,
     email
   ])),
-  /* @__PURE__ */ new Frame(3000, /* @__PURE__ */ toList([
+  /* @__PURE__ */ new Frame(1000, /* @__PURE__ */ toList([
     cellist,
     /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new EmptyLine,

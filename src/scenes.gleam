@@ -12,7 +12,7 @@ import model.{
 
 const nick = Text(L("    NICK"))
 
-const poz = Text(L("    POZOULAKIS'"))
+const poz = Text(R("POZOULAKIS'  "))
 
 const dot = Text(C("(DOT)"))
 
@@ -42,14 +42,12 @@ const home = Scene(
       ms: 500,
       lines: [
         Text(C("WELCOME    ")),
-        EmptyLine,
       ],
     ),
     Frame(
       ms: 300,
       lines: [
         Text(C("WELCOME TO ")),
-        EmptyLine,
       ],
     ),
     Frame(
@@ -66,6 +64,7 @@ const home = Scene(
         Text(C("WELCOME TO ")),
         EmptyLine,
         nick,
+        EmptyLine,
         poz,
       ],
     ),
@@ -75,9 +74,10 @@ const home = Scene(
         Text(C("WELCOME TO ")),
         EmptyLine,
         nick,
+        EmptyLine,
         poz,
         EmptyLine,
-        Text(L("    WEBSITE")),
+        Text(C("   WEBSITE")),
       ],
     ),
 
@@ -105,35 +105,20 @@ const tech = Scene(
   chars: None,
   frames: [
     Frame(
-      ms: 1500,
+      ms: 1000,
       lines: [
         EmptyLine,
         EmptyLine,
       ],
     ),
     Frame(
-      ms: 500,
-      lines: [
-        Text(L(" TECHNOLOGIST")),
-      ],
-    ),
-    Frame(
-      ms: 500,
+      ms: 750,
       lines: [
         Text(L(" TECHNOLOGIST")),
-        EmptyLine,
-        EmptyLine,
-        EmptyLine,
-        EmptyLine,
-        EmptyLine,
-        EmptyLine,
-        linked_in,
-        github,
-        email,
       ],
     ),
     Frame(
-      ms: 1250,
+      ms: 1200,
       lines: [
         technologist,
         empty_box,
@@ -268,12 +253,12 @@ const tech = Scene(
       ],
     ),
     Frame(
-      ms: 1600,
+      ms: 3200,
       lines: [
         technologist,
         empty_box,
-        BoxContent(L("ACCOUNTING")),
-        BoxContent(L("SYSTEMS")),
+        BoxContent(C("ACCOUNTING")),
+        BoxContent(C("SYSTEMS")),
         empty_box,
         BoxBottom,
         EmptyLine,
@@ -287,9 +272,9 @@ const tech = Scene(
       lines: [
         technologist,
         empty_box,
-        BoxContent(L("ACCOUNTING")),
-        BoxContent(L("SYSTEMS")),
-        BoxContent(L("ENTHUSIAST!")),
+        BoxContent(C("ACCOUNTING")),
+        BoxContent(C("SYSTEMS")),
+        BoxContent(C("ENTHUSIAST")),
         BoxBottom,
         EmptyLine,
         linked_in,
@@ -337,10 +322,10 @@ const music = Scene(
       ],
     ),
     Frame(
-      ms: 2500,
+      ms: 3000,
       lines: [
         cellist,
-        EmptyLine,
+        Text(C("(FREELANCE) ")),
         EmptyLine,
         Text(C(" ┏━━━┓ ╻●    ")),
         Text(C(" ┃   ┃ ┃   ╻●")),
@@ -352,11 +337,11 @@ const music = Scene(
       ],
     ),
     Frame(
-      ms: 3000,
+      ms: 2500,
       lines: [
         cellist,
         EmptyLine,
-        Text(C("(FREELANCE)")),
+        EmptyLine,
         Text(C(" ┏━━━┓ ╻●    ")),
         Text(C(" ┃   ┃ ┃   ╻●")),
         Text(C(" ┃ #●╹ ┗━━━┛ ")),
@@ -388,9 +373,9 @@ const music = Scene(
         EmptyLine,
         EmptyLine,
         Text(C(" ┏━━━┓ ╻●    ")),
-        Text(C(" ┃   ┃ ┃   ╻●")),
+        Text(C("M┃O D┃E┃R N╻●")),
         Text(C(" ┃ #●╹ ┗━━━┛ ")),
-        Text(C("●╹(MODERN)   ")),
+        Text(C("●╹           ")),
         linked_in,
         github,
         email,
@@ -412,7 +397,7 @@ const music = Scene(
       ],
     ),
     Frame(
-      ms: 3000,
+      ms: 1000,
       lines: [
         cellist,
         EmptyLine,
@@ -466,48 +451,3 @@ pub const scenes = [
   music,
   friends,
 ]
-// Frame(
-//   ms: 500,
-//   lines: [
-//     cellist,
-//     freelance,
-//     EmptyLine,
-//     Text(C(" ┏           ")),
-//     Text(C(" ┃           ")),
-//     Text(C(" ┃           ")),
-//     Text(C("●╹           ")),
-//     linked_in,
-//     github,
-//     email,
-//   ],
-// ),
-// Frame(
-//   ms: 500,
-//   lines: [
-//     cellist,
-//     freelance,
-//     EmptyLine,
-//     Text(C(" ┏━━━┓       ")),
-//     Text(C(" ┃   ┃       ")),
-//     Text(C(" ┃ #●╹       ")),
-//     Text(C("●╹           ")),
-//     linked_in,
-//     github,
-//     email,
-//   ],
-// ),
-// Frame(
-//   ms: 500,
-//   lines: [
-//     cellist,
-//     freelance,
-//     EmptyLine,
-//     Text(C(" ┏━━━┓ ╻●    ")),
-//     Text(C(" ┃   ┃ ┃     ")),
-//     Text(C(" ┃ #●╹ ┗     ")),
-//     Text(C("●╹           ")),
-//     linked_in,
-//     github,
-//     email,
-//   ],
-// ),

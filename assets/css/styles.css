@@ -133,10 +133,10 @@ body {
 .split-flap {
   /* --flap-width and --flap-height are inherited from .matrix */
   container-type: inline-size;
-  contain: layout style;
+  contain: layout style paint;
   display: inline-block;
   position: relative;
-  perspective: 30cqh;
+  perspective: 40cqh;
 
   width: var(--flap-width);
   aspect-ratio: 1 / 1.618; /* golden ratio */
