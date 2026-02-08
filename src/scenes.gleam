@@ -387,43 +387,9 @@ const friends = Scene(
   ],
 )
 
-const alive = Scene(
-  name: "!",
-  chars: None,
-  frames: [
-    Frame(
-      ms: 2000,
-      lines: [
-        EmptyLine,
-        Text(C("         WHAT")),
-        Text(C("       A     ")),
-        Text(C("  TIME       ")),
-        Text(C("TO           ")),
-        Text(C("   BE        ")),
-        Text(C("      ALIVE  ")),
-        EmptyLine,
-      ],
-    ),
-    Frame(
-      ms: 3000,
-      lines: [
-        EmptyLine,
-        Text(C("         WHAT")),
-        Text(C("       A     ")),
-        Text(C("  TIME       ")),
-        Text(C("TO           ")),
-        Text(C("   BE        ")),
-        Text(C("      ALIVE  ")),
-        Text(C("            !")),
-      ],
-    ),
-  ],
-)
-
 pub const scenes = [
   home,
   tech,
   music,
-  // alive,
   friends,
 ]

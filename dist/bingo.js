@@ -5063,112 +5063,88 @@ screen.orientation.addEventListener("change", (event4) => {
 gsap.config({ force3D: true });
 var FLIP_DURATIONS = [0.028, 0.03, 0.032, 0.034];
 var FALLBACK_CHAR = " ";
-var timelines = {};
 var adjacencyLists = {};
 function set_adjacency_list(name, adjacency_list) {
   adjacencyLists[name] = adjacency_list;
 }
-function getDistance(from, to, adjacencyList) {
-  if (!from || !to || !(from in adjacencyList) || !(to in adjacencyList)) {
-    console.error("Invalid distance calculation", { from, to, adjacencyList });
-    return 0;
-  }
-  let distance = 0;
-  let current = from;
-  while (current !== to) {
-    current = adjacencyList[current];
-    distance++;
-  }
-  return distance;
-}
-function resolveFlipDistance(current, destination, adjacencyList) {
-  if (current in adjacencyList) {
-    return {
-      next: adjacencyList[current],
-      distance: getDistance(current, destination, adjacencyList)
-    };
-  }
-  return {
-    next: FALLBACK_CHAR,
-    distance: 1 + getDistance(FALLBACK_CHAR, destination, adjacencyList)
-  };
-}
 function getFlipElements(el) {
   const topContent = el.querySelector(".top > .flap-content");
-  const bottom = el.querySelector(".bottom");
-  const bottomContent = bottom?.querySelector(".flap-content");
+  const bottomContent = el.querySelector(".bottom > .flap-content");
   const flippingBottom = el.querySelector(".flipping-bottom");
   const flippingBottomContent = flippingBottom?.querySelector(".flap-content");
-  if (!topContent || !bottom || !bottomContent || !flippingBottom || !flippingBottomContent) {
+  if (!topContent || !bottomContent || !flippingBottom || !flippingBottomContent) {
     return null;
   }
-  return {
-    topContent,
-    bottom,
-    bottomContent,
-    flippingBottom,
-    flippingBottomContent
-  };
-}
-function buildFlipFrames(timeline, elements, current, next, distance, adjacencyList, duration) {
-  const { topContent, bottomContent, flippingBottom, flippingBottomContent } = elements;
-  for (let i = distance;i > 0; i--) {
-    const currChar = current;
-    const nextChar = next;
-    timeline.set(topContent, { text: nextChar }).set(bottomContent, { text: currChar }).set(flippingBottomContent, { text: nextChar }).to(flippingBottom, {
-      rotationX: 0,
-      duration,
-      ease: "none"
-    }).set(flippingBottom, { rotationX: 90 }).set(bottomContent, { text: nextChar }).addLabel(`flip-${i}`);
-    current = next;
-    next = adjacencyList[current];
-  }
+  return { topContent, bottomContent, flippingBottom, flippingBottomContent };
 }
 function randomFlipDuration() {
   return FLIP_DURATIONS[Math.floor(Math.random() * FLIP_DURATIONS.length)];
 }
-function cleanupTimeline(selector) {
-  const timeline = timelines[selector];
-  if (!timeline)
-    return;
-  timeline.pause();
-  timeline.getChildren(true, false, true).forEach((child) => {
-    child.pause();
-    child.progress(1);
-    child.kill();
-  });
-  delete timelines[selector];
+var modules = new Map;
+function createModule(el) {
+  let currentChar = el.querySelector(".top .flap-content")?.textContent || FALLBACK_CHAR;
+  let targetChar = currentChar;
+  let adjacencyList = {};
+  let flipping = false;
+  function setTarget(char, adjList) {
+    targetChar = char;
+    adjacencyList = adjList;
+    if (!flipping)
+      flipLoop();
+  }
+  function flipLoop() {
+    if (currentChar === targetChar) {
+      flipping = false;
+      el.classList.remove("is-flipping");
+      return;
+    }
+    if (!flipping) {
+      flipping = true;
+      el.classList.add("is-flipping");
+    }
+    const nextChar = currentChar in adjacencyList ? adjacencyList[currentChar] : FALLBACK_CHAR;
+    animateOneFlip(el, currentChar, nextChar, () => {
+      currentChar = nextChar;
+      flipLoop();
+    });
+  }
+  return { setTarget };
 }
-function animate_flips(el, adjacencyList) {
+function animateOneFlip(el, current, next, onComplete) {
   const elements = getFlipElements(el);
-  if (!elements)
-    return null;
-  const destination = el.dataset.dest || FALLBACK_CHAR;
-  const current = elements.topContent.textContent || FALLBACK_CHAR;
-  const { next, distance } = resolveFlipDistance(current, destination, adjacencyList);
-  if (distance === 0)
-    return null;
-  const timeline = gsap.timeline({
-    smoothChildTiming: true,
-    paused: true
+  if (!elements) {
+    onComplete();
+    return;
+  }
+  const { topContent, bottomContent, flippingBottom, flippingBottomContent } = elements;
+  topContent.textContent = next;
+  bottomContent.textContent = current;
+  flippingBottomContent.textContent = next;
+  gsap.fromTo(flippingBottom, { rotationX: 90 }, {
+    rotationX: 0,
+    duration: randomFlipDuration(),
+    ease: "none",
+    onComplete: () => {
+      bottomContent.textContent = next;
+      gsap.set(flippingBottom, { rotationX: 90 });
+      onComplete();
+    }
   });
-  buildFlipFrames(timeline, elements, current, next, distance, adjacencyList, randomFlipDuration());
-  timeline.addLabel("end");
-  return timeline;
 }
 function animate() {
   for (const [selector, adjacencyList] of Object.entries(adjacencyLists)) {
-    cleanupTimeline(selector);
-    timelines[selector] = gsap.timeline({ paused: true });
     const splitFlaps = document.querySelectorAll(`[data-name=${selector}] > .split-flap`);
     for (const el of splitFlaps) {
-      const child = animate_flips(el, adjacencyList);
-      if (child) {
-        timelines[selector].add(child, 0);
-        child.paused(false);
+      const htmlEl = el;
+      const dest = htmlEl.dataset.dest || FALLBACK_CHAR;
+      const id2 = htmlEl.id;
+      let mod = modules.get(id2);
+      if (!mod) {
+        mod = createModule(htmlEl);
+        modules.set(id2, mod);
       }
+      mod.setTarget(dest, adjacencyList);
     }
-    timelines[selector].play();
   }
 }
 // build/dev/javascript/bingo/model.mjs
@@ -6003,7 +5979,7 @@ function main() {
   let app = application(init, update2, view);
   let $ = start3(app, "#app", undefined);
   if (!($ instanceof Ok)) {
-    throw makeError("let_assert", FILEPATH2, "bingo", 26, "main", "Pattern match failed, no pattern matched the value.", { value: $, start: 680, end: 729, pattern_start: 691, pattern_end: 696 });
+    throw makeError("let_assert", FILEPATH2, "bingo", 26, "main", "Pattern match failed, no pattern matched the value.", { value: $, start: 673, end: 722, pattern_start: 684, pattern_end: 689 });
   }
   return new Ok(undefined);
 }

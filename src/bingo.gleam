@@ -16,7 +16,7 @@ import lustre/event
 import browser
 import model.{
   type BingoState, type Content, type Frame, type Scene, BingoState, BoxBottom,
-  BoxContent, BoxTitle, C, EmptyLine, Frame, L, Link, R, Text,
+  BoxContent, BoxTitle, C, EmptyLine, L, Link, R, Text,
 }
 import scenes.{scenes}
 import utils
