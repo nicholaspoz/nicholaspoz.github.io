@@ -272,6 +272,13 @@ function structurallyCompatibleObjects(a, b) {
     return false;
   return a.constructor === b.constructor;
 }
+function remainderInt(a, b) {
+  if (b === 0) {
+    return 0;
+  } else {
+    return a % b;
+  }
+}
 function makeError(variant, file, module, line, fn, message, extra) {
   let error = new globalThis.Error(message);
   error.gleam_error = variant;
@@ -1936,6 +1943,19 @@ function max(a, b) {
     return b;
   }
 }
+function modulo(dividend, divisor) {
+  if (divisor === 0) {
+    return new Error(undefined);
+  } else {
+    let remainder$1 = remainderInt(dividend, divisor);
+    let $ = remainder$1 * divisor < 0;
+    if ($) {
+      return new Ok(remainder$1 + divisor);
+    } else {
+      return new Ok(remainder$1);
+    }
+  }
+}
 
 // build/dev/javascript/gleam_stdlib/gleam/string.mjs
 function slice(string2, idx, len) {
@@ -2094,6 +2114,10 @@ function dict2(dict3, keys2, values2) {
   }));
 }
 
+// build/dev/javascript/gleam_stdlib/gleam/function.mjs
+function identity3(x) {
+  return x;
+}
 // build/dev/javascript/gleam_stdlib/gleam/bool.mjs
 function guard(requirement, consequence, alternative) {
   if (requirement) {
@@ -2101,11 +2125,6 @@ function guard(requirement, consequence, alternative) {
   } else {
     return alternative();
   }
-}
-
-// build/dev/javascript/gleam_stdlib/gleam/function.mjs
-function identity3(x) {
-  return x;
 }
 // build/dev/javascript/lustre/lustre/internals/constants.ffi.mjs
 var document2 = () => globalThis?.document;
@@ -5018,14 +5037,6 @@ function update_flap_height() {
   const flapHeight = document.querySelector(".split-flap")?.getBoundingClientRect().height ?? 0;
   document.documentElement.style.setProperty("--flap-height", `${flapHeight}px`);
 }
-function measure_orientation(root3) {
-  const rect = root3?.getBoundingClientRect() || {
-    width: 0,
-    height: 0
-  };
-  const aspectRatio = rect.height / rect.width < 1;
-  return aspectRatio ? "landscape" : "portrait";
-}
 var observer = null;
 function on_resize(root3, cb) {
   if (observer) {
@@ -5050,115 +5061,95 @@ screen.orientation.addEventListener("change", (event4) => {
   }, 400);
 });
 gsap.config({ force3D: true });
-var FLIP_DURATIONS = [0.03, 0.04, 0.045, 0.045];
+var FLIP_DURATIONS = [0.026, 0.028, 0.03, 0.032, 0.034];
 var FALLBACK_CHAR = " ";
-var timelines = {};
 var adjacencyLists = {};
+var selectorCache = new Map;
 function set_adjacency_list(name, adjacency_list) {
   adjacencyLists[name] = adjacency_list;
-}
-function getDistance(from, to, adjacencyList) {
-  if (!from || !to || !(from in adjacencyList) || !(to in adjacencyList)) {
-    console.error("Invalid distance calculation", { from, to, adjacencyList });
-    return 0;
-  }
-  let distance = 0;
-  let current = from;
-  while (current !== to) {
-    current = adjacencyList[current];
-    distance++;
-  }
-  return distance;
-}
-function resolveFlipDistance(current, destination, adjacencyList) {
-  if (current in adjacencyList) {
-    return {
-      next: adjacencyList[current],
-      distance: getDistance(current, destination, adjacencyList)
-    };
-  }
-  return {
-    next: FALLBACK_CHAR,
-    distance: 1 + getDistance(FALLBACK_CHAR, destination, adjacencyList)
-  };
+  selectorCache.delete(name);
 }
 function getFlipElements(el) {
   const topContent = el.querySelector(".top > .flap-content");
-  const bottom = el.querySelector(".bottom");
-  const bottomContent = bottom?.querySelector(".flap-content");
+  const bottomContent = el.querySelector(".bottom > .flap-content");
   const flippingBottom = el.querySelector(".flipping-bottom");
   const flippingBottomContent = flippingBottom?.querySelector(".flap-content");
-  if (!topContent || !bottom || !bottomContent || !flippingBottom || !flippingBottomContent) {
+  if (!topContent || !bottomContent || !flippingBottom || !flippingBottomContent) {
     return null;
   }
-  return {
-    topContent,
-    bottom,
-    bottomContent,
-    flippingBottom,
-    flippingBottomContent
-  };
-}
-function buildFlipFrames(timeline, elements, current, next, distance, adjacencyList, duration) {
-  const { topContent, bottomContent, flippingBottom, flippingBottomContent } = elements;
-  for (let i = distance;i > 0; i--) {
-    const currChar = current;
-    const nextChar = next;
-    timeline.call(() => {
-      topContent.textContent = nextChar;
-      bottomContent.textContent = currChar;
-      flippingBottomContent.textContent = nextChar;
-    }, [], ">").to(flippingBottom, { rotationX: 0, duration, ease: "none" }, ">").call(() => {
-      bottomContent.textContent = nextChar;
-    }, [], ">").set(flippingBottom, { rotationX: 90 }, ">").addLabel(`flip-${i}`, ">");
-    current = next;
-    next = adjacencyList[current];
-  }
+  return { topContent, bottomContent, flippingBottom, flippingBottomContent };
 }
 function randomFlipDuration() {
   return FLIP_DURATIONS[Math.floor(Math.random() * FLIP_DURATIONS.length)];
 }
-function cleanupTimeline(selector) {
-  const timeline = timelines[selector];
-  if (!timeline)
-    return;
-  timeline.pause();
-  timeline.getChildren(true, false, true).forEach((child) => {
-    const nextLabel = child.nextLabel();
-    if (nextLabel)
-      child.seek(nextLabel);
-    child.kill();
-  });
-  timeline.kill();
-  delete timelines[selector];
-}
-function animate_flips(el, adjacencyList) {
+var modules = new Map;
+function createModule(el) {
+  let currentChar = el.querySelector(".top .flap-content")?.textContent || FALLBACK_CHAR;
+  let targetChar = currentChar;
+  let adjacencyList = {};
+  let flipping = false;
+  let duration = randomFlipDuration();
   const elements = getFlipElements(el);
   if (!elements)
-    return null;
-  const destination = el.dataset.dest || FALLBACK_CHAR;
-  const current = elements.topContent.textContent || FALLBACK_CHAR;
-  const { next, distance } = resolveFlipDistance(current, destination, adjacencyList);
-  if (distance === 0)
-    return null;
-  const timeline = gsap.timeline({ smoothChildTiming: true, paused: true });
-  buildFlipFrames(timeline, elements, current, next, distance, adjacencyList, randomFlipDuration());
-  timeline.set(elements.bottomContent, { text: destination }, ">");
-  return timeline;
+    return { setTarget() {} };
+  const { topContent, bottomContent, flippingBottom, flippingBottomContent } = elements;
+  const resetRotation = gsap.quickSetter(flippingBottom, "rotationX");
+  resetRotation(90);
+  const tween = gsap.to(flippingBottom, {
+    paused: true,
+    duration,
+    rotationX: 0,
+    ease: "none",
+    onComplete() {
+      bottomContent.textContent = flippingBottomContent.textContent;
+      resetRotation(90);
+      flipLoop();
+    }
+  });
+  function setTarget(char, adjList) {
+    targetChar = char;
+    adjacencyList = adjList;
+    duration = randomFlipDuration();
+    if (!flipping)
+      flipLoop();
+  }
+  function flipLoop() {
+    if (currentChar === targetChar) {
+      flipping = false;
+      el.classList.remove("is-flipping");
+      return;
+    }
+    if (!flipping) {
+      flipping = true;
+      el.classList.add("is-flipping");
+    }
+    const nextChar = currentChar in adjacencyList ? adjacencyList[currentChar] : FALLBACK_CHAR;
+    topContent.textContent = nextChar;
+    bottomContent.textContent = currentChar;
+    flippingBottomContent.textContent = nextChar;
+    currentChar = nextChar;
+    tween.invalidate().restart();
+  }
+  return { setTarget };
 }
 function animate() {
   for (const [selector, adjacencyList] of Object.entries(adjacencyLists)) {
-    cleanupTimeline(selector);
-    timelines[selector] = gsap.timeline({ paused: true });
-    const splitFlaps = document.querySelectorAll(`[data-name=${selector}] > .split-flap`);
-    for (const el of splitFlaps) {
-      const child = animate_flips(el, adjacencyList);
-      if (child) {
-        timelines[selector].add(child, 0);
-        child.paused(false);
-      }
+    let splitFlaps = selectorCache.get(selector);
+    if (!splitFlaps) {
+      splitFlaps = document.querySelectorAll(`[data-name=${selector}] > .split-flap`);
+      selectorCache.set(selector, splitFlaps);
     }
-    timelines[selector].play();
+    for (const el of splitFlaps) {
+      const htmlEl = el;
+      const dest = htmlEl.dataset.dest || FALLBACK_CHAR;
+      const id2 = htmlEl.id;
+      let mod = modules.get(id2);
+      if (!mod) {
+        mod = createModule(htmlEl);
+        modules.set(id2, mod);
+      }
+      mod.setTarget(dest, adjacencyList);
+    }
   }
 }
 // build/dev/javascript/bingo/model.mjs
@@ -5193,6 +5184,20 @@ class Link extends CustomType {
     this.url = url;
   }
 }
+class BoxTitle extends CustomType {
+  constructor(text3) {
+    super();
+    this.text = text3;
+  }
+}
+class BoxContent extends CustomType {
+  constructor(text3) {
+    super();
+    this.text = text3;
+  }
+}
+class BoxBottom extends CustomType {
+}
 class EmptyLine extends CustomType {
 }
 class Frame extends CustomType {
@@ -5219,168 +5224,332 @@ class BingoState extends CustomType {
 }
 
 // build/dev/javascript/bingo/scenes.mjs
-var nick = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("NICK"));
-var poz = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("((POZOULAKIS))"));
+var nick = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("    NICK"));
+var poz = /* @__PURE__ */ new Text2(/* @__PURE__ */ new R("POZOULAKIS'  "));
 var dot = /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("(DOT)"));
-var bingo = /* @__PURE__ */ new Text2(/* @__PURE__ */ new R("BINGO"));
+var bingo = /* @__PURE__ */ new Text2(/* @__PURE__ */ new R("BINGO    "));
 var linked_in = /* @__PURE__ */ new Link(/* @__PURE__ */ new R("LINKEDIN ▶"), "https://www.linkedin.com/in/nicholaspozoulakis/");
 var github = /* @__PURE__ */ new Link(/* @__PURE__ */ new R("GITHUB ▶"), "https://github.com/nicholaspoz");
 var email = /* @__PURE__ */ new Link(/* @__PURE__ */ new R("EMAIL ▶"), "mailto:nicholaspoz@gmail.com");
 var home = /* @__PURE__ */ new Scene("HOME", /* @__PURE__ */ new None, /* @__PURE__ */ toList([
-  /* @__PURE__ */ new Frame(1500, /* @__PURE__ */ toList([
-    nick,
-    /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new EmptyLine,
-    dot,
-    /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new EmptyLine,
-    bingo
+  /* @__PURE__ */ new Frame(1000, /* @__PURE__ */ toList([/* @__PURE__ */ new EmptyLine])),
+  /* @__PURE__ */ new Frame(500, /* @__PURE__ */ toList([
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("WELCOME    "))
   ])),
-  /* @__PURE__ */ new Frame(4500, /* @__PURE__ */ toList([
+  /* @__PURE__ */ new Frame(300, /* @__PURE__ */ toList([
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("WELCOME TO "))
+  ])),
+  /* @__PURE__ */ new Frame(300, /* @__PURE__ */ toList([
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("WELCOME TO ")),
+    /* @__PURE__ */ new EmptyLine,
+    nick
+  ])),
+  /* @__PURE__ */ new Frame(300, /* @__PURE__ */ toList([
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("WELCOME TO ")),
+    /* @__PURE__ */ new EmptyLine,
     nick,
+    /* @__PURE__ */ new EmptyLine,
+    poz
+  ])),
+  /* @__PURE__ */ new Frame(2000, /* @__PURE__ */ toList([
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("WELCOME TO ")),
+    /* @__PURE__ */ new EmptyLine,
+    nick,
+    /* @__PURE__ */ new EmptyLine,
     poz,
     /* @__PURE__ */ new EmptyLine,
-    dot,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("   WEBSITE"))
+  ])),
+  /* @__PURE__ */ new Frame(3000, /* @__PURE__ */ toList([
     /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    nick,
+    /* @__PURE__ */ new EmptyLine,
+    dot,
     /* @__PURE__ */ new EmptyLine,
     bingo
   ]))
 ]));
-var freelance = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("FREELANCE"));
-var engineer = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("  ENGINEER"));
-var technologist = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("TECHNOLOGIST"));
+var technologist = /* @__PURE__ */ new BoxTitle("TECHNOLOGIST");
+var empty_box = /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L(""));
 var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PURE__ */ toList([
-  /* @__PURE__ */ new Frame(4500, /* @__PURE__ */ toList([
-    freelance,
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("  SOFTWARE")),
-    engineer,
+  /* @__PURE__ */ new Frame(1000, /* @__PURE__ */ toList([
     /* @__PURE__ */ new EmptyLine,
-    linked_in,
-    github,
-    email
+    /* @__PURE__ */ new EmptyLine
   ])),
-  /* @__PURE__ */ new Frame(4500, /* @__PURE__ */ toList([
-    freelance,
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("  FULL-STACK")),
-    engineer,
-    /* @__PURE__ */ new EmptyLine,
-    linked_in,
-    github,
-    email
+  /* @__PURE__ */ new Frame(750, /* @__PURE__ */ toList([
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L(" TECHNOLOGIST"))
   ])),
-  /* @__PURE__ */ new Frame(4500, /* @__PURE__ */ toList([
-    freelance,
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("  BACKEND")),
-    engineer,
-    /* @__PURE__ */ new EmptyLine,
-    linked_in,
-    github,
-    email
-  ])),
-  /* @__PURE__ */ new Frame(4500, /* @__PURE__ */ toList([
-    freelance,
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("  PAYMENTS")),
-    engineer,
-    /* @__PURE__ */ new EmptyLine,
-    linked_in,
-    github,
-    email
-  ])),
-  /* @__PURE__ */ new Frame(4500, /* @__PURE__ */ toList([
-    freelance,
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("  ACCOUNTING")),
-    engineer,
-    /* @__PURE__ */ new EmptyLine,
-    linked_in,
-    github,
-    email
-  ])),
-  /* @__PURE__ */ new Frame(4500, /* @__PURE__ */ toList([
-    freelance,
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("  A.I.")),
-    engineer,
-    /* @__PURE__ */ new EmptyLine,
-    linked_in,
-    github,
-    email
-  ])),
-  /* @__PURE__ */ new Frame(6000, /* @__PURE__ */ toList([
-    freelance,
+  /* @__PURE__ */ new Frame(1200, /* @__PURE__ */ toList([
     technologist,
+    empty_box,
+    empty_box,
+    empty_box,
+    empty_box,
+    /* @__PURE__ */ new BoxBottom,
     /* @__PURE__ */ new EmptyLine,
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
+    technologist,
+    empty_box,
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("SOFTWARE")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("ENGINEERING")),
+    empty_box,
+    /* @__PURE__ */ new BoxBottom,
+    /* @__PURE__ */ new EmptyLine,
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
+    technologist,
+    empty_box,
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("SOFTWARE")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("ARCHITECTURE")),
+    empty_box,
+    /* @__PURE__ */ new BoxBottom,
+    /* @__PURE__ */ new EmptyLine,
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
+    technologist,
+    empty_box,
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("FULL-STACK")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new R("APPLICATIONS")),
+    empty_box,
+    /* @__PURE__ */ new BoxBottom,
+    /* @__PURE__ */ new EmptyLine,
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
+    technologist,
+    empty_box,
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("WEB & MOBILE")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new R("APPLICATIONS")),
+    empty_box,
+    /* @__PURE__ */ new BoxBottom,
+    /* @__PURE__ */ new EmptyLine,
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
+    technologist,
+    empty_box,
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("A.I. & AGENTIC")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new R("APPLICATIONS")),
+    empty_box,
+    /* @__PURE__ */ new BoxBottom,
+    /* @__PURE__ */ new EmptyLine,
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
+    technologist,
+    empty_box,
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("A.I. & AGENTIC")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("SYSTEMS")),
+    empty_box,
+    /* @__PURE__ */ new BoxBottom,
+    /* @__PURE__ */ new EmptyLine,
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
+    technologist,
+    empty_box,
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("BACKEND")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("SYSTEMS")),
+    empty_box,
+    /* @__PURE__ */ new BoxBottom,
+    /* @__PURE__ */ new EmptyLine,
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
+    technologist,
+    empty_box,
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("PAYMENTS")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("SYSTEMS")),
+    empty_box,
+    /* @__PURE__ */ new BoxBottom,
+    /* @__PURE__ */ new EmptyLine,
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
+    technologist,
+    empty_box,
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("ACCOUNTING")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("SYSTEMS")),
+    empty_box,
+    /* @__PURE__ */ new BoxBottom,
+    /* @__PURE__ */ new EmptyLine,
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
+    technologist,
+    empty_box,
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("ACCOUNTING")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("SYSTEMS")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("ENTHUSIAST")),
+    /* @__PURE__ */ new BoxBottom,
     /* @__PURE__ */ new EmptyLine,
     linked_in,
     github,
     email
   ]))
 ]));
-var cellist = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("CELLIST"));
-var music = /* @__PURE__ */ new Scene("MUSIC", /* @__PURE__ */ new Some(" ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶#┏━┓┃●╹╻┗┛"), /* @__PURE__ */ toList([
-  /* @__PURE__ */ new Frame(1000, /* @__PURE__ */ toList([
-    freelance,
-    cellist,
+var cellist = /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("CELLIST"));
+var music = /* @__PURE__ */ new Scene("MUSIC", /* @__PURE__ */ new Some(" ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶&()#┏━┓┗┛┃●╹╻"), /* @__PURE__ */ toList([
+  /* @__PURE__ */ new Frame(500, /* @__PURE__ */ toList([
     /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    linked_in,
+    github,
     email
   ])),
-  /* @__PURE__ */ new Frame(6500, /* @__PURE__ */ toList([
-    freelance,
+  /* @__PURE__ */ new Frame(500, /* @__PURE__ */ toList([
     cellist,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(3000, /* @__PURE__ */ toList([
+    cellist,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("(FREELANCE) ")),
+    /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┏━━━┓ ╻●    ")),
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃   ┃ ┃   ╻●")),
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃ #●╹ ┗━━━┛ ")),
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("●╹           ")),
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(2500, /* @__PURE__ */ toList([
+    cellist,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┏━━━┓ ╻●    ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃   ┃ ┃   ╻●")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃ #●╹ ┗━━━┛ ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("●╹           ")),
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(3000, /* @__PURE__ */ toList([
+    cellist,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("CLASSICAL")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┏━━━┓ ╻●    ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃   ┃ ┃   ╻●")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃ #●╹ ┗━━━┛ ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("●╹           ")),
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(3000, /* @__PURE__ */ toList([
+    cellist,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┏━━━┓ ╻●    ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("M┃O D┃E┃R N╻●")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃ #●╹ ┗━━━┛ ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("●╹           ")),
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(3000, /* @__PURE__ */ toList([
+    cellist,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("MUSICAL THEATER")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┏━━━┓ ╻●    ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃   ┃ ┃   ╻●")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃ #●╹ ┗━━━┛ ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("●╹           ")),
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(1000, /* @__PURE__ */ toList([
+    cellist,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┏━━━┓ ╻●    ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃   ┃ ┃   ╻●")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃ #●╹ ┗━━━┛ ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("●╹           ")),
+    linked_in,
+    github,
     email
   ]))
 ]));
 var friends = /* @__PURE__ */ new Scene("FRIENDS", /* @__PURE__ */ new None, /* @__PURE__ */ toList([
-  /* @__PURE__ */ new Frame(2000, /* @__PURE__ */ toList([
+  /* @__PURE__ */ new Frame(1500, /* @__PURE__ */ toList([
     /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("LET'S BE")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("FRIENDS :)"))
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("    LET'S BE")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new R("FRIENDS!    "))
   ])),
   /* @__PURE__ */ new Frame(7000, /* @__PURE__ */ toList([
     /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("LET'S BE")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("FRIENDS :)")),
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("    LET'S BE")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new R("FRIENDS!    ")),
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new EmptyLine,
     linked_in,
     github,
     email
   ]))
 ]));
-var alive = /* @__PURE__ */ new Scene("!", /* @__PURE__ */ new None, /* @__PURE__ */ toList([
-  /* @__PURE__ */ new Frame(2000, /* @__PURE__ */ toList([
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("         WHAT")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("       A     ")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("  TIME       ")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("TO           ")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("   BE        ")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("      ALIVE  ")),
-    /* @__PURE__ */ new EmptyLine
-  ])),
-  /* @__PURE__ */ new Frame(4500, /* @__PURE__ */ toList([
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("         WHAT")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("       A     ")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("  TIME       ")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("TO           ")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("   BE        ")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("      ALIVE  ")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("            !"))
-  ]))
-]));
-var scenes = /* @__PURE__ */ toList([home, tech, music, alive, friends]);
+var scenes = /* @__PURE__ */ toList([home, tech, music, friends]);
 
 // build/dev/javascript/bingo/utils.mjs
+var FILEPATH = "src/utils.gleam";
 function center(text3, bg) {
-  let len = string_length(bg);
-  let text$1 = slice(text3, 0, len);
-  let middle_idx = string_length(text$1);
-  let start_idx = max(0, globalThis.Math.trunc((len - middle_idx) / 2));
-  let end_idx = max(0, len - start_idx - middle_idx);
-  return slice(bg, 0, start_idx) + text$1 + slice(bg, start_idx + middle_idx, end_idx);
+  let bg_length = string_length(bg);
+  let text$1 = slice(text3, 0, bg_length);
+  let text_length = string_length(text$1);
+  let $ = modulo(bg_length - text_length, 2);
+  let pad_round_up;
+  if ($ instanceof Ok) {
+    pad_round_up = $[0];
+  } else {
+    throw makeError("let_assert", FILEPATH, "utils", 14, "center", "Pattern match failed, no pattern matched the value.", { value: $, start: 366, end: 438, pattern_start: 377, pattern_end: 393 });
+  }
+  let start_idx = max(0, globalThis.Math.trunc((bg_length - text_length) / 2)) + pad_round_up;
+  let end_idx = max(0, bg_length - start_idx - text_length);
+  return slice(bg, 0, start_idx) + text$1 + slice(bg, start_idx + text_length, end_idx);
 }
 function left(text3, bg) {
   let bg_len = string_length(bg);
@@ -5410,11 +5579,33 @@ function find_scene(loop$scenes, loop$page) {
   }
 }
 function initial_state(scenes2) {
-  return try$(first(scenes2), (first_scene) => {
-    return try$(first(first_scene.frames), (first_frame) => {
-      return new Ok(new BingoState(first_scene, first_frame));
+  let $ = first(scenes2);
+  let first_scene;
+  if ($ instanceof Ok) {
+    first_scene = $[0];
+  } else {
+    throw makeError("let_assert", FILEPATH, "utils", 65, "initial_state", "Pattern match failed, no pattern matched the value.", {
+      value: $,
+      start: 1897,
+      end: 1944,
+      pattern_start: 1908,
+      pattern_end: 1923
     });
-  });
+  }
+  let $1 = first(first_scene.frames);
+  let first_frame;
+  if ($1 instanceof Ok) {
+    first_frame = $1[0];
+  } else {
+    throw makeError("let_assert", FILEPATH, "utils", 66, "initial_state", "Pattern match failed, no pattern matched the value.", {
+      value: $1,
+      start: 1947,
+      end: 2006,
+      pattern_start: 1958,
+      pattern_end: 1973
+    });
+  }
+  return new BingoState(first_scene, first_frame);
 }
 function find_next(loop$l, loop$current) {
   while (true) {
@@ -5452,7 +5643,7 @@ function find_next_state(scenes2, current) {
         return new Ok(new BingoState(scene, frame));
       });
     }), () => {
-      return initial_state(scenes2);
+      return new Ok(initial_state(scenes2));
     });
   }
 }
@@ -5481,7 +5672,7 @@ function to_adjacency_list(chars) {
 }
 
 // build/dev/javascript/bingo/bingo.mjs
-var FILEPATH = "src/bingo.gleam";
+var FILEPATH2 = "src/bingo.gleam";
 
 class Model extends CustomType {
   constructor(scenes2, rows, columns, current, auto_play, timeout, path) {
@@ -5497,13 +5688,6 @@ class Model extends CustomType {
 }
 
 class Resized extends CustomType {
-}
-
-class ColumnsChanged extends CustomType {
-  constructor($0) {
-    super();
-    this[0] = $0;
-  }
 }
 
 class PageClicked extends CustomType {
@@ -5525,26 +5709,12 @@ class TimeoutStarted extends CustomType {
 
 class TimeoutEnded extends CustomType {
 }
-var default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-'.:▶()\uD834\uDD1E\uD834\uDD22\uD834\uDD5F\uD834\uDD3D!";
+var default_chars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-'&.▶()┏━┓┗┛┃!";
 var pagination_chars = " ○●()\uD834\uDD06\uD834\uDD07";
-function on_resize_effect(model) {
-  return batch(toList([
-    after_paint((_, _1) => {
-      return update_flap_height();
-    }),
-    before_paint((dispatch2, root_element) => {
-      let _block;
-      let $ = model.path;
-      let $1 = measure_orientation(root_element);
-      if ($ === "/" && $1 === "landscape") {
-        _block = 21;
-      } else {
-        _block = 15;
-      }
-      let cols = _block;
-      return dispatch2(new ColumnsChanged(cols));
-    })
-  ]));
+function on_resize_effect() {
+  return after_paint((_, _1) => {
+    return update_flap_height();
+  });
 }
 function start_timeout(frame, id2) {
   return after_paint((dispatch2, _) => {
@@ -5555,6 +5725,7 @@ function start_timeout(frame, id2) {
     let id$1 = set_timeout(frame.ms, () => {
       return dispatch2(new TimeoutEnded);
     });
+    animate();
     return dispatch2(new TimeoutStarted(id$1));
   });
 }
@@ -5595,47 +5766,69 @@ function row(name, line, row_num, num_cols) {
   let _block;
   if (line instanceof Text2) {
     let text4 = line.text;
-    _block = [text4, new None];
+    if (text4 instanceof L) {
+      let str = text4[0];
+      _block = left(str, bg);
+    } else if (text4 instanceof C) {
+      let str = text4[0];
+      _block = center(str, bg);
+    } else {
+      let str = text4[0];
+      _block = right(str, bg);
+    }
   } else if (line instanceof Link) {
     let text4 = line.text;
-    let url2 = line.url;
-    _block = [text4, new Some(url2)];
+    if (text4 instanceof L) {
+      let str = text4[0];
+      _block = left(str, bg);
+    } else if (text4 instanceof C) {
+      let str = text4[0];
+      _block = center(str, bg);
+    } else {
+      let str = text4[0];
+      _block = right(str, bg);
+    }
+  } else if (line instanceof BoxTitle) {
+    let text4 = line.text;
+    _block = left("┏" + text4, repeat2("━", num_cols - 1) + "┓");
+  } else if (line instanceof BoxContent) {
+    let text4 = line.text;
+    let bg$1 = repeat2(" ", num_cols - 4);
+    let _block$12;
+    if (text4 instanceof L) {
+      let str = text4[0];
+      _block$12 = left(str, bg$1);
+    } else if (text4 instanceof C) {
+      let str = text4[0];
+      _block$12 = center(str, bg$1);
+    } else {
+      let str = text4[0];
+      _block$12 = right(str, bg$1);
+    }
+    let text$1 = _block$12;
+    _block = "┃ " + text$1 + " ┃";
+  } else if (line instanceof BoxBottom) {
+    _block = "┗" + repeat2("━", num_cols - 2) + "┛";
   } else {
-    _block = [new C(bg), new None];
+    _block = bg;
   }
-  let $ = _block;
-  let text3;
-  let url;
-  text3 = $[0];
-  url = $[1];
+  let text3 = _block;
   let _block$1;
-  if (text3 instanceof L) {
-    let str = text3[0];
-    _block$1 = left(str, bg);
-  } else if (text3 instanceof C) {
-    let str = text3[0];
-    _block$1 = center(str, bg);
-  } else {
-    let str = text3[0];
-    _block$1 = right(str, bg);
-  }
-  let text$1 = _block$1;
-  let _block$2;
-  let _pipe = text$1;
+  let _pipe = text3;
   let _pipe$1 = graphemes(_pipe);
-  _block$2 = index_map(_pipe$1, (char, idx) => {
+  _block$1 = index_map(_pipe$1, (char, idx) => {
     let id2 = to_string(row_num) + "-" + to_string(idx);
     return [id2, character(id2, char, new None)];
   });
-  let children = _block$2;
-  let _block$3;
-  if (url instanceof Some) {
-    let url$1 = url[0];
-    _block$3 = toList([href(url$1), target("_blank")]);
+  let children = _block$1;
+  let _block$2;
+  if (line instanceof Link) {
+    let url = line.url;
+    _block$2 = toList([href(url), target("_blank")]);
   } else {
-    _block$3 = toList([role("div")]);
+    _block$2 = toList([role("div")]);
   }
-  let link_attrs = _block$3;
+  let link_attrs = _block$2;
   return element3("a", prepend(class$("row"), prepend(data("name", name), link_attrs)), children);
 }
 function display(lines, cols, rows) {
@@ -5709,84 +5902,60 @@ function pagination(pages, page, cols, auto_play) {
   }));
 }
 function view(model) {
-  let _block;
-  let $ = model.current;
-  if ($ instanceof Ok) {
-    let lines2 = $[0].frame.lines;
-    _block = lines2;
-  } else {
-    _block = toList([]);
-  }
-  let lines = _block;
-  return div(toList([class$("matrix")]), toList([
+  let lines = model.current.frame.lines;
+  let total_rows = model.rows + 2;
+  return div(toList([
+    class$("matrix"),
+    style("--rows", to_string(total_rows)),
+    style("--cols", to_string(model.columns))
+  ]), toList([
     display(lines, model.columns, model.rows),
+    div(toList([class$("row")]), toList([])),
     pagination(length(model.scenes), fold_until(model.scenes, 1, (acc, s) => {
-      let $1 = model.current;
-      if ($1 instanceof Ok) {
-        let state = $1[0];
-        if (isEqual(s, state.scene)) {
-          return new Stop(acc);
-        } else {
-          return new Continue(acc + 1);
-        }
+      let $ = isEqual(model.current.scene, s);
+      if ($) {
+        return new Stop(acc);
       } else {
-        return new Stop(0);
+        return new Continue(acc + 1);
       }
     }), model.columns, model.auto_play)
   ]));
 }
 function set_adjacency_list_effect(name, chars) {
-  let _block;
-  let _pipe = to_adjacency_list((() => {
-    if (chars instanceof Some) {
-      let chars$1 = chars[0];
-      return chars$1;
-    } else {
-      return default_chars;
-    }
-  })());
-  _block = dict2(_pipe, identity3, string2);
-  let adjacency_list = _block;
   return before_paint((_, _1) => {
+    let _block;
+    let _pipe = to_adjacency_list((() => {
+      if (chars instanceof Some) {
+        let chars$1 = chars[0];
+        return chars$1;
+      } else {
+        return default_chars;
+      }
+    })());
+    _block = dict2(_pipe, identity3, string2);
+    let adjacency_list = _block;
     return set_adjacency_list(name, adjacency_list);
   });
 }
 function reduce(model, msg) {
   if (msg instanceof Resized) {
-    return new Ok([model, on_resize_effect(model)]);
-  } else if (msg instanceof ColumnsChanged) {
-    let columns = msg[0];
-    return guard(columns === model.columns, new Ok([model, none2()]), () => {
-      return try$(model.current, (initial_state2) => {
-        return new Ok([
-          new Model(scenes, model.rows, columns, model.current, model.auto_play, model.timeout, model.path),
-          start_timeout(initial_state2.frame, model.timeout)
-        ]);
-      });
-    });
+    return new Ok([model, on_resize_effect()]);
   } else if (msg instanceof PageClicked) {
     let page = msg[0];
     return try$(find_scene(model.scenes, page), (scene) => {
       return try$(first(scene.frames), (frame) => {
-        let next = map3(model.current, (current) => {
-          let $ = !isEqual(current.scene, scene);
-          if ($) {
-            return new BingoState(scene, frame);
-          } else {
-            return current;
-          }
-        });
+        let _block;
+        let $ = !isEqual(model.current.scene, scene);
+        if ($) {
+          _block = new BingoState(scene, frame);
+        } else {
+          _block = model.current;
+        }
+        let next = _block;
         return new Ok([
           new Model(model.scenes, model.rows, model.columns, next, false, model.timeout, model.path),
           batch(toList([
-            (() => {
-              if (next instanceof Ok) {
-                let state = next[0];
-                return set_adjacency_list_effect("display", state.scene.chars);
-              } else {
-                return none2();
-              }
-            })(),
+            set_adjacency_list_effect("display", next.scene.chars),
             start_timeout(frame, model.timeout)
           ]))
         ]);
@@ -5801,7 +5970,6 @@ function reduce(model, msg) {
           let id2 = $[0];
           clear_timeout(id2);
         } else {}
-        animate();
         return dispatch2(new TimeoutEnded);
       })
     ]);
@@ -5809,30 +5977,33 @@ function reduce(model, msg) {
     let id2 = msg[0];
     return new Ok([
       new Model(model.scenes, model.rows, model.columns, model.current, model.auto_play, new Some(id2), model.path),
-      (() => {
-        animate();
-        return none2();
-      })()
+      before_paint((_, _1) => {
+        let $ = model.timeout;
+        if ($ instanceof Some) {
+          let id$1 = $[0];
+          return clear_timeout(id$1);
+        } else {
+          return;
+        }
+      })
     ]);
   } else {
-    return try$(model.current, (current) => {
-      return try$(find_next_state(model.scenes, current), (next) => {
-        let continue$ = isEqual(current.scene, next.scene) || model.auto_play;
-        if (continue$) {
-          return new Ok([
-            new Model(model.scenes, model.rows, model.columns, new Ok(next), model.auto_play, new None, model.path),
-            batch(toList([
-              set_adjacency_list_effect("display", next.scene.chars),
-              start_timeout(next.frame, new None)
-            ]))
-          ]);
-        } else {
-          return new Ok([
-            new Model(model.scenes, model.rows, model.columns, model.current, model.auto_play, new None, model.path),
-            none2()
-          ]);
-        }
-      });
+    return try$(find_next_state(model.scenes, model.current), (next) => {
+      let continue$ = isEqual(model.current.scene, next.scene) || model.auto_play;
+      if (continue$) {
+        return new Ok([
+          new Model(model.scenes, model.rows, model.columns, next, model.auto_play, new None, model.path),
+          batch(toList([
+            set_adjacency_list_effect("display", next.scene.chars),
+            start_timeout(next.frame, new None)
+          ]))
+        ]);
+      } else {
+        return new Ok([
+          new Model(model.scenes, model.rows, model.columns, model.current, model.auto_play, new None, model.path),
+          none2()
+        ]);
+      }
     });
   }
 }
@@ -5842,32 +6013,25 @@ function update2(model, msg) {
     let next = $[0];
     return next;
   } else {
-    echo("ERROR", undefined, "src/bingo.gleam", 141);
+    echo("ERROR", undefined, "src/bingo.gleam", 122);
     return [model, none2()];
   }
 }
 function init(_) {
-  let cols = 0;
   let scenes$1 = scenes;
   let state = initial_state(scenes$1);
   let path = get_path();
   return [
-    new Model(scenes$1, 7, cols, state, true, new None, path),
+    new Model(scenes$1, 10, 19, state, true, new None, path),
     batch(toList([
       set_adjacency_list_effect("pagination", new Some(pagination_chars)),
-      (() => {
-        if (state instanceof Ok) {
-          let state$1 = state[0];
-          return set_adjacency_list_effect("display", state$1.scene.chars);
-        } else {
-          return none2();
-        }
-      })(),
+      set_adjacency_list_effect("display", state.scene.chars),
       after_paint((dispatch2, root_element) => {
         return on_resize(root_element, () => {
           return dispatch2(new Resized);
         });
-      })
+      }),
+      start_timeout(state.frame, new None)
     ]))
   ];
 }
@@ -5875,7 +6039,7 @@ function main() {
   let app = application(init, update2, view);
   let $ = start3(app, "#app", undefined);
   if (!($ instanceof Ok)) {
-    throw makeError("let_assert", FILEPATH, "bingo", 30, "main", "Pattern match failed, no pattern matched the value.", { value: $, start: 726, end: 775, pattern_start: 737, pattern_end: 742 });
+    throw makeError("let_assert", FILEPATH2, "bingo", 26, "main", "Pattern match failed, no pattern matched the value.", { value: $, start: 673, end: 722, pattern_start: 684, pattern_end: 689 });
   }
   return new Ok(undefined);
 }

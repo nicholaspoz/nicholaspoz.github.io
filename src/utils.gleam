@@ -7,16 +7,17 @@ import gleam/string
 import model.{type BingoState, type Content, type Scene, BingoState, EmptyLine}
 
 pub fn center(text: String, against bg: String) -> String {
-  let len = string.length(bg)
-  let text = string.slice(text, 0, len)
+  let bg_length = string.length(bg)
+  let text = string.slice(text, 0, bg_length)
+  let text_length = string.length(text)
 
-  let middle_idx = string.length(text)
-  let start_idx = int.max(0, { len - middle_idx } / 2)
-  let end_idx = int.max(0, len - start_idx - middle_idx)
+  let assert Ok(pad_round_up) = int.modulo({ bg_length - text_length }, 2)
+  let start_idx = int.max(0, { bg_length - text_length } / 2) + pad_round_up
+  let end_idx = int.max(0, bg_length - start_idx - text_length)
 
   string.slice(bg, 0, start_idx)
   <> text
-  <> string.slice(bg, start_idx + middle_idx, end_idx)
+  <> string.slice(bg, start_idx + text_length, end_idx)
 }
 
 pub fn left(text: String, against bg: String) -> String {
@@ -55,15 +56,15 @@ pub fn find_next_state(
           Ok(BingoState(scene, frame))
         },
         // Start over
-        fn() { initial_state(scenes) },
+        fn() { Ok(initial_state(scenes)) },
       )
   }
 }
 
-pub fn initial_state(scenes: List(Scene)) -> Result(BingoState, Nil) {
-  use first_scene <- try(list.first(scenes))
-  use first_frame <- try(list.first(first_scene.frames))
-  Ok(BingoState(first_scene, first_frame))
+pub fn initial_state(scenes: List(Scene)) -> BingoState {
+  let assert Ok(first_scene) = list.first(scenes)
+  let assert Ok(first_frame) = list.first(first_scene.frames)
+  BingoState(first_scene, first_frame)
 }
 
 /// Find the item in the list directly after the `current` item.
