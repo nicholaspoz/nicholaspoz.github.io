@@ -5061,7 +5061,7 @@ screen.orientation.addEventListener("change", (event4) => {
   }, 400);
 });
 gsap.config({ force3D: true });
-var FLIP_DURATIONS = [0.028, 0.03, 0.032, 0.034];
+var FLIP_DURATIONS = [0.026, 0.028, 0.03, 0.032, 0.034];
 var FALLBACK_CHAR = " ";
 var adjacencyLists = {};
 function set_adjacency_list(name, adjacency_list) {
@@ -5086,6 +5086,23 @@ function createModule(el) {
   let targetChar = currentChar;
   let adjacencyList = {};
   let flipping = false;
+  const elements = getFlipElements(el);
+  if (!elements)
+    return { setTarget() {} };
+  const { topContent, bottomContent, flippingBottom, flippingBottomContent } = elements;
+  const resetRotation = gsap.quickSetter(flippingBottom, "rotationX");
+  resetRotation(90);
+  const tween = gsap.to(flippingBottom, {
+    rotationX: 0,
+    duration: randomFlipDuration(),
+    ease: "none",
+    paused: true,
+    onComplete() {
+      bottomContent.textContent = flippingBottomContent.textContent;
+      resetRotation(90);
+      flipLoop();
+    }
+  });
   function setTarget(char, adjList) {
     targetChar = char;
     adjacencyList = adjList;
@@ -5103,33 +5120,14 @@ function createModule(el) {
       el.classList.add("is-flipping");
     }
     const nextChar = currentChar in adjacencyList ? adjacencyList[currentChar] : FALLBACK_CHAR;
-    animateOneFlip(el, currentChar, nextChar, () => {
-      currentChar = nextChar;
-      flipLoop();
-    });
+    topContent.textContent = nextChar;
+    bottomContent.textContent = currentChar;
+    flippingBottomContent.textContent = nextChar;
+    currentChar = nextChar;
+    tween.duration(randomFlipDuration());
+    tween.invalidate().restart();
   }
   return { setTarget };
-}
-function animateOneFlip(el, current, next, onComplete) {
-  const elements = getFlipElements(el);
-  if (!elements) {
-    onComplete();
-    return;
-  }
-  const { topContent, bottomContent, flippingBottom, flippingBottomContent } = elements;
-  topContent.textContent = next;
-  bottomContent.textContent = current;
-  flippingBottomContent.textContent = next;
-  gsap.fromTo(flippingBottom, { rotationX: 90 }, {
-    rotationX: 0,
-    duration: randomFlipDuration(),
-    ease: "none",
-    onComplete: () => {
-      bottomContent.textContent = next;
-      gsap.set(flippingBottom, { rotationX: 90 });
-      onComplete();
-    }
-  });
 }
 function animate() {
   for (const [selector, adjacencyList] of Object.entries(adjacencyLists)) {
@@ -5263,16 +5261,15 @@ var home = /* @__PURE__ */ new Scene("HOME", /* @__PURE__ */ new None, /* @__PUR
     dot,
     /* @__PURE__ */ new EmptyLine,
     bingo
-  ])),
-  /* @__PURE__ */ new Frame(1500, /* @__PURE__ */ toList([
-    /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new EmptyLine
   ]))
 ]));
-var freelance = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("FREELANCE"));
 var technologist = /* @__PURE__ */ new BoxTitle("TECHNOLOGIST");
 var empty_box = /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L(""));
 var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PURE__ */ toList([
+  /* @__PURE__ */ new Frame(1500, /* @__PURE__ */ toList([
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine
+  ])),
   /* @__PURE__ */ new Frame(500, /* @__PURE__ */ toList([
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new L(" TECHNOLOGIST"))
   ])),
@@ -5327,7 +5324,7 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
   /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
     technologist,
     empty_box,
-    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new R("FULL-STACK")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("FULL-STACK")),
     /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new R("APPLICATIONS")),
     empty_box,
     /* @__PURE__ */ new BoxBottom,
@@ -5339,7 +5336,19 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
   /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
     technologist,
     empty_box,
-    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new R("WEB & MOBILE")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("WEB & MOBILE")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new R("APPLICATIONS")),
+    empty_box,
+    /* @__PURE__ */ new BoxBottom,
+    /* @__PURE__ */ new EmptyLine,
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
+    technologist,
+    empty_box,
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("A.I. & AGENTIC")),
     /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new R("APPLICATIONS")),
     empty_box,
     /* @__PURE__ */ new BoxBottom,
@@ -5384,7 +5393,7 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
     github,
     email
   ])),
-  /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
+  /* @__PURE__ */ new Frame(1600, /* @__PURE__ */ toList([
     technologist,
     empty_box,
     /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("ACCOUNTING")),
@@ -5396,24 +5405,12 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
     github,
     email
   ])),
-  /* @__PURE__ */ new Frame(3000, /* @__PURE__ */ toList([
-    technologist,
-    empty_box,
-    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("ACCOUNTING")),
-    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("ENTHUSIAST")),
-    empty_box,
-    /* @__PURE__ */ new BoxBottom,
-    /* @__PURE__ */ new EmptyLine,
-    linked_in,
-    github,
-    email
-  ])),
   /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
     technologist,
     empty_box,
     /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("ACCOUNTING")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("SYSTEMS")),
     /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("ENTHUSIAST!")),
-    empty_box,
     /* @__PURE__ */ new BoxBottom,
     /* @__PURE__ */ new EmptyLine,
     linked_in,
@@ -5421,8 +5418,8 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
     email
   ]))
 ]));
-var cellist = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("CELLIST"));
-var music = /* @__PURE__ */ new Scene("MUSIC", /* @__PURE__ */ new Some(" ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶#┏━┓┗┛┃●╹╻"), /* @__PURE__ */ toList([
+var cellist = /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("CELLIST"));
+var music = /* @__PURE__ */ new Scene("MUSIC", /* @__PURE__ */ new Some(" ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶&()#┏━┓┗┛┃●╹╻"), /* @__PURE__ */ toList([
   /* @__PURE__ */ new Frame(500, /* @__PURE__ */ toList([
     /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new EmptyLine,
@@ -5435,9 +5432,9 @@ var music = /* @__PURE__ */ new Scene("MUSIC", /* @__PURE__ */ new Some(" ABCDEF
     github,
     email
   ])),
-  /* @__PURE__ */ new Frame(1000, /* @__PURE__ */ toList([
-    freelance,
+  /* @__PURE__ */ new Frame(500, /* @__PURE__ */ toList([
     cellist,
+    /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new EmptyLine,
@@ -5447,9 +5444,69 @@ var music = /* @__PURE__ */ new Scene("MUSIC", /* @__PURE__ */ new Some(" ABCDEF
     github,
     email
   ])),
-  /* @__PURE__ */ new Frame(6500, /* @__PURE__ */ toList([
-    freelance,
+  /* @__PURE__ */ new Frame(2500, /* @__PURE__ */ toList([
     cellist,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┏━━━┓ ╻●    ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃   ┃ ┃   ╻●")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃ #●╹ ┗━━━┛ ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("●╹           ")),
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(3000, /* @__PURE__ */ toList([
+    cellist,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("(FREELANCE)")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┏━━━┓ ╻●    ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃   ┃ ┃   ╻●")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃ #●╹ ┗━━━┛ ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("●╹           ")),
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(3000, /* @__PURE__ */ toList([
+    cellist,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("CLASSICAL")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┏━━━┓ ╻●    ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃   ┃ ┃   ╻●")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃ #●╹ ┗━━━┛ ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("●╹           ")),
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(3000, /* @__PURE__ */ toList([
+    cellist,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┏━━━┓ ╻●    ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃   ┃ ┃   ╻●")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃ #●╹ ┗━━━┛ ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("●╹(MODERN)   ")),
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(3000, /* @__PURE__ */ toList([
+    cellist,
+    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("MUSICAL THEATER")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┏━━━┓ ╻●    ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃   ┃ ┃   ╻●")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃ #●╹ ┗━━━┛ ")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("●╹           ")),
+    linked_in,
+    github,
+    email
+  ])),
+  /* @__PURE__ */ new Frame(3000, /* @__PURE__ */ toList([
+    cellist,
+    /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┏━━━┓ ╻●    ")),
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃   ┃ ┃   ╻●")),
@@ -5925,7 +5982,15 @@ function reduce(model, msg) {
     let id2 = msg[0];
     return new Ok([
       new Model(model.scenes, model.rows, model.columns, model.current, model.auto_play, new Some(id2), model.path),
-      none2()
+      before_paint((_, _1) => {
+        let $ = model.timeout;
+        if ($ instanceof Some) {
+          let id$1 = $[0];
+          return clear_timeout(id$1);
+        } else {
+          return;
+        }
+      })
     ]);
   } else {
     return try$(find_next_state(model.scenes, model.current), (next) => {

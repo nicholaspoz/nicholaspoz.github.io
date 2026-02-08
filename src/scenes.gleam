@@ -93,17 +93,8 @@ const home = Scene(
         bingo,
       ],
     ),
-    Frame(
-      ms: 1500,
-      lines: [
-        EmptyLine,
-        EmptyLine,
-      ],
-    ),
   ],
 )
-
-const freelance = Text(L("FREELANCE"))
 
 const technologist = BoxTitle("TECHNOLOGIST")
 
@@ -113,6 +104,13 @@ const tech = Scene(
   name: "TECH",
   chars: None,
   frames: [
+    Frame(
+      ms: 1500,
+      lines: [
+        EmptyLine,
+        EmptyLine,
+      ],
+    ),
     Frame(
       ms: 500,
       lines: [
@@ -184,7 +182,7 @@ const tech = Scene(
       lines: [
         technologist,
         empty_box,
-        BoxContent(R("FULL-STACK")),
+        BoxContent(L("FULL-STACK")),
         BoxContent(R("APPLICATIONS")),
         empty_box,
         BoxBottom,
@@ -199,7 +197,22 @@ const tech = Scene(
       lines: [
         technologist,
         empty_box,
-        BoxContent(R("WEB & MOBILE")),
+        BoxContent(L("WEB & MOBILE")),
+        BoxContent(R("APPLICATIONS")),
+        empty_box,
+        BoxBottom,
+        EmptyLine,
+        linked_in,
+        github,
+        email,
+      ],
+    ),
+    Frame(
+      ms: 3200,
+      lines: [
+        technologist,
+        empty_box,
+        BoxContent(C("A.I. & AGENTIC")),
         BoxContent(R("APPLICATIONS")),
         empty_box,
         BoxBottom,
@@ -255,7 +268,7 @@ const tech = Scene(
       ],
     ),
     Frame(
-      ms: 3200,
+      ms: 1600,
       lines: [
         technologist,
         empty_box,
@@ -270,28 +283,13 @@ const tech = Scene(
       ],
     ),
     Frame(
-      ms: 3000,
-      lines: [
-        technologist,
-        empty_box,
-        BoxContent(L("ACCOUNTING")),
-        BoxContent(L("ENTHUSIAST")),
-        empty_box,
-        BoxBottom,
-        EmptyLine,
-        linked_in,
-        github,
-        email,
-      ],
-    ),
-    Frame(
       ms: 3200,
       lines: [
         technologist,
         empty_box,
         BoxContent(L("ACCOUNTING")),
+        BoxContent(L("SYSTEMS")),
         BoxContent(L("ENTHUSIAST!")),
-        empty_box,
         BoxBottom,
         EmptyLine,
         linked_in,
@@ -302,11 +300,11 @@ const tech = Scene(
   ],
 )
 
-const cellist = Text(L("CELLIST"))
+const cellist = Text(C("CELLIST"))
 
 const music = Scene(
   name: "MUSIC",
-  chars: Some(" ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶#┏━┓┗┛┃●╹╻"),
+  chars: Some(" ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789▶&()#┏━┓┗┛┃●╹╻"),
   frames: [
     Frame(
       ms: 500,
@@ -324,10 +322,10 @@ const music = Scene(
       ],
     ),
     Frame(
-      ms: 1000,
+      ms: 500,
       lines: [
-        freelance,
         cellist,
+        EmptyLine,
         EmptyLine,
         EmptyLine,
         EmptyLine,
@@ -339,10 +337,85 @@ const music = Scene(
       ],
     ),
     Frame(
-      ms: 6500,
+      ms: 2500,
       lines: [
-        freelance,
         cellist,
+        EmptyLine,
+        EmptyLine,
+        Text(C(" ┏━━━┓ ╻●    ")),
+        Text(C(" ┃   ┃ ┃   ╻●")),
+        Text(C(" ┃ #●╹ ┗━━━┛ ")),
+        Text(C("●╹           ")),
+        linked_in,
+        github,
+        email,
+      ],
+    ),
+    Frame(
+      ms: 3000,
+      lines: [
+        cellist,
+        EmptyLine,
+        Text(C("(FREELANCE)")),
+        Text(C(" ┏━━━┓ ╻●    ")),
+        Text(C(" ┃   ┃ ┃   ╻●")),
+        Text(C(" ┃ #●╹ ┗━━━┛ ")),
+        Text(C("●╹           ")),
+        linked_in,
+        github,
+        email,
+      ],
+    ),
+    Frame(
+      ms: 3000,
+      lines: [
+        cellist,
+        EmptyLine,
+        Text(C("CLASSICAL")),
+        Text(C(" ┏━━━┓ ╻●    ")),
+        Text(C(" ┃   ┃ ┃   ╻●")),
+        Text(C(" ┃ #●╹ ┗━━━┛ ")),
+        Text(C("●╹           ")),
+        linked_in,
+        github,
+        email,
+      ],
+    ),
+    Frame(
+      ms: 3000,
+      lines: [
+        cellist,
+        EmptyLine,
+        EmptyLine,
+        Text(C(" ┏━━━┓ ╻●    ")),
+        Text(C(" ┃   ┃ ┃   ╻●")),
+        Text(C(" ┃ #●╹ ┗━━━┛ ")),
+        Text(C("●╹(MODERN)   ")),
+        linked_in,
+        github,
+        email,
+      ],
+    ),
+    Frame(
+      ms: 3000,
+      lines: [
+        cellist,
+        EmptyLine,
+        Text(C("MUSICAL THEATER")),
+        Text(C(" ┏━━━┓ ╻●    ")),
+        Text(C(" ┃   ┃ ┃   ╻●")),
+        Text(C(" ┃ #●╹ ┗━━━┛ ")),
+        Text(C("●╹           ")),
+        linked_in,
+        github,
+        email,
+      ],
+    ),
+    Frame(
+      ms: 3000,
+      lines: [
+        cellist,
+        EmptyLine,
         EmptyLine,
         Text(C(" ┏━━━┓ ╻●    ")),
         Text(C(" ┃   ┃ ┃   ╻●")),
@@ -393,3 +466,48 @@ pub const scenes = [
   music,
   friends,
 ]
+// Frame(
+//   ms: 500,
+//   lines: [
+//     cellist,
+//     freelance,
+//     EmptyLine,
+//     Text(C(" ┏           ")),
+//     Text(C(" ┃           ")),
+//     Text(C(" ┃           ")),
+//     Text(C("●╹           ")),
+//     linked_in,
+//     github,
+//     email,
+//   ],
+// ),
+// Frame(
+//   ms: 500,
+//   lines: [
+//     cellist,
+//     freelance,
+//     EmptyLine,
+//     Text(C(" ┏━━━┓       ")),
+//     Text(C(" ┃   ┃       ")),
+//     Text(C(" ┃ #●╹       ")),
+//     Text(C("●╹           ")),
+//     linked_in,
+//     github,
+//     email,
+//   ],
+// ),
+// Frame(
+//   ms: 500,
+//   lines: [
+//     cellist,
+//     freelance,
+//     EmptyLine,
+//     Text(C(" ┏━━━┓ ╻●    ")),
+//     Text(C(" ┃   ┃ ┃     ")),
+//     Text(C(" ┃ #●╹ ┗     ")),
+//     Text(C("●╹           ")),
+//     linked_in,
+//     github,
+//     email,
+//   ],
+// ),

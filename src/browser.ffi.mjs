@@ -90,7 +90,7 @@ screen.orientation.addEventListener("change", (event) => {
 
 gsap.config({ force3D: true });
 
-const FLIP_DURATIONS = [0.028, 0.03, 0.032, 0.034];
+const FLIP_DURATIONS = [0.026, 0.028, 0.03, 0.032, 0.034];
 const FALLBACK_CHAR = " ";
 
 /** @type {Record<string, Record<string, string>>} */
@@ -160,6 +160,9 @@ const modules = new Map();
  * re-evaluating the target after each flip. Mid-animation retargeting
  * is handled naturally — no timeline killing needed.
  *
+ * A single GSAP tween is created per module and reused via .restart()
+ * to avoid allocation/GC overhead from creating tweens every flip step.
+ *
  * @param {HTMLElement} el
  */
 function createModule(el) {
@@ -169,6 +172,33 @@ function createModule(el) {
   /** @type {Record<string, string>} */
   let adjacencyList = {};
   let flipping = false;
+  const elements = getFlipElements(el);
+
+  if (!elements) return { setTarget() {} };
+
+  const { topContent, bottomContent, flippingBottom, flippingBottomContent } =
+    elements;
+
+  const resetRotation = gsap.quickSetter(flippingBottom, "rotationX");
+
+  // Make sure we start out at 90 from the get-go
+  resetRotation(90);
+
+  const tween = gsap.to(
+    flippingBottom,
+    // { rotationX: 90 },
+    {
+      rotationX: 0,
+      duration: randomFlipDuration(),
+      ease: "none",
+      paused: true,
+      onComplete() {
+        bottomContent.textContent = flippingBottomContent.textContent;
+        resetRotation(90);
+        flipLoop();
+      },
+    },
+  );
 
   /**
    * @param {string} char
@@ -194,51 +224,16 @@ function createModule(el) {
     const nextChar =
       currentChar in adjacencyList ? adjacencyList[currentChar] : FALLBACK_CHAR;
 
-    animateOneFlip(el, currentChar, nextChar, () => {
-      currentChar = nextChar;
-      flipLoop();
-    });
+    topContent.textContent = nextChar;
+    bottomContent.textContent = currentChar;
+    flippingBottomContent.textContent = nextChar;
+    currentChar = nextChar;
+
+    tween.duration(randomFlipDuration());
+    tween.invalidate().restart();
   }
 
   return { setTarget };
-}
-
-/**
- * Animates a single character step on one split-flap element.
- *
- * @param {HTMLElement} el
- * @param {string} current
- * @param {string} next
- * @param {() => void} onComplete
- */
-function animateOneFlip(el, current, next, onComplete) {
-  const elements = getFlipElements(el);
-  if (!elements) {
-    onComplete();
-    return;
-  }
-
-  const { topContent, bottomContent, flippingBottom, flippingBottomContent } =
-    elements;
-
-  topContent.textContent = next;
-  bottomContent.textContent = current;
-  flippingBottomContent.textContent = next;
-
-  gsap.fromTo(
-    flippingBottom,
-    { rotationX: 90 },
-    {
-      rotationX: 0,
-      duration: randomFlipDuration(),
-      ease: "none",
-      onComplete: () => {
-        bottomContent.textContent = next;
-        gsap.set(flippingBottom, { rotationX: 90 });
-        onComplete();
-      },
-    },
-  );
 }
 
 /**

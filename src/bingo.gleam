@@ -130,7 +130,15 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
     Resized -> Ok(#(model, on_resize_effect()))
 
     TimeoutStarted(id) ->
-      Ok(#(Model(..model, timeout: Some(id)), effect.none()))
+      Ok(
+        #(Model(..model, timeout: Some(id)), {
+          use _, _ <- effect.before_paint
+          case model.timeout {
+            Some(id) -> browser.clear_timeout(id)
+            None -> Nil
+          }
+        }),
+      )
 
     TimeoutEnded -> {
       use next <- try(utils.find_next_state(model.scenes, model.current))

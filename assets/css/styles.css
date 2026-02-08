@@ -133,15 +133,13 @@ body {
 .split-flap {
   /* --flap-width and --flap-height are inherited from .matrix */
   container-type: inline-size;
+  contain: layout style;
   display: inline-block;
   position: relative;
+  perspective: 30cqh;
 
   width: var(--flap-width);
   aspect-ratio: 1 / 1.618; /* golden ratio */
-}
-
-.split-flap.is-flipping {
-  perspective: 30cqh;
 }
 
 .split-flap::selection {
@@ -214,11 +212,11 @@ body {
   border-radius: 0 0 5cqw 5cqw;
   z-index: 2;
   visibility: hidden;
+  /*transform: rotate3d(1, 0, 0, 90deg);*/
 }
 
 .is-flipping > .flap.flipping-bottom {
   visibility: visible;
-  transform: rotate3d(1, 0, 0, 90deg);
   will-change: transform;
 }
 
