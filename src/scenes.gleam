@@ -4,12 +4,6 @@ import model.{
   BoxBottom, BoxContent, BoxTitle, C, EmptyLine, Frame, L, Link, R, Scene, Text,
 }
 
-// const hello = Text(L("HELLO"))
-
-// const i_am = Text(L("I'M NICK"))
-
-// const welcome = Text(L("    WELCOME TO"))
-
 const nick = Text(L("    NICK"))
 
 const poz = Text(R("POZOULAKIS'  "))

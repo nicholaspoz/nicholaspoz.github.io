@@ -224,7 +224,11 @@ fn view(model: Model) -> Element(Msg) {
   )
 }
 
-fn display(lines: List(Content), cols cols: Int, rows rows: Int) -> Element(msg) {
+fn display(
+  lines: List(Content),
+  cols cols: Int,
+  rows rows: Int,
+) -> Element(msg) {
   let sanitized_lines = utils.pad_empty_rows(lines, rows)
 
   keyed.fragment(
@@ -336,12 +340,12 @@ fn pagination(
   let empty = string.repeat(" ", cols)
 
   let dots =
-    list.range(1, pages)
-    |> list.map(fn(idx) {
-      case idx == page {
+    int.range(from: 1, to: pages + 1, with: [], run: fn(acc, idx) {
+      let dot = case idx == page {
         True -> "●"
         False -> "○"
       }
+      list.append(acc, [dot])
     })
     |> string.join(" ")
 
