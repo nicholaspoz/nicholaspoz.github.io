@@ -5510,40 +5510,33 @@ var nick = /* @__PURE__ */ new Text2(/* @__PURE__ */ new L("    NICK"));
 var poz = /* @__PURE__ */ new Text2(/* @__PURE__ */ new R("POZOULAKIS'  "));
 var dot = /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("(DOT)"));
 var bingo = /* @__PURE__ */ new Text2(/* @__PURE__ */ new R("BINGO    "));
-var linked_in = /* @__PURE__ */ new Link(/* @__PURE__ */ new R("LINKEDIN ▶"), "https://www.linkedin.com/in/nicholaspozoulakis/");
-var github = /* @__PURE__ */ new Link(/* @__PURE__ */ new R("GITHUB ▶"), "https://github.com/nicholaspoz");
-var email = /* @__PURE__ */ new Link(/* @__PURE__ */ new R("EMAIL ▶"), "mailto:nicholaspoz@gmail.com");
 var home = /* @__PURE__ */ new Scene("HOME", /* @__PURE__ */ new None, /* @__PURE__ */ toList([
-  /* @__PURE__ */ new Frame(1000, /* @__PURE__ */ toList([/* @__PURE__ */ new EmptyLine])),
-  /* @__PURE__ */ new Frame(500, /* @__PURE__ */ toList([
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("WELCOME    "))
+  /* @__PURE__ */ new Frame(1, /* @__PURE__ */ toList([/* @__PURE__ */ new EmptyLine])),
+  /* @__PURE__ */ new Frame(2000, /* @__PURE__ */ toList([
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new R("WELCOME         "))
   ])),
   /* @__PURE__ */ new Frame(300, /* @__PURE__ */ toList([
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("WELCOME TO "))
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new R("WELCOME TO      "))
   ])),
   /* @__PURE__ */ new Frame(300, /* @__PURE__ */ toList([
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("WELCOME TO ")),
-    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new R("WELCOME TO      ")),
     nick
   ])),
   /* @__PURE__ */ new Frame(300, /* @__PURE__ */ toList([
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("WELCOME TO ")),
-    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new R("WELCOME TO      ")),
     nick,
     /* @__PURE__ */ new EmptyLine,
     poz
   ])),
   /* @__PURE__ */ new Frame(2000, /* @__PURE__ */ toList([
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("WELCOME TO ")),
-    /* @__PURE__ */ new EmptyLine,
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new R("WELCOME TO      ")),
     nick,
     /* @__PURE__ */ new EmptyLine,
     poz,
     /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("   WEBSITE"))
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("WEBSITE"))
   ])),
-  /* @__PURE__ */ new Frame(3000, /* @__PURE__ */ toList([
-    /* @__PURE__ */ new EmptyLine,
+  /* @__PURE__ */ new Frame(4000, /* @__PURE__ */ toList([
     /* @__PURE__ */ new EmptyLine,
     nick,
     /* @__PURE__ */ new EmptyLine,
@@ -5568,35 +5561,29 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
     empty_box,
     empty_box,
     empty_box,
+    empty_box,
     /* @__PURE__ */ new BoxBottom,
-    /* @__PURE__ */ new EmptyLine,
-    linked_in,
-    github,
-    email
+    /* @__PURE__ */ new EmptyLine
   ])),
   /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
     technologist,
     empty_box,
     /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("SOFTWARE")),
-    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("ENGINEERING")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("ENGINEER")),
+    empty_box,
     empty_box,
     /* @__PURE__ */ new BoxBottom,
-    /* @__PURE__ */ new EmptyLine,
-    linked_in,
-    github,
-    email
+    /* @__PURE__ */ new EmptyLine
   ])),
   /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
     technologist,
     empty_box,
     /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("SOFTWARE")),
-    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("ARCHITECTURE")),
+    /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("ARCHITECT")),
+    empty_box,
     empty_box,
     /* @__PURE__ */ new BoxBottom,
-    /* @__PURE__ */ new EmptyLine,
-    linked_in,
-    github,
-    email
+    /* @__PURE__ */ new EmptyLine
   ])),
   /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
     technologist,
@@ -5604,11 +5591,9 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
     /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("FULL-STACK")),
     /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new R("APPLICATIONS")),
     empty_box,
+    empty_box,
     /* @__PURE__ */ new BoxBottom,
-    /* @__PURE__ */ new EmptyLine,
-    linked_in,
-    github,
-    email
+    /* @__PURE__ */ new EmptyLine
   ])),
   /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
     technologist,
@@ -5616,11 +5601,9 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
     /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new L("WEB & MOBILE")),
     /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new R("APPLICATIONS")),
     empty_box,
+    empty_box,
     /* @__PURE__ */ new BoxBottom,
-    /* @__PURE__ */ new EmptyLine,
-    linked_in,
-    github,
-    email
+    /* @__PURE__ */ new EmptyLine
   ])),
   /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
     technologist,
@@ -5628,11 +5611,9 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
     /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("A.I. & AGENTIC")),
     /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new R("APPLICATIONS")),
     empty_box,
+    empty_box,
     /* @__PURE__ */ new BoxBottom,
-    /* @__PURE__ */ new EmptyLine,
-    linked_in,
-    github,
-    email
+    /* @__PURE__ */ new EmptyLine
   ])),
   /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
     technologist,
@@ -5640,11 +5621,9 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
     /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("A.I. & AGENTIC")),
     /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("SYSTEMS")),
     empty_box,
+    empty_box,
     /* @__PURE__ */ new BoxBottom,
-    /* @__PURE__ */ new EmptyLine,
-    linked_in,
-    github,
-    email
+    /* @__PURE__ */ new EmptyLine
   ])),
   /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
     technologist,
@@ -5652,11 +5631,9 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
     /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("BACKEND")),
     /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("SYSTEMS")),
     empty_box,
+    empty_box,
     /* @__PURE__ */ new BoxBottom,
-    /* @__PURE__ */ new EmptyLine,
-    linked_in,
-    github,
-    email
+    /* @__PURE__ */ new EmptyLine
   ])),
   /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
     technologist,
@@ -5664,11 +5641,9 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
     /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("PAYMENTS")),
     /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("SYSTEMS")),
     empty_box,
+    empty_box,
     /* @__PURE__ */ new BoxBottom,
-    /* @__PURE__ */ new EmptyLine,
-    linked_in,
-    github,
-    email
+    /* @__PURE__ */ new EmptyLine
   ])),
   /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
     technologist,
@@ -5676,11 +5651,9 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
     /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("ACCOUNTING")),
     /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("SYSTEMS")),
     empty_box,
+    empty_box,
     /* @__PURE__ */ new BoxBottom,
-    /* @__PURE__ */ new EmptyLine,
-    linked_in,
-    github,
-    email
+    /* @__PURE__ */ new EmptyLine
   ])),
   /* @__PURE__ */ new Frame(3200, /* @__PURE__ */ toList([
     technologist,
@@ -5688,11 +5661,9 @@ var tech = /* @__PURE__ */ new Scene("TECH", /* @__PURE__ */ new None, /* @__PUR
     /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("ACCOUNTING")),
     /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("SYSTEMS")),
     /* @__PURE__ */ new BoxContent(/* @__PURE__ */ new C("ENTHUSIAST")),
+    empty_box,
     /* @__PURE__ */ new BoxBottom,
-    /* @__PURE__ */ new EmptyLine,
-    linked_in,
-    github,
-    email
+    /* @__PURE__ */ new EmptyLine
   ]))
 ]));
 var cellist = /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("CELLIST"));
@@ -5704,10 +5675,7 @@ var music = /* @__PURE__ */ new Scene("MUSIC", /* @__PURE__ */ new Some(" ABCDEF
     /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new EmptyLine,
-    linked_in,
-    github,
-    email
+    /* @__PURE__ */ new EmptyLine
   ])),
   /* @__PURE__ */ new Frame(500, /* @__PURE__ */ toList([
     cellist,
@@ -5716,82 +5684,55 @@ var music = /* @__PURE__ */ new Scene("MUSIC", /* @__PURE__ */ new Some(" ABCDEF
     /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new EmptyLine,
-    linked_in,
-    github,
-    email
+    /* @__PURE__ */ new EmptyLine
   ])),
   /* @__PURE__ */ new Frame(3000, /* @__PURE__ */ toList([
     cellist,
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("(FREELANCE) ")),
-    /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┏━━━┓ ╻●    ")),
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃   ┃ ┃   ╻●")),
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃ #●╹ ┗━━━┛ ")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("●╹           ")),
-    linked_in,
-    github,
-    email
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("●╹           "))
   ])),
   /* @__PURE__ */ new Frame(2500, /* @__PURE__ */ toList([
     cellist,
     /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┏━━━┓ ╻●    ")),
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃   ┃ ┃   ╻●")),
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃ #●╹ ┗━━━┛ ")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("●╹           ")),
-    linked_in,
-    github,
-    email
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("●╹           "))
   ])),
   /* @__PURE__ */ new Frame(3000, /* @__PURE__ */ toList([
     cellist,
-    /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("CLASSICAL")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("(CLASSICAL)")),
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┏━━━┓ ╻●    ")),
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃   ┃ ┃   ╻●")),
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃ #●╹ ┗━━━┛ ")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("●╹           ")),
-    linked_in,
-    github,
-    email
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("●╹           "))
   ])),
   /* @__PURE__ */ new Frame(3000, /* @__PURE__ */ toList([
     cellist,
-    /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┏━━━┓ ╻●    ")),
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("M┃O D┃E┃R N╻●")),
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃ #●╹ ┗━━━┛ ")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("●╹           ")),
-    linked_in,
-    github,
-    email
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("●╹           "))
   ])),
   /* @__PURE__ */ new Frame(3000, /* @__PURE__ */ toList([
     cellist,
-    /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("MUSICAL THEATER")),
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("(MUSICAL THEATER)")),
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┏━━━┓ ╻●    ")),
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃   ┃ ┃   ╻●")),
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃ #●╹ ┗━━━┛ ")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("●╹           ")),
-    linked_in,
-    github,
-    email
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("●╹           "))
   ])),
   /* @__PURE__ */ new Frame(1000, /* @__PURE__ */ toList([
     cellist,
     /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┏━━━┓ ╻●    ")),
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃   ┃ ┃   ╻●")),
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new C(" ┃ #●╹ ┗━━━┛ ")),
-    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("●╹           ")),
-    linked_in,
-    github,
-    email
+    /* @__PURE__ */ new Text2(/* @__PURE__ */ new C("●╹           "))
   ]))
 ]));
 var friends = /* @__PURE__ */ new Scene("FRIENDS", /* @__PURE__ */ new None, /* @__PURE__ */ toList([
@@ -5808,12 +5749,14 @@ var friends = /* @__PURE__ */ new Scene("FRIENDS", /* @__PURE__ */ new None, /* 
     /* @__PURE__ */ new Text2(/* @__PURE__ */ new R("FRIENDS!    ")),
     /* @__PURE__ */ new EmptyLine,
     /* @__PURE__ */ new EmptyLine,
-    /* @__PURE__ */ new EmptyLine,
-    linked_in,
-    github,
-    email
+    /* @__PURE__ */ new EmptyLine
   ]))
 ]));
+var links = /* @__PURE__ */ toList([
+  /* @__PURE__ */ new Link(/* @__PURE__ */ new R("LINKEDIN ▶"), "https://www.linkedin.com/in/nicholaspozoulakis/"),
+  /* @__PURE__ */ new Link(/* @__PURE__ */ new R("GITHUB ▶"), "https://github.com/nicholaspoz"),
+  /* @__PURE__ */ new Link(/* @__PURE__ */ new R("EMAIL ▶"), "mailto:nicholaspoz@gmail.com")
+]);
 var scenes = /* @__PURE__ */ toList([home, tech, music, friends]);
 
 // build/dev/javascript/bingo/utils.mjs
@@ -6025,6 +5968,82 @@ function character(id2, dest, on_click2) {
     ]))
   ]));
 }
+function row(name, line, row_num, num_cols) {
+  let bg = repeat2(" ", num_cols);
+  let _block;
+  if (line instanceof Text2) {
+    let text4 = line.text;
+    if (text4 instanceof L) {
+      let str = text4[0];
+      _block = left(str, bg);
+    } else if (text4 instanceof C) {
+      let str = text4[0];
+      _block = center(str, bg);
+    } else {
+      let str = text4[0];
+      _block = right(str, bg);
+    }
+  } else if (line instanceof Link) {
+    let text4 = line.text;
+    if (text4 instanceof L) {
+      let str = text4[0];
+      _block = left(str, bg);
+    } else if (text4 instanceof C) {
+      let str = text4[0];
+      _block = center(str, bg);
+    } else {
+      let str = text4[0];
+      _block = right(str, bg);
+    }
+  } else if (line instanceof BoxTitle) {
+    let text4 = line.text;
+    _block = left("┏" + text4, repeat2("━", num_cols - 1) + "┓");
+  } else if (line instanceof BoxContent) {
+    let text4 = line.text;
+    let bg$1 = repeat2(" ", num_cols - 4);
+    let _block$12;
+    if (text4 instanceof L) {
+      let str = text4[0];
+      _block$12 = left(str, bg$1);
+    } else if (text4 instanceof C) {
+      let str = text4[0];
+      _block$12 = center(str, bg$1);
+    } else {
+      let str = text4[0];
+      _block$12 = right(str, bg$1);
+    }
+    let text$1 = _block$12;
+    _block = "┃ " + text$1 + " ┃";
+  } else if (line instanceof BoxBottom) {
+    _block = "┗" + repeat2("━", num_cols - 2) + "┛";
+  } else {
+    _block = bg;
+  }
+  let text3 = _block;
+  let _block$1;
+  let _pipe = text3;
+  let _pipe$1 = graphemes(_pipe);
+  _block$1 = index_map(_pipe$1, (char, idx) => {
+    let id2 = name + "-" + to_string(row_num) + "-" + to_string(idx);
+    return [id2, character(id2, char, new None)];
+  });
+  let children = _block$1;
+  let _block$2;
+  if (line instanceof Link) {
+    let url = line.url;
+    _block$2 = toList([href(url), target("_blank")]);
+  } else {
+    _block$2 = toList([role("div")]);
+  }
+  let link_attrs = _block$2;
+  return element3("a", prepend(class$("row"), prepend(data2("name", name), link_attrs)), children);
+}
+function display(name, lines, cols, rows) {
+  let sanitized_lines = pad_empty_rows(lines, rows);
+  return fragment2(index_map(sanitized_lines, (line, row_num) => {
+    return [name + to_string(row_num), row(name, line, row_num, cols)];
+  }));
+}
 function pagination(pages, page, cols, auto_play) {
   let empty3 = repeat2(" ", cols);
   let _block;
@@ -6091,100 +6110,29 @@ function pagination(pages, page, cols, auto_play) {
     ];
   }));
 }
-function row(name, line, row_num, num_cols) {
-  let bg = repeat2(" ", num_cols);
-  let _block;
-  if (line instanceof Text2) {
-    let text4 = line.text;
-    if (text4 instanceof L) {
-      let str = text4[0];
-      _block = left(str, bg);
-    } else if (text4 instanceof C) {
-      let str = text4[0];
-      _block = center(str, bg);
-    } else {
-      let str = text4[0];
-      _block = right(str, bg);
-    }
-  } else if (line instanceof Link) {
-    let text4 = line.text;
-    if (text4 instanceof L) {
-      let str = text4[0];
-      _block = left(str, bg);
-    } else if (text4 instanceof C) {
-      let str = text4[0];
-      _block = center(str, bg);
-    } else {
-      let str = text4[0];
-      _block = right(str, bg);
-    }
-  } else if (line instanceof BoxTitle) {
-    let text4 = line.text;
-    _block = left("┏" + text4, repeat2("━", num_cols - 1) + "┓");
-  } else if (line instanceof BoxContent) {
-    let text4 = line.text;
-    let bg$1 = repeat2(" ", num_cols - 4);
-    let _block$12;
-    if (text4 instanceof L) {
-      let str = text4[0];
-      _block$12 = left(str, bg$1);
-    } else if (text4 instanceof C) {
-      let str = text4[0];
-      _block$12 = center(str, bg$1);
-    } else {
-      let str = text4[0];
-      _block$12 = right(str, bg$1);
-    }
-    let text$1 = _block$12;
-    _block = "┃ " + text$1 + " ┃";
-  } else if (line instanceof BoxBottom) {
-    _block = "┗" + repeat2("━", num_cols - 2) + "┛";
-  } else {
-    _block = bg;
-  }
-  let text3 = _block;
-  let _block$1;
-  let _pipe = text3;
-  let _pipe$1 = graphemes(_pipe);
-  _block$1 = index_map(_pipe$1, (char, idx) => {
-    let id2 = to_string(row_num) + "-" + to_string(idx);
-    return [id2, character(id2, char, new None)];
-  });
-  let children = _block$1;
-  let _block$2;
-  if (line instanceof Link) {
-    let url = line.url;
-    _block$2 = toList([href(url), target("_blank")]);
-  } else {
-    _block$2 = toList([role("div")]);
-  }
-  let link_attrs = _block$2;
-  return element3("a", prepend(class$("row"), prepend(data2("name", name), link_attrs)), children);
-}
-function display(lines, cols, rows) {
-  let sanitized_lines = pad_empty_rows(lines, rows);
-  return fragment2(index_map(sanitized_lines, (line, row_num) => {
-    return [to_string(row_num), row("display", line, row_num, cols)];
-  }));
-}
 function view(model) {
-  let lines = model.current.frame.lines;
-  let total_rows = model.rows + 2;
+  let $ = [2, 1, 3];
+  let empty_rows = $[0];
+  let pagination_rows = $[1];
+  let links_rows = $[2];
+  let total_rows = model.rows + empty_rows + pagination_rows + links_rows;
   return div(toList([
     class$("matrix"),
     style("--rows", to_string(total_rows)),
     style("--cols", to_string(model.columns))
   ]), toList([
-    display(lines, model.columns, model.rows),
+    display("main", model.current.frame.lines, model.columns, model.rows),
     div(toList([class$("row")]), toList([])),
     pagination(length(model.scenes), fold_until(model.scenes, 1, (acc, s) => {
-      let $ = isEqual(model.current.scene, s);
-      if ($) {
+      let $1 = isEqual(model.current.scene, s);
+      if ($1) {
         return new Stop(acc);
       } else {
         return new Continue(acc + 1);
       }
-    }), model.columns, model.auto_play)
+    }), model.columns, model.auto_play),
+    div(toList([class$("row")]), toList([])),
+    display("links", links, model.columns, length(links))
   ]));
 }
 function start_timeout(frame, id2) {
@@ -6239,7 +6187,7 @@ function reduce(model, msg) {
         return new Ok([
           new Model(model.scenes, model.rows, model.columns, next, false, model.timeout, model.path),
           batch(toList([
-            set_adjacency_list_effect("display", next.scene.chars),
+            set_adjacency_list_effect("main", next.scene.chars),
             start_timeout(frame, model.timeout)
           ]))
         ]);
@@ -6278,7 +6226,7 @@ function reduce(model, msg) {
         return new Ok([
           new Model(model.scenes, model.rows, model.columns, next, model.auto_play, new None, model.path),
           batch(toList([
-            set_adjacency_list_effect("display", next.scene.chars),
+            set_adjacency_list_effect("main", next.scene.chars),
             start_timeout(next.frame, new None)
           ]))
         ]);
@@ -6297,7 +6245,7 @@ function update2(model, msg) {
     let next = $[0];
     return next;
   } else {
-    echo("ERROR", undefined, "src/bingo.gleam", 122);
+    echo("ERROR", undefined, "src/bingo.gleam", 123);
     return [model, none2()];
   }
 }
@@ -6306,10 +6254,11 @@ function init(_) {
   let state = initial_state(scenes$1);
   let path = get_path();
   return [
-    new Model(scenes$1, 10, 19, state, true, new None, path),
+    new Model(scenes$1, 7, 23, state, true, new None, path),
     batch(toList([
       set_adjacency_list_effect("pagination", new Some(pagination_chars)),
-      set_adjacency_list_effect("display", state.scene.chars),
+      set_adjacency_list_effect("main", state.scene.chars),
+      set_adjacency_list_effect("links", new Some(default_chars)),
       after_paint((dispatch2, root_element) => {
         return on_resize(root_element, () => {
           return dispatch2(new Resized);

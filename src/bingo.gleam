@@ -61,8 +61,8 @@ fn init(_) -> #(Model, effect.Effect(Msg)) {
   #(
     Model(
       scenes: scenes,
-      rows: 10,
-      columns: 19,
+      rows: 7,
+      columns: 23,
       current: state,
       auto_play: True,
       timeout: None,
@@ -70,7 +70,8 @@ fn init(_) -> #(Model, effect.Effect(Msg)) {
     ),
     effect.batch([
       set_adjacency_list_effect("pagination", Some(pagination_chars)),
-      set_adjacency_list_effect("display", state.scene.chars),
+      set_adjacency_list_effect("main", state.scene.chars),
+      set_adjacency_list_effect("links", Some(default_chars)),
       {
         use dispatch, root_element <- effect.after_paint
         browser.on_resize(root_element, fn() { dispatch(Resized) })
@@ -152,7 +153,7 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
           Ok(#(
             Model(..model, current: next, timeout: None),
             effect.batch([
-              set_adjacency_list_effect("display", next.scene.chars),
+              set_adjacency_list_effect("main", next.scene.chars),
               start_timeout(next.frame, current_timeout: None),
             ]),
           ))
@@ -170,7 +171,7 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
       Ok(#(
         Model(..model, auto_play: False, current: next),
         effect.batch([
-          set_adjacency_list_effect("display", next.scene.chars),
+          set_adjacency_list_effect("main", next.scene.chars),
           start_timeout(frame, model.timeout),
         ]),
       ))
@@ -194,10 +195,8 @@ fn reduce(model: Model, msg: Msg) -> Result(#(Model, Effect(Msg)), Nil) {
 // MARK: VIEW
 
 fn view(model: Model) -> Element(Msg) {
-  let lines = model.current.frame.lines
-
-  // +1 for pagination row
-  let total_rows = model.rows + 2
+  let #(empty_rows, pagination_rows, links_rows) = #(2, 1, 3)
+  let total_rows = model.rows + empty_rows + pagination_rows + links_rows
 
   html.div(
     [
@@ -206,9 +205,18 @@ fn view(model: Model) -> Element(Msg) {
       attribute.style("--cols", int.to_string(model.columns)),
     ],
     [
-      display(lines, cols: model.columns, rows: model.rows),
+      // MAIN DISPLAY CONTENT
+      display(
+        name: "main",
+        lines: model.current.frame.lines,
+        cols: model.columns,
+        rows: model.rows,
+      ),
+
+      // EMPTY SPACE
       html.div([attribute.class("row")], []),
 
+      // PAGINATION
       pagination(
         pages: list.length(model.scenes),
         page: list.fold_until(model.scenes, 1, fn(acc, s) {
@@ -220,12 +228,24 @@ fn view(model: Model) -> Element(Msg) {
         cols: model.columns,
         auto_play: model.auto_play,
       ),
+
+      // EMPTY SPACE
+      html.div([attribute.class("row")], []),
+
+      // Links
+      display(
+        name: "links",
+        lines: scenes.links,
+        cols: model.columns,
+        rows: list.length(scenes.links),
+      ),
     ],
   )
 }
 
 fn display(
-  lines: List(Content),
+  name name: String,
+  lines lines: List(Content),
   cols cols: Int,
   rows rows: Int,
 ) -> Element(msg) {
@@ -233,7 +253,7 @@ fn display(
 
   keyed.fragment(
     list.index_map(sanitized_lines, fn(line, row_num) {
-      #(int.to_string(row_num), row("display", line, row_num:, cols:))
+      #(name <> int.to_string(row_num), row(name, line, row_num:, cols:))
     }),
   )
 }
@@ -280,7 +300,8 @@ fn row(
     text
     |> string.to_graphemes
     |> list.index_map(fn(char, idx) {
-      let id = int.to_string(row_num) <> "-" <> int.to_string(idx)
+      let id =
+        name <> "-" <> int.to_string(row_num) <> "-" <> int.to_string(idx)
       #(id, character(id, dest: char, on_click: None))
     })
 

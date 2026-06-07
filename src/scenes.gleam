@@ -12,51 +12,40 @@ const dot = Text(C("(DOT)"))
 
 const bingo = Text(R("BINGO    "))
 
-const linked_in = Link(
-  text: R("LINKEDIN ▶"),
-  url: "https://www.linkedin.com/in/nicholaspozoulakis/",
-)
-
-const github = Link(text: R("GITHUB ▶"), url: "https://github.com/nicholaspoz")
-
-const email = Link(text: R("EMAIL ▶"), url: "mailto:nicholaspoz@gmail.com")
-
 const home = Scene(
   name: "HOME",
   chars: None,
   frames: [
     Frame(
-      ms: 1000,
+      ms: 1,
       lines: [
         EmptyLine,
       ],
     ),
 
     Frame(
-      ms: 500,
+      ms: 2000,
       lines: [
-        Text(C("WELCOME    ")),
+        Text(R("WELCOME         ")),
       ],
     ),
     Frame(
       ms: 300,
       lines: [
-        Text(C("WELCOME TO ")),
+        Text(R("WELCOME TO      ")),
       ],
     ),
     Frame(
       ms: 300,
       lines: [
-        Text(C("WELCOME TO ")),
-        EmptyLine,
+        Text(R("WELCOME TO      ")),
         nick,
       ],
     ),
     Frame(
       ms: 300,
       lines: [
-        Text(C("WELCOME TO ")),
-        EmptyLine,
+        Text(R("WELCOME TO      ")),
         nick,
         EmptyLine,
         poz,
@@ -65,20 +54,18 @@ const home = Scene(
     Frame(
       ms: 2000,
       lines: [
-        Text(C("WELCOME TO ")),
-        EmptyLine,
+        Text(R("WELCOME TO      ")),
         nick,
         EmptyLine,
         poz,
         EmptyLine,
-        Text(C("   WEBSITE")),
+        Text(C("WEBSITE")),
       ],
     ),
 
     Frame(
-      ms: 3000,
+      ms: 4000,
       lines: [
-        EmptyLine,
         EmptyLine,
         nick,
         EmptyLine,
@@ -119,11 +106,9 @@ const tech = Scene(
         empty_box,
         empty_box,
         empty_box,
+        empty_box,
         BoxBottom,
         EmptyLine,
-        linked_in,
-        github,
-        email,
       ],
     ),
     Frame(
@@ -132,13 +117,11 @@ const tech = Scene(
         technologist,
         empty_box,
         BoxContent(L("SOFTWARE")),
-        BoxContent(L("ENGINEERING")),
+        BoxContent(L("ENGINEER")),
+        empty_box,
         empty_box,
         BoxBottom,
         EmptyLine,
-        linked_in,
-        github,
-        email,
       ],
     ),
     Frame(
@@ -147,13 +130,11 @@ const tech = Scene(
         technologist,
         empty_box,
         BoxContent(L("SOFTWARE")),
-        BoxContent(L("ARCHITECTURE")),
+        BoxContent(L("ARCHITECT")),
+        empty_box,
         empty_box,
         BoxBottom,
         EmptyLine,
-        linked_in,
-        github,
-        email,
       ],
     ),
     Frame(
@@ -164,11 +145,9 @@ const tech = Scene(
         BoxContent(L("FULL-STACK")),
         BoxContent(R("APPLICATIONS")),
         empty_box,
+        empty_box,
         BoxBottom,
         EmptyLine,
-        linked_in,
-        github,
-        email,
       ],
     ),
     Frame(
@@ -179,11 +158,9 @@ const tech = Scene(
         BoxContent(L("WEB & MOBILE")),
         BoxContent(R("APPLICATIONS")),
         empty_box,
+        empty_box,
         BoxBottom,
         EmptyLine,
-        linked_in,
-        github,
-        email,
       ],
     ),
     Frame(
@@ -194,11 +171,9 @@ const tech = Scene(
         BoxContent(C("A.I. & AGENTIC")),
         BoxContent(R("APPLICATIONS")),
         empty_box,
+        empty_box,
         BoxBottom,
         EmptyLine,
-        linked_in,
-        github,
-        email,
       ],
     ),
     Frame(
@@ -209,11 +184,9 @@ const tech = Scene(
         BoxContent(C("A.I. & AGENTIC")),
         BoxContent(C("SYSTEMS")),
         empty_box,
+        empty_box,
         BoxBottom,
         EmptyLine,
-        linked_in,
-        github,
-        email,
       ],
     ),
     Frame(
@@ -224,11 +197,9 @@ const tech = Scene(
         BoxContent(C("BACKEND")),
         BoxContent(C("SYSTEMS")),
         empty_box,
+        empty_box,
         BoxBottom,
         EmptyLine,
-        linked_in,
-        github,
-        email,
       ],
     ),
     Frame(
@@ -239,11 +210,9 @@ const tech = Scene(
         BoxContent(C("PAYMENTS")),
         BoxContent(C("SYSTEMS")),
         empty_box,
+        empty_box,
         BoxBottom,
         EmptyLine,
-        linked_in,
-        github,
-        email,
       ],
     ),
     Frame(
@@ -254,11 +223,9 @@ const tech = Scene(
         BoxContent(C("ACCOUNTING")),
         BoxContent(C("SYSTEMS")),
         empty_box,
+        empty_box,
         BoxBottom,
         EmptyLine,
-        linked_in,
-        github,
-        email,
       ],
     ),
     Frame(
@@ -269,11 +236,9 @@ const tech = Scene(
         BoxContent(C("ACCOUNTING")),
         BoxContent(C("SYSTEMS")),
         BoxContent(C("ENTHUSIAST")),
+        empty_box,
         BoxBottom,
         EmptyLine,
-        linked_in,
-        github,
-        email,
       ],
     ),
   ],
@@ -295,9 +260,6 @@ const music = Scene(
         EmptyLine,
         EmptyLine,
         EmptyLine,
-        linked_in,
-        github,
-        email,
       ],
     ),
     Frame(
@@ -310,9 +272,6 @@ const music = Scene(
         EmptyLine,
         EmptyLine,
         EmptyLine,
-        linked_in,
-        github,
-        email,
       ],
     ),
     Frame(
@@ -320,14 +279,10 @@ const music = Scene(
       lines: [
         cellist,
         Text(C("(FREELANCE) ")),
-        EmptyLine,
         Text(C(" ┏━━━┓ ╻●    ")),
         Text(C(" ┃   ┃ ┃   ╻●")),
         Text(C(" ┃ #●╹ ┗━━━┛ ")),
         Text(C("●╹           ")),
-        linked_in,
-        github,
-        email,
       ],
     ),
     Frame(
@@ -335,59 +290,43 @@ const music = Scene(
       lines: [
         cellist,
         EmptyLine,
-        EmptyLine,
         Text(C(" ┏━━━┓ ╻●    ")),
         Text(C(" ┃   ┃ ┃   ╻●")),
         Text(C(" ┃ #●╹ ┗━━━┛ ")),
         Text(C("●╹           ")),
-        linked_in,
-        github,
-        email,
       ],
     ),
     Frame(
       ms: 3000,
       lines: [
         cellist,
-        EmptyLine,
-        Text(C("CLASSICAL")),
+        Text(C("(CLASSICAL)")),
         Text(C(" ┏━━━┓ ╻●    ")),
         Text(C(" ┃   ┃ ┃   ╻●")),
         Text(C(" ┃ #●╹ ┗━━━┛ ")),
         Text(C("●╹           ")),
-        linked_in,
-        github,
-        email,
       ],
     ),
     Frame(
       ms: 3000,
       lines: [
         cellist,
-        EmptyLine,
         EmptyLine,
         Text(C(" ┏━━━┓ ╻●    ")),
         Text(C("M┃O D┃E┃R N╻●")),
         Text(C(" ┃ #●╹ ┗━━━┛ ")),
         Text(C("●╹           ")),
-        linked_in,
-        github,
-        email,
       ],
     ),
     Frame(
       ms: 3000,
       lines: [
         cellist,
-        EmptyLine,
-        Text(C("MUSICAL THEATER")),
+        Text(C("(MUSICAL THEATER)")),
         Text(C(" ┏━━━┓ ╻●    ")),
         Text(C(" ┃   ┃ ┃   ╻●")),
         Text(C(" ┃ #●╹ ┗━━━┛ ")),
         Text(C("●╹           ")),
-        linked_in,
-        github,
-        email,
       ],
     ),
     Frame(
@@ -395,14 +334,10 @@ const music = Scene(
       lines: [
         cellist,
         EmptyLine,
-        EmptyLine,
         Text(C(" ┏━━━┓ ╻●    ")),
         Text(C(" ┃   ┃ ┃   ╻●")),
         Text(C(" ┃ #●╹ ┗━━━┛ ")),
         Text(C("●╹           ")),
-        linked_in,
-        github,
-        email,
       ],
     ),
   ],
@@ -431,13 +366,19 @@ const friends = Scene(
         EmptyLine,
         EmptyLine,
         EmptyLine,
-        linked_in,
-        github,
-        email,
       ],
     ),
   ],
 )
+
+pub const links = [
+  Link(
+    text: R("LINKEDIN ▶"),
+    url: "https://www.linkedin.com/in/nicholaspozoulakis/",
+  ),
+  Link(text: R("GITHUB ▶"), url: "https://github.com/nicholaspoz"),
+  Link(text: R("EMAIL ▶"), url: "mailto:nicholaspoz@gmail.com"),
+]
 
 pub const scenes = [
   home,

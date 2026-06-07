@@ -70,12 +70,6 @@ body {
   padding: 5cqh 5cqw;
 }
 
-/*@container bingo (aspect-ratio < 1) {
-  #app {
-    padding: 3cqh 3cqw;
-  }
-}*/
-
 .matrix {
   /* Set from Gleam via inline styles */
   --rows: 10;
@@ -116,6 +110,7 @@ body {
   justify-content: center;
   align-items: center;
   gap: var(--gap);
+  position: relative;
 
   /* Ensure empty rows have correct height */
   min-height: var(--flap-height);
